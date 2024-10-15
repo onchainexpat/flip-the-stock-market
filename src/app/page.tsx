@@ -4,13 +4,24 @@ import { useAccount } from 'wagmi';
 import LoginButton from '../components/LoginButton';
 import SignupButton from '../components/SignupButton';
 import { 
+  type LifecycleStatus,
   Swap, 
   SwapAmountInput, 
   SwapButton, 
   SwapMessage, 
+  SwapSettings,
+  SwapSettingsSlippageDescription, 
+  SwapSettingsSlippageInput, 
+  SwapSettingsSlippageTitle,  
+  SwapError,
   SwapToast 
 } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
+import { useCallback, useContext } from 'react';
+import type { TransactionReceipt } from 'viem';
+
+const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
+
 import { useState } from 'react';
 
 export default function Page() {
@@ -24,6 +35,9 @@ export default function Page() {
       setOpenDropdown(dropdown);
     }
   };
+ 
+  const defaultMaxSlippage = 3;
+
 
   const SPXToken: Token = {
     address: "0x50da645f148798f68ef2d7db7c1cb22a6819bb2c",
@@ -35,15 +49,6 @@ export default function Page() {
 
   };
 
-  const ETHToken: Token = {
-    address: "0x4200000000000000000000000000000000000006",
-    chainId: 8453,
-    decimals: 18,
-    name: "Ethereum",
-    symbol: "ETH",
-    image: "https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png",
-  };
-
   const USDCToken: Token = {
     address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     chainId: 8453,
@@ -53,7 +58,22 @@ export default function Page() {
     image: "https://dynamic-assets.coinbase.com/3c15df5e2ac7d4abbe9499ed9335041f00c620f28e8de2f93474a9f432058742cdf4674bd43f309e69778a26969372310135be97eb183d91c492154176d455b8/asset_icons/9d67b728b6c8f457717154b3a35f9ddc702eae7e76c4684ee39302c4d7fd0bb8.png",
   };
 
-  const swappableTokens: Token[] = [SPXToken, USDCToken, ETHToken];
+  const swappableTokens: Token[] = [SPXToken, USDCToken];
+
+    const handleOnStatus = useCallback((lifecycleStatus: LifecycleStatus) => {
+    console.log('Status:', lifecycleStatus);
+  }, []);
+
+  const handleOnSuccess = useCallback(
+    (transactionReceipt: TransactionReceipt) => {
+      console.log('Success:', transactionReceipt);
+    },
+    [],
+  );
+
+  const handleOnError = useCallback((swapError: SwapError) => {
+    console.log('Error:', swapError);
+  }, []);
 
   return (
     <div className="flex h-full w-96 max-w-full flex-col px-1 md:w-[1008px]">
@@ -68,7 +88,27 @@ export default function Page() {
       <section className="templateSection flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-gray-100 px-2 py-4 md:grow">
         <div className="flex h-[450px] w-[450px] max-w-full items-center justify-center rounded-xl bg-[#030712]">
           {address ? (
-            <Swap>
+            <Swap
+              className="w-full border sm:w-[500px]"
+              onStatus={handleOnStatus}
+              onSuccess={handleOnSuccess}
+              onError={handleOnError}
+              config={{
+                maxSlippage: defaultMaxSlippage || FALLBACK_DEFAULT_MAX_SLIPPAGE,
+              }}
+              isSponsored={true}
+            >
+
+              <SwapSettings>
+                  <SwapSettingsSlippageTitle>
+                    Max. slippage
+                  </SwapSettingsSlippageTitle>
+                  <SwapSettingsSlippageDescription>
+                    Your swap will revert if the prices change by more than the selected
+                    percentage.
+                  </SwapSettingsSlippageDescription>
+                  <SwapSettingsSlippageInput />
+                </SwapSettings>
               <SwapAmountInput
                 label="Sell"
                 swappableTokens={swappableTokens}
@@ -81,7 +121,7 @@ export default function Page() {
                 type="to"
               />
               <SwapButton />
-              <SwapMessage />
+              <SwapMessage className="text-red-500" />
               <SwapToast />
             </Swap>
           ) : (
