@@ -27,6 +27,13 @@ import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
 
+// Add this new component at the top of your file, outside of the Page component
+const TelegramLogo = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22.05 2.25L2.25 10.35L11.7 13.5L14.85 23.1L22.05 2.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M11.7 13.5L17.55 7.65" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 export default function Page() {
   const [openDropdown, setOpenDropdown] = useState<'tenets' | 'priceChart' | null>(null);
@@ -37,7 +44,8 @@ export default function Page() {
   // Add this new state for background videos
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
 
-  const projectId = NEXT_PUBLIC_CDP_PROJECT_ID;
+//  const projectId = NEXT_PUBLIC_CDP_PROJECT_ID;
+const projectId = "cc2410f3-9ed7-4da8-a005-711f71b8e8dc";
   const { address } = useAccount();
 
   const onrampBuyUrl = address
@@ -48,7 +56,7 @@ export default function Page() {
         presetFiatAmount: 20,
         fiatCurrency: 'USD'
       })
-    : "undefined";
+    : undefined;
 
   useEffect(() => {
     const images = Array.from({length: 11}, (_, i) => `/background/sticker${i}_web.gif`);
@@ -241,61 +249,59 @@ export default function Page() {
             
             {/* Dropdown buttons */}
             <div className="w-full flex flex-col items-center gap-4 mt-4">
-              {address && showFundWalletButton && (
+              {address && showFundWalletButton && onrampBuyUrl && (
                 <FundButton fundingUrl={onrampBuyUrl} text="Get USDC with Coinbase (0% fee)" />
               )}
 
-              {/* Existing "How to buy" button and new button */}
-              <div className="w-full flex flex-col sm:flex-row justify-between gap-2">
+              {/* Updated buttons with consistent color theme */}
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button 
-                  className="w-full sm:w-1/2 px-4 py-2 bg-purple-500 text-white rounded-md text-center hover:bg-purple-600 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-center hover:bg-blue-700 transition-colors flex items-center justify-center"
                 >
-                  How to Buy SPX
+                  <span>How to Buy SPX</span>
                 </button>
                 <a 
                   href="https://spx6900.com/"
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-full sm:w-1/2 px-4 py-2 bg-orange-500 text-white rounded-md text-center hover:bg-orange-600 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-center hover:bg-blue-700 transition-colors flex items-center justify-center"
                 >
-                  Official Website
+                  <span>Official Website</span>
                 </a>
-              </div>
-
-              {/* Existing row of buttons */}
-              <div className="w-full flex flex-col sm:flex-row justify-between gap-2 mb-4">
                 <a 
                   href="https://t.me/SPX6900" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-full sm:w-1/2 px-4 py-2 bg-blue-500 text-white rounded-md text-center hover:bg-blue-600 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-center hover:bg-blue-700 transition-colors flex items-center justify-center"
                 >
-                  Community Chat
+                  <img 
+                    src="/telegram_logo.png" 
+                    alt="Telegram" 
+                    className="w-5 h-5 mr-2"
+                  />
+                  <span>Community Chat</span>
                 </a>
-                <a 
-                  href="https://spx6900.com/"
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="w-full sm:w-1/2 px-4 py-2 bg-green-500 text-white rounded-md text-center hover:bg-green-600 transition-colors"
+                <button 
+                  disabled
+                  className="px-4 py-2 bg-blue-300 text-blue-600 rounded-md text-center cursor-not-allowed flex items-center justify-center"
                 >
-                  Meme Kit
-                </a>
+                  <span>Meme Kit (Coming Soon)</span>
+                </button>
+                <button 
+                  onClick={() => toggleDropdown('tenets')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center relative hover:bg-blue-700 transition-colors"
+                >
+                  <span className="mr-2">Tenets of SPX</span>
+                  <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'tenets' ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+                <button 
+                  onClick={() => toggleDropdown('priceChart')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center relative hover:bg-blue-700 transition-colors"
+                >
+                  <span className="mr-2">Price Chart</span>
+                  <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'priceChart' ? 'rotate-180' : ''}`}>▼</span>
+                </button>
               </div>
-
-              <button 
-                onClick={() => toggleDropdown('tenets')}
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded-md flex items-center justify-between"
-              >
-                <span>Tenets of SPX</span>
-                <span className={`transition-transform duration-300 ${openDropdown === 'tenets' ? 'rotate-180' : ''}`}>▼</span>
-              </button>
-              <button 
-                onClick={() => toggleDropdown('priceChart')}
-                className="w-full px-4 py-2 bg-green-500 text-white rounded-md flex items-center justify-between"
-              >
-                <span>Price Chart</span>
-                <span className={`transition-transform duration-300 ${openDropdown === 'priceChart' ? 'rotate-180' : ''}`}>▼</span>
-              </button>
             </div>
             
             {/* Tenets of SPX content */}
