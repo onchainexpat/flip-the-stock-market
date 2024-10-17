@@ -31,7 +31,7 @@ export function useWagmiConfig() {
         },
       ],
       {
-        appName: 'SPX6900',
+        appName: 'Flip the Stock Market',
         projectId,
       },
     );
