@@ -20,7 +20,7 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               title={title}
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800"
+              className="flex items-center gap-1 text-base font-bold text-gray-600 hover:text-gray-800"
             >
               <p>{title}</p>
               <ArrowSvg />

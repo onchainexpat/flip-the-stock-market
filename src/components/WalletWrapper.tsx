@@ -1,4 +1,5 @@
 'use client';
+import { useAccount } from 'wagmi';
 import {
   Address,
   Avatar,
@@ -15,24 +16,32 @@ import {
   WalletDropdownFundLink,
   WalletDropdownLink,
 } from '@coinbase/onchainkit/wallet';
+import { ReactNode } from 'react';
 
 type WalletWrapperParams = {
   text?: string;
   className?: string;
   withWalletAggregator?: boolean;
 };
+
 export default function WalletWrapper({
   className,
   text,
   withWalletAggregator = false,
 }: WalletWrapperParams) {
+  const { isConnected } = useAccount();
+
   return (
     <>
       <Wallet>
         <ConnectWallet
           withWalletAggregator={withWalletAggregator}
           text={text}
-          className={className}
+          className={`${className} ${
+            isConnected
+              ? 'bg-blue-600 bg-opacity-70 backdrop-blur-sm hover:bg-blue-600 hover:bg-opacity-80 !text-white'
+              : ''
+          }`}
         >
           <Avatar className="h-6 w-6" />
           <Name />
