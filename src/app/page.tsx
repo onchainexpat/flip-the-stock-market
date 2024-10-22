@@ -25,7 +25,7 @@ const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
 
 export default function Page() {
-  const [openDropdown, setOpenDropdown] = useState<'tenets' | 'priceChart' | 'sponsoredBuys' | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'tenets' | 'priceChart' | 'sponsoredBuys' | 'howToBuyVideo' | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
   const confettiImage = useRef<HTMLImageElement | null>(null);
@@ -68,7 +68,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
     return () => window.removeEventListener('resize', updateWindowDimensions);
   }, []);
 
-  const toggleDropdown = (dropdown: 'tenets' | 'priceChart' | 'sponsoredBuys') => {
+  const toggleDropdown = (dropdown: 'tenets' | 'priceChart' | 'sponsoredBuys' | 'howToBuyVideo') => {
     if (openDropdown === dropdown) {
       setOpenDropdown(null);
     } else {
@@ -300,6 +300,13 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                 <span className="mr-2">🎁 How are there no fees?</span>
                 <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'sponsoredBuys' ? 'rotate-180' : ''}`}>▼</span>
               </button>
+              <button 
+                onClick={() => toggleDropdown('howToBuyVideo')}
+                className="px-4 py-2 bg-blue-600 bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
+              >
+                <span className="mr-2">🎥 How to Buy (Video)</span>
+                <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'howToBuyVideo' ? 'rotate-180' : ''}`}>▼</span>
+              </button>
             </div>
           </div>
           
@@ -346,6 +353,25 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
               <div className="w-full overflow-auto">
                 <img src="/nogas.png" alt="Sponsored Buys" className="w-full h-auto max-w-none" />
               </div>
+            </div>
+          </div>
+          
+          {/* How to Buy Video content */}
+          <div 
+            className={`w-full md:w-[450px] overflow-hidden transition-all duration-300 ease-in-out ${
+              openDropdown === 'howToBuyVideo' ? 'max-h-[315px]' : 'max-h-0'
+            }`}
+          >
+            <div className="bg-white bg-opacity-50 backdrop-blur-md p-4 rounded-md shadow-md">
+              <iframe
+                width="100%"
+                height="315"
+                src="https://www.youtube.com/embed/HxAkFlOIoCA"
+                title="How to Buy SPX6900"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
         </section>

@@ -15,15 +15,23 @@ const OnchainProviders = dynamic(
 
 export const viewport = {
   width: 'device-width',
-  initialScale: 1.0,
+  initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: 'SPX6900 > S&P500',
-  description: 'Flip the Stock Market',
+  title: 'Flip The S&P500',
+  description: 'Buy SPX6900 for 0% fees!',
   openGraph: {
-    title: 'SPX6900 > S&P500',
-    description: 'Flip the Stock Market',
+    title: 'Flip The S&P500',
+    description: 'Buy SPX6900 for 0% fees!',
+    images: [`${NEXT_PUBLIC_URL}/spx6900.png`],
+    url: 'https://flipthestockmarket.com', // Add the full URL of your site
+    type: 'website', // Specify the type of your content
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Flip The S&P500',
+    description: 'Buy SPX6900 for 0% fees!',
     images: [`${NEXT_PUBLIC_URL}/spx6900.png`],
   },
 };

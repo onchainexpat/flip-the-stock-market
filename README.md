@@ -49,7 +49,12 @@ This project leverages cutting-edge blockchain technologies to provide a seamles
 
 ## Usage
 
-[Provide brief instructions on how to use your project]
+Set these variables in your .env file:
+
+- NEXT_PUBLIC_COINBASE_API_KEY (from Coinbase)
+- NEXT_PUBLIC_COINBASE_PAYMASTER_AND_BUILDER_ENDPOINT (URL from Coinbase CDP portal)
+- NEXT_PUBLIC_CDP_PROJECT_ID (from Coinbase CDP portal)
+- NEXT_PUBLIC_WC_PROJECT_ID (from WalletConnect)
 
 ## Technologies Used
 
