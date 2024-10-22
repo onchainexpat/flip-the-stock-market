@@ -83,3 +83,17 @@ a {
 .templateSection > div {
   max-width: 100%;;
 }
+
+.gif-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Adjust as needed */
+  height: 100%; /* Adjust as needed */
+}
+
+.rounded-gif {
+  border-radius: 15px; /* Adjust the value to control the roundness */
+  max-width: 100%;
+  height: auto;
+}

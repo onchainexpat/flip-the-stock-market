@@ -25,7 +25,7 @@ const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
 
 export default function Page() {
-  const [openDropdown, setOpenDropdown] = useState<'tenets' | 'priceChart' | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'tenets' | 'priceChart' | 'sponsoredBuys' | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
   const confettiImage = useRef<HTMLImageElement | null>(null);
@@ -68,7 +68,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
     return () => window.removeEventListener('resize', updateWindowDimensions);
   }, []);
 
-  const toggleDropdown = (dropdown: 'tenets' | 'priceChart') => {
+  const toggleDropdown = (dropdown: 'tenets' | 'priceChart' | 'sponsoredBuys') => {
     if (openDropdown === dropdown) {
       setOpenDropdown(null);
     } else {
@@ -179,8 +179,8 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
           document.body
         )}
         <section className="mt-6 mb-6 flex w-full flex-col">
-          <div className="flex w-full flex-row items-center justify-end gap-2">
-            <div className="flex-grow">
+          <div className="flex w-full flex-row items-center justify-between gap-2">
+            <div>
               {address && onrampBuyUrl && (
                 <FundButton
                   fundingUrl={onrampBuyUrl}
@@ -227,29 +227,31 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
               </Swap>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="w-full h-full relative">
-                  <video 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline 
-                    className="absolute top-0 left-0 w-full h-full object-cover"
-                  >
-                    <source src="sticker.webm" type="video/webm" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-                <div className="absolute z-10 text-center">
-                  <SignupButton />
+                <div className="w-full relative">
+                  <div className="gif-container">
+                    <img src="spinLogo.gif" alt="Spinning Logo" className="rounded-gif" />
+                  </div>
                 </div>
               </div>
             )}
           </div>
           
+          {/* New message */}
+          <div className="w-full flex justify-center mt-4">
+            <div className="text-white bg-blue-600 bg-opacity-70 rounded-md p-4 inline-block">
+              <h3 className="font-bold text-lg mb-2 text-center">How to Flip the S&P500</h3>
+              <ol className="list-decimal list-inside space-y-2 text-left">
+                <li><strong>Click Sign up to generate a Coinbase Smart wallet.</strong></li>
+                <li><strong>Click Get USDC to convert your fiat to USDC (0% fee).</strong></li>
+                <li><strong>Click Swap to buy SPX6900 (0% fee).</strong></li>
+                <li><strong>???</strong></li>
+                <li><strong>Flip the S&P500</strong></li>
+              </ol>
+            </div>
+          </div>
+          
           {/* Dropdown buttons */}
           <div className="w-full flex flex-col items-center gap-4 mt-4">
-
-            {/* Updated buttons with consistent color theme and transparency */}
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
               <a 
                 href="https://spx6900.com/"
@@ -291,6 +293,13 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                 <span className="mr-2">📈 Price Chart</span>
                 <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'priceChart' ? 'rotate-180' : ''}`}>▼</span>
               </button>
+              <button 
+                onClick={() => toggleDropdown('sponsoredBuys')}
+                className="px-4 py-2 bg-blue-600 bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
+              >
+                <span className="mr-2">🎁 How are there no fees?</span>
+                <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'sponsoredBuys' ? 'rotate-180' : ''}`}>▼</span>
+              </button>
             </div>
           </div>
           
@@ -323,6 +332,20 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
             <div className="bg-white bg-opacity-50 backdrop-blur-md p-4 rounded-md shadow-md text-center">
               <p className="font-bold text-xl mb-4">There is no chart</p>
               <img src="/nopricechart.jpg" alt="No Price Chart" className="w-full h-auto" />
+            </div>
+          </div>
+          
+          {/* Sponsored Buys content */}
+          <div 
+            className={`w-full md:w-[450px] overflow-hidden transition-all duration-300 ease-in-out ${
+              openDropdown === 'sponsoredBuys' ? 'max-h-[600px]' : 'max-h-0'
+            }`}
+          >
+            <div className="bg-white bg-opacity-50 backdrop-blur-md p-4 rounded-md shadow-md text-center">
+              <p className="font-bold text-xl mb-4">Zero Fees! We're sponsoring!</p>
+              <div className="w-full overflow-auto">
+                <img src="/nogas.png" alt="Sponsored Buys" className="w-full h-auto max-w-none" />
+              </div>
             </div>
           </div>
         </section>
