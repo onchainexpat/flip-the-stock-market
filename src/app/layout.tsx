@@ -19,10 +19,10 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Flip The S&P500',
+  title: 'Buy SPX6900',
   description: 'Buy SPX6900 for 0% fees!',
   openGraph: {
-    title: 'Flip The S&P500',
+    title: 'Buy SPX6900',
     description: 'Buy SPX6900 for 0% fees!',
     images: [`${NEXT_PUBLIC_URL}/spx6900.png`],
     url: 'https://flipthestockmarket.com', // Add the full URL of your site
