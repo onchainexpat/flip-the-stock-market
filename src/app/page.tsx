@@ -282,14 +282,14 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
           {/* New message */}
           <div className="w-full flex justify-center mt-4">
             <div className="text-white bg-blue-600 bg-opacity-70 rounded-md p-4 inline-block">
-              <h3 className="font-bold text-lg mb-2 text-center">How to Buy $SPX6900</h3>
+              <h3 className="font-bold text-lg mb-2 text-center">Join the SPX6900 Family</h3>
               <ol className="list-decimal list-inside space-y-2 text-left">
                 <li><strong>Generate a Coinbase Smart Wallet</strong></li>
                 <li><strong>Get USDC on Coinbase (0% fee)</strong></li>
                 <li><strong>Swap USDC for $SPX (0% fee)</strong></li>
                 <li>
                   <strong>
-                    Join the Fam on X by adding 💹🧲
+                    Add 💹🧲 to your X bio
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText('💹🧲');
@@ -303,7 +303,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                       }`}
                       title="Copy emojis"
                     >
-                      {copyClicked ? '📋' : '📋'}
+                      {copyClicked ? 'Copied!' : 'Copy'}
                     </button>
                   </strong>
                 </li>
@@ -461,7 +461,14 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                     formatter={(value: any, name: string) => {
                       if (name === 'holders') {
                         const dataPoint = holdersData.find(d => d.holders === value);
-                        return [`${value} (${dataPoint?.percentChange ?? 0 >= 0 ? '+' : ''}${dataPoint?.percentChange ?? 0}%)`, 'Holders'];
+                        const percentChange = dataPoint?.percentChange ?? 0;
+                        const color = percentChange < 0 ? '#ef4444' : '#22c55e'; // red for negative, green for positive
+                        return [
+                          <span style={{ color }}>
+                            {value} ({percentChange >= 0 ? '+' : ''}{percentChange}%)
+                          </span>,
+                          'Holders'
+                        ];
                       }
                       return [value, name];
                     }}
