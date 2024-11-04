@@ -97,3 +97,64 @@ a {
   max-width: 100%;
   height: auto;
 }
+
+.word-rotation {
+  display: inline-block;
+  animation: rotate-words 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-style: preserve-3d;
+  perspective: 300px;
+}
+
+@keyframes rotate-words {
+  0%, 30% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+  33% {
+    transform: rotateX(-90deg);
+    opacity: 0;
+  }
+  36%, 63% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+  66% {
+    transform: rotateX(-90deg);
+    opacity: 0;
+  }
+  69%, 96% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+  99% {
+    transform: rotateX(-90deg);
+    opacity: 0;
+  }
+}
+
+.word-rotation::before {
+  content: "SAFEST";
+  animation: word-change 6s infinite;
+  color: #FFD700; /* Classic gold color */
+  /* Alternative gold colors you could try:
+  color: #DAA520; // Goldenrod
+  color: #FDB347; // Warmer gold
+  color: #C5B358; // Antique gold
+  */
+}
+
+@keyframes word-change {
+  0%, 30% {
+    content: "SAFEST";
+  }
+  36%, 63% {
+    content: "FASTEST";
+  }
+  69%, 96% {
+    content: "EASIEST";
+  }
+}
+
+.gold-text {
+  color: #FFD700;
+}

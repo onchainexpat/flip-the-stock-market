@@ -20,9 +20,16 @@ import type { TransactionReceipt } from 'viem';
 import Confetti from 'react-confetti';
 import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 import { createPortal } from 'react-dom';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
+
+type DuneDataPoint = {
+  date: string;
+  holders: number;
+  percentChange: number;
+};
 
 export default function Page() {
   const [openDropdown, setOpenDropdown] = useState<'tenets' | 'priceChart' | 'sponsoredBuys' | 'howToBuyVideo' | null>(null);
@@ -32,6 +39,11 @@ export default function Page() {
 
   // Add this new state for background videos
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
+
+  // Near the top of the component, add this state
+  const [copyClicked, setCopyClicked] = useState(false);
+
+  const [holdersData, setHoldersData] = useState<DuneDataPoint[]>([]);
 
 //  const projectId = NEXT_PUBLIC_CDP_PROJECT_ID;
 const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
@@ -66,6 +78,33 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
     };
 
     return () => window.removeEventListener('resize', updateWindowDimensions);
+  }, []);
+
+  useEffect(() => {
+    const fetchHoldersData = async () => {
+      try {
+        const response = await fetch('/api/holders');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        
+        const formattedData = data.map((row: any, index: number, array: any[]) => {
+          const prevDay = index > 0 ? array[index - 1].holder_count : row.holder_count;
+          const percentChange = ((row.holder_count - prevDay) / prevDay * 100).toFixed(2);
+          
+          return {
+            date: row.block_date.split(' ')[0],
+            holders: row.holder_count,
+            percentChange: Number(percentChange)
+          };
+        });
+        
+        setHoldersData(formattedData);
+      } catch (error) {
+        console.error('Error fetching holders data:', error);
+      }
+    };
+
+    fetchHoldersData();
   }, []);
 
   const toggleDropdown = (dropdown: 'tenets' | 'priceChart' | 'sponsoredBuys' | 'howToBuyVideo') => {
@@ -117,7 +156,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
       {/* Anti-phishing warning */}
       <div className="fixed top-0 left-0 right-0 bg-yellow-100 text-yellow-800 px-2 py-2 text-xs sm:text-sm z-50 overflow-hidden">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-center text-center">
-          <span className="mb-1 sm:mb-0 sm:mr-2">Please confirm you are on the correct URL. Verify SPX Token Contract on Base:</span>
+          <span className="mb-1 sm:mb-0 sm:mr-2">Don't get phished! Please confirm you are FlipTheStockMarket.com. Verify SPX Token Address:</span>
           <a 
             href="https://basescan.org/address/0x50da645f148798f68ef2d7db7c1cb22a6819bb2c" 
             target="_blank" 
@@ -127,7 +166,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
             0x50da645f148798f68ef2d7db7c1cb22a6819bb2c
           </a> 
           <span className="mt-1 sm:mt-0 sm:ml-2">
-            and <a href="https://www.coingecko.com/en/coins/spx6900" target="_blank" rel="noopener noreferrer" className="underline font-bold">CoinGecko</a>.
+           with <a href="https://www.coingecko.com/en/coins/spx6900" target="_blank" rel="noopener noreferrer" className="underline font-bold">CoinGecko</a>.
           </span>
         </div>
       </div>
@@ -196,6 +235,10 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
           </div>
         </section>
         <section className="templateSection flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-transparent px-2 py-4">
+          <h1 className="text-3xl font-bold text-white text-center mb-4 bg-blue-600 bg-opacity-70 rounded-md p-4 backdrop-blur-sm">
+            The <span className="word-rotation"></span> Way to Buy  <span className="gold-text">$SPX6900</span>
+          </h1>
+          
           <div className="flex h-[450px] w-full max-w-[450px] items-center justify-center rounded-xl bg-transparent">
             {address ? (
               <Swap
@@ -223,7 +266,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                 />
                 <SwapButton />
                 <SwapMessage />
-                <SwapToast position="top-center" durationMs={10000}/>
+                <SwapToast position="bottom-center" durationMs={10000}/>
               </Swap>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center">
@@ -239,13 +282,37 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
           {/* New message */}
           <div className="w-full flex justify-center mt-4">
             <div className="text-white bg-blue-600 bg-opacity-70 rounded-md p-4 inline-block">
-              <h3 className="font-bold text-lg mb-2 text-center">How to Flip the S&P500</h3>
+              <h3 className="font-bold text-lg mb-2 text-center">How to Buy $SPX6900</h3>
               <ol className="list-decimal list-inside space-y-2 text-left">
-                <li><strong>Click Sign up to generate a Coinbase Smart wallet.</strong></li>
-                <li><strong>Click Get USDC to convert your fiat to USDC (0% fee).</strong></li>
-                <li><strong>Click Swap to buy SPX6900 (0% fee).</strong></li>
-                <li><strong>???</strong></li>
-                <li><strong>Flip the S&P500</strong></li>
+                <li><strong>Generate a Coinbase Smart Wallet</strong></li>
+                <li><strong>Get USDC on Coinbase (0% fee)</strong></li>
+                <li><strong>Swap USDC for $SPX (0% fee)</strong></li>
+                <li>
+                  <strong>
+                    Join the Fam on X by adding 💹🧲
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText('💹🧲');
+                        setCopyClicked(true);
+                        setTimeout(() => setCopyClicked(false), 2000); // Reset after 2 seconds
+                      }}
+                      className={`ml-2 px-2 py-1 text-xs rounded-md border transition-all duration-200 ${
+                        copyClicked 
+                          ? 'bg-green-500 text-white border-green-600' 
+                          : 'bg-white text-blue-600 border-blue-400 hover:bg-gray-100'
+                      }`}
+                      title="Copy emojis"
+                    >
+                      {copyClicked ? '📋' : 'Copy'}
+                    </button>
+                  </strong>
+                </li>
+                <li><strong>Like and Retweet all <a 
+                  href="https://x.com/search?q=%23SPX6900" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white hover:underline hover:text-blue-300 underline decoration-dotted transition-colors duration-200"
+                >#SPX6900</a> posts.</strong></li>
               </ol>
             </div>
           </div>
@@ -280,6 +347,13 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                 <span>Community Chat</span>
               </a>
               <button 
+                onClick={() => toggleDropdown('howToBuyVideo')}
+                className="px-4 py-2 bg-blue-600 bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
+              >
+                <span className="mr-2">🎥 How to Buy (Video Guide)</span>
+                <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'howToBuyVideo' ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+              <button 
                 onClick={() => toggleDropdown('tenets')}
                 className="px-4 py-2 bg-blue-600 bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
               >
@@ -299,13 +373,6 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
               >
                 <span className="mr-2">🎁 How are there no fees?</span>
                 <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'sponsoredBuys' ? 'rotate-180' : ''}`}>▼</span>
-              </button>
-              <button 
-                onClick={() => toggleDropdown('howToBuyVideo')}
-                className="px-4 py-2 bg-blue-600 bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
-              >
-                <span className="mr-2">🎥 How to Buy (Video)</span>
-                <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'howToBuyVideo' ? 'rotate-180' : ''}`}>▼</span>
               </button>
             </div>
           </div>
@@ -375,6 +442,42 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
             </div>
           </div>
         </section>
+        <div className="w-full max-w-[1200px] mx-auto mb-8 p-4">
+          <div className="bg-white bg-opacity-50 backdrop-blur-md p-4 rounded-md shadow-md">
+            <h2 className="text-xl font-bold mb-4 text-center">$SPX6900 Holders Over Time</h2>
+            <div className="w-full h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={holdersData}>
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#1a1a1a"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="#1a1a1a"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    formatter={(value: any, name: string) => {
+                      if (name === 'holders') {
+                        const dataPoint = holdersData.find(d => d.holders === value);
+                        return [`${value} (${dataPoint?.percentChange ?? 0 >= 0 ? '+' : ''}${dataPoint?.percentChange ?? 0}%)`, 'Holders'];
+                      }
+                      return [value, name];
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="holders" 
+                    stroke="#2563eb" 
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
         <Footer />
       </div>
     </>

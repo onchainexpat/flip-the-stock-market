@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      
+      - name: Install Dependencies
+        run: bun install
+        
+      - name: Type Check
+        run: bun run ci:check
+        
+      - name: Lint
+        run: bun run ci:lint
+        
+      - name: Format
+        run: bun run ci:format
+        
+      - name: Test
+        run: bun run test:coverage
+        
+      - name: Build
+        run: bun run build 
