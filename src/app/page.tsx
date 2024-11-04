@@ -303,7 +303,7 @@ const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
                       }`}
                       title="Copy emojis"
                     >
-                      {copyClicked ? '📋' : 'Copy'}
+                      {copyClicked ? '📋' : '📋'}
                     </button>
                   </strong>
                 </li>
