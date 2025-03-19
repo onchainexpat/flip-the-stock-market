@@ -39,12 +39,12 @@ export default function WalletWrapper({
           text={text}
           className={`${className} ${
             isConnected
-              ? 'bg-blue-600 bg-opacity-70 backdrop-blur-sm hover:bg-blue-600 hover:bg-opacity-80 !text-white'
+              ? 'bg-blue-600 bg-opacity-70 backdrop-blur-sm hover:bg-blue-600 hover:bg-opacity-80 !text-white [&_*]:!text-white [&_svg]:!fill-white [&_svg_path]:!fill-white [&_svg_circle]:!fill-white [&_img]:!brightness-0 [&_img]:!invert-[1]'
               : ''
           }`}
         >
-          <Avatar className="h-6 w-6" />
-          <Name />
+          <Avatar className="h-6 w-6 !text-white [&_svg]:!fill-white [&_svg_path]:!fill-white [&_svg_circle]:!fill-white [&_img]:!brightness-0 [&_img]:!invert-[1]" />
+          <Name className="!text-white" />
         </ConnectWallet>
         <WalletDropdown>
           <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick={true}>
