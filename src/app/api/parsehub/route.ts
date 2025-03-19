@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     }
 
     const client = new ParseHubClient({
-      apiKey: process.env.NEXT_PUBLIC_PARSEHUB_API_KEY || '',
+      apiKey: process.env.PARSEHUB_API_KEY || '',
       projectToken
     });
 
