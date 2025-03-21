@@ -22,6 +22,7 @@ import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ParseHubClient, type ParseHubProject } from '../utils/ParseHubClient';
+import ProfileGrid from './components/ProfileGrid';
 
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
@@ -345,9 +346,9 @@ export default function Page() {
           </div>
         </section>
         <section className="templateSection flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-transparent px-2 py-4">
-          <h1 className="text-5xl font-bold text-center mb-4 p-4 relative">
-            {/* Background gradient div */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#ff69b4]/20 via-[#ff8c00]/20 to-[#4caf50]/20 rounded-xl blur-lg"></div>
+          <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-center mb-8 p-4 relative">
+            {/* Background gradient div - modified for larger halo effect */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-gradient-to-r from-[#ff69b4]/20 via-[#ff8c00]/20 to-[#4caf50]/20 rounded-[100px] blur-[100px] -z-10"></div>
             
             {/* Text with gradient */}
             <span className="relative bg-gradient-to-r from-[#ff69b4] via-[#ff8c00] to-[#4caf50] text-transparent bg-clip-text">
@@ -548,11 +549,17 @@ export default function Page() {
                     setCopyClicked(true);
                     setTimeout(() => setCopyClicked(false), 2000);
                   }}
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 border border-[#4299e1] bg-[#1B2236] bg-opacity-70 text-white hover:bg-opacity-80 backdrop-blur-sm`}
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 border-2 border-[#4299e1] bg-[#1B2236] bg-opacity-70 text-white hover:bg-opacity-80 backdrop-blur-sm`}
                 >
                   {copyClicked ? 'Copied!' : 'Copy'}
                 </button>
               </div>
+            </div>
+
+            {/* Twitter Profiles Grid */}
+            <div className="text-white bg-[#1B2236] bg-opacity-70 rounded-xl p-4 backdrop-blur-md">
+              <h3 className="text-sm uppercase tracking-wider mb-4">SPX6900 FAM ON X</h3>
+              <ProfileGrid />
             </div>
           </div>
         </section>
