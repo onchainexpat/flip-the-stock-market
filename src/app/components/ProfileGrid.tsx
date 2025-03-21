@@ -121,9 +121,8 @@ export default function ProfileGrid() {
                       rel="noopener noreferrer"
                       className="text-base font-bold text-blue-400 hover:text-blue-300 hover:underline truncate block"
                     >
-                      @{profile.username.replace('/', '')}
+                      @{profile.username.replace('/', '')} 💹🧲
                     </a>
-                    <span className="text-sm">💹🧲</span>
                   </div>
                 </div>
                 <p className="text-gray-200 text-sm whitespace-pre-wrap max-h-24 overflow-y-auto">

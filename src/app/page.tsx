@@ -347,8 +347,8 @@ export default function Page() {
         </section>
         <section className="templateSection flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-transparent px-2 py-4">
           <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-center mb-8 p-4 relative">
-            {/* Background gradient div - modified for larger halo effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-gradient-to-r from-[#ff69b4]/20 via-[#ff8c00]/20 to-[#4caf50]/20 rounded-[100px] blur-[100px] -z-10"></div>
+            {/* Background gradient div - modified for softer halo effect */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-gradient-to-r from-[#ff69b4]/10 via-[#ff8c00]/10 to-[#4caf50]/10 rounded-[100px] blur-[120px] -z-10"></div>
             
             {/* Text with gradient */}
             <span className="relative bg-gradient-to-r from-[#ff69b4] via-[#ff8c00] to-[#4caf50] text-transparent bg-clip-text">
@@ -542,7 +542,10 @@ export default function Page() {
             <div className="text-white bg-[#1B2236] bg-opacity-70 rounded-xl p-4 backdrop-blur-md">
               <h3 className="text-sm uppercase tracking-wider mb-2">ADD SPX6900 ON X</h3>
               <div className="flex items-center gap-4">
-                <span className="text-2xl">💹🧲</span>
+                <div className="flex items-center">
+                  <span>@username</span>
+                  <span className="ml-1">💹🧲</span>
+                </div>
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText('💹🧲');
