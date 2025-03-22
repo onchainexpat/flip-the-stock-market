@@ -186,7 +186,7 @@ export default function Page() {
     image: "https://dynamic-assets.coinbase.com/3c15df5e2ac7d4abbe9499ed9335041f00c620f28e8de2f93474a9f432058742cdf4674bd43f309e69778a26969372310135be97eb183d91c492154176d455b8/asset_icons/9d67b728b6c8f457717154b3a35f9ddc702eae7e76c4684ee39302c4d7fd0bb8.png",
   };
 
- const swappableTokens: Token[] = [SPXToken, USDCToken];
+  const swappableTokens: Token[] = [SPXToken, USDCToken];
 
   const handleOnStatus = useCallback((lifecycleStatus: LifecycleStatus) => {
     console.log('Status:', lifecycleStatus);
@@ -248,7 +248,7 @@ export default function Page() {
       <div className="fixed inset-0 z-0 bg-[#131827]"></div>
 
       {/* Hamburger Menu */}
-      <div className="fixed top-4 left-4 z-50">
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-[#131827]/50 backdrop-blur-sm">
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -277,9 +277,14 @@ export default function Page() {
             )}
           </svg>
         </button>
+
+        <div className="flex items-center gap-3">
+          <SignupButton />
+          {!address && <LoginButton />}
+        </div>
         
         {isMenuOpen && (
-          <div className="absolute top-12 left-0 bg-black/90 backdrop-blur-md rounded-lg shadow-lg border border-white/10">
+          <div className="absolute top-full left-4 mt-2 bg-black/90 backdrop-blur-md rounded-lg shadow-lg border border-white/10">
             <nav className="py-2">
               <a 
                 href="/" 
@@ -303,7 +308,7 @@ export default function Page() {
       </div>
 
       {/* Existing content wrapper */}
-      <div className="relative z-10 pt-20 sm:pt-10">
+      <div className="relative z-10 pt-20 sm:pt-24">
         {showConfetti && createPortal(
           <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 10000 }}>
             <Confetti
@@ -328,23 +333,6 @@ export default function Page() {
           </div>,
           document.body
         )}
-        <section className="mt-6 mb-6 flex w-full flex-col">
-          <div className="flex w-full flex-row items-center justify-between gap-2">
-            <div>
-              {address && onrampBuyUrl && (
-                <FundButton
-                  fundingUrl={onrampBuyUrl}
-                  text="Get USDC"
-                  className="bg-blue-500 hover:bg-blue-600 font-bold py-2 px-4 rounded"
-                />
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <SignupButton />
-              {!address && <LoginButton />}
-            </div>
-          </div>
-        </section>
         <section className="templateSection flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-transparent px-2 py-4">
           <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-center mb-8 p-4 relative">
             {/* Background gradient div - modified for softer halo effect */}
@@ -485,35 +473,46 @@ export default function Page() {
           </div>
 
           {/* Swap Section */}
-          <div className="flex h-[450px] w-full max-w-[450px] items-center justify-center rounded-xl bg-transparent mt-4">
+          <div className="flex h-[450px] w-full items-center justify-center rounded-xl bg-transparent mt-4">
             {address ? (
-              <Swap
-                className="w-full sm:w-[500px] pt-2 bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md text-white [&_*]:text-white [&_p]:text-white [&_span]:text-white [&_div]:text-white [&_input]:bg-[#1B2236] [&_button]:bg-[#1B2236] [&_.swap-input]:!bg-[#1B2236] [&_.swap-input-container]:!bg-[#1B2236] [&_.swap-button]:!bg-[#1B2236] [&_.swap-message]:!bg-[#1B2236] [&_*]:!bg-[#1B2236] [&_*]:!bg-opacity-70 [&_.token-selector]:!bg-[#1B2236] [&_.token-selector-button]:!bg-[#1B2236] [&_.token-list]:!bg-[#1B2236] [&_.input-container]:!bg-[#1B2236] [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_svg]:!text-white [&_svg]:!fill-white"
-                onStatus={handleOnStatus}
-                onSuccess={handleOnSuccess}
-                onError={handleOnError}
-                config={{
-                  maxSlippage: defaultMaxSlippage || FALLBACK_DEFAULT_MAX_SLIPPAGE,
-                }}
-                isSponsored={true}
-              >
-                <SwapAmountInput
-                  label="Sell"
-                  swappableTokens={swappableTokens}
-                  token={USDCToken}
-                  type="from"
-                />
-                <SwapToggleButton className='border-white !text-white [&_svg]:!text-white [&_svg]:!fill-white [&_path]:!stroke-white scale-125 p-2'/>
-                <SwapAmountInput
-                  label="Buy"
-                  swappableTokens={swappableTokens}
-                  token={SPXToken}
-                  type="to"
-                />
-                <SwapButton />
-                <SwapMessage />
-                <SwapToast position="bottom-center" durationMs={10000}/>
-              </Swap>
+              <div className="w-full max-w-[450px] mx-auto relative">
+                {address && onrampBuyUrl && (
+                  <div className="absolute right-4 top-4 z-[1]">
+                    <FundButton
+                      fundingUrl={onrampBuyUrl}
+                      text="BUY USDC"
+                      className="!bg-white/5 hover:!bg-white/10 !text-white !text-[24px] !font-semibold !py-1 !px-3 !rounded-lg !leading-none transition-all duration-200"
+                    />
+                  </div>
+                )}
+                <Swap
+                  className="w-full bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md text-white [&_*]:text-white [&_p]:text-white [&_span]:text-white [&_div]:text-white [&_input]:bg-[#1B2236] [&_button]:bg-[#1B2236] [&_.swap-input]:!bg-[#1B2236] [&_.swap-input-container]:!bg-[#1B2236] [&_.swap-button]:!bg-[#1B2236] [&_.swap-message]:!bg-[#1B2236] [&_*]:!bg-[#1B2236] [&_*]:!bg-opacity-70 [&_.token-selector]:!bg-[#1B2236] [&_.token-selector-button]:!bg-[#1B2236] [&_.token-list]:!bg-[#1B2236] [&_.input-container]:!bg-[#1B2236] [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_svg]:!text-white [&_svg]:!fill-white [&_[data-testid='ockSwap_title']]:!bg-transparent"
+                  onStatus={handleOnStatus}
+                  onSuccess={handleOnSuccess}
+                  onError={handleOnError}
+                  config={{
+                    maxSlippage: defaultMaxSlippage || FALLBACK_DEFAULT_MAX_SLIPPAGE,
+                  }}
+                  isSponsored={true}
+                >
+                  <SwapAmountInput
+                    label="Sell"
+                    swappableTokens={swappableTokens}
+                    token={USDCToken}
+                    type="from"
+                  />
+                  <SwapToggleButton className="!border-0 !bg-transparent !text-white [&_svg]:!text-white [&_svg]:!fill-white [&_path]:!stroke-white scale-100 !p-1 hover:!bg-[#1B2236] transition-all duration-200 !z-0 !w-8 !h-8 rounded-lg"/>
+                  <SwapAmountInput
+                    label="Buy"
+                    swappableTokens={swappableTokens}
+                    token={SPXToken}
+                    type="to"
+                  />
+                  <SwapButton />
+                  <SwapMessage />
+                  <SwapToast position="bottom-center" durationMs={10000}/>
+                </Swap>
+              </div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md">
                 <div className="w-full relative">
@@ -543,7 +542,6 @@ export default function Page() {
               <h3 className="text-sm uppercase tracking-wider mb-2">ADD SPX6900 ON X</h3>
               <div className="flex items-center gap-4">
                 <div className="flex items-center">
-                  <span>@username</span>
                   <span className="ml-1">💹🧲</span>
                 </div>
                 <button 

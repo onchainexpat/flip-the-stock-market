@@ -158,3 +158,27 @@ a {
 .gold-text {
   color: #FFD700;
 }
+
+/* Dark mode scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1B2236;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2D3748;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4A5568;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2D3748 #1B2236;
+}
