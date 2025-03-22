@@ -23,6 +23,7 @@ import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ParseHubClient, type ParseHubProject } from '../utils/ParseHubClient';
 import ProfileGrid from './components/ProfileGrid';
+import WalletWrapper from '../components/WalletWrapper';
 
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
@@ -472,8 +473,8 @@ export default function Page() {
             )}
           </div>
 
-          {/* Swap Section */}
-          <div className="flex h-[450px] w-full items-center justify-center rounded-xl bg-transparent mt-4">
+          {/* Swap Section - reduce bottom margin */}
+          <div className="w-full items-center justify-center rounded-xl bg-transparent mt-4 mb-8">
             {address ? (
               <div className="w-full max-w-[450px] mx-auto relative">
                 {address && onrampBuyUrl && (
@@ -514,20 +515,107 @@ export default function Page() {
                 </Swap>
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md">
-                <div className="w-full relative">
-                  <div className="gif-container">
-                    <img src="spinLogo.gif" alt="Spinning Logo" className="rounded-gif" />
+              <div className="flex flex-col items-center w-full">
+                <h1 className="text-5xl font-bold text-center text-white mb-6">
+                  Buy SPX6900
+                </h1>
+                <div className="w-full bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md px-8 py-10 mb-8">
+                  {/* Recommended heading */}
+                  <h3 className="text-xl font-bold text-white mb-4">Recommended</h3>
+                  
+                  {/* Coinbase Wallet Button - changed from <a> to a button with WalletWrapper */}
+                  <div className="w-full bg-[#1B2236]/70 hover:bg-[#1B2236]/90 text-white rounded-xl p-4 mb-8 flex items-center justify-center gap-3 transition-all duration-200">
+                    <img src="/Coinbase_Coin_Primary.png" alt="Coinbase" className="h-8" />
+                    <div className="flex flex-col items-center justify-center">
+                      <WalletWrapper
+                        className="w-full bg-transparent hover:bg-transparent !p-0 !m-0 flex justify-center items-center"
+                        text="Coinbase Wallet"
+                      />
+                      <p className="text-sm opacity-75 text-center">(0% fees)</p>
+                    </div>
+                  </div>
+
+                  {/* Centralized Exchanges */}
+                  <h3 className="text-xl font-bold text-white mb-4">Centralized Exchanges</h3>
+                  <div className="grid grid-cols-3 gap-4 w-full mb-8">
+                    {[
+                      { name: 'Bybit', url: 'https://www.bybit.com/trade/spot/SPX/USDT/', icon: '/bybit.svg' },
+                      { name: 'Kraken', url: 'https://pro.kraken.com/app/trade/SPX-USD', icon: '/kraken.svg' },
+                      { name: 'KuCoin', url: 'https://www.kucoin.com/trade/SPX-USDT', icon: '/kukoin.svg' }
+                    ].map((exchange) => (
+                      <a
+                        key={exchange.name}
+                        href={exchange.url}
+                        className="bg-[#1B2236]/70 hover:bg-[#1B2236]/90 text-white rounded-xl p-3 flex items-center justify-center transition-all duration-200"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <div className="h-10 w-24 flex items-center justify-center">
+                          <img src={exchange.icon} alt={exchange.name} className="max-h-8 max-w-full object-contain" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+
+                  {/* Onchain Exchanges */}
+                  <h3 className="text-xl font-bold text-white mb-4">Onchain Exchanges</h3>
+                  <div className="grid grid-cols-3 gap-4 w-full mb-8">
+                    {[
+                      { name: 'Uniswap', url: 'https://app.uniswap.org/explore/tokens/ethereum/0xe0f63a424a4439cbe457d80e4f4b51ad25b2c56c', icon: '/Uniswap_horizontallogo_pink.svg', showText: false },
+                      { name: 'Aerodrome', url: 'https://aerodrome.finance/swap?from=0x50da645f148798f68ef2d7db7c1cb22a6819bb2c&to=0x4200000000000000000000000000000000000006', icon: '/velodrome-logo-light.svg', showText: false },
+                      { name: 'Raydium', url: 'https://raydium.io/swap/?outputCurrency=J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr&referrer=6tvwZLkMWj9qZNu8YoquKNde8RJXk1fofgaAyJkWMC5f', icon: '/raydium.jpeg', showText: true }
+                    ].map((exchange) => (
+                      <a
+                        key={exchange.name}
+                        href={exchange.url}
+                        className="bg-[#1B2236]/70 hover:bg-[#1B2236]/90 text-white rounded-xl p-3 flex items-center justify-center transition-all duration-200"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <div className="flex flex-col items-center justify-center h-10">
+                          <div className="flex items-center justify-center">
+                            <img src={exchange.icon} alt={exchange.name} className="max-h-8 max-w-[75px] object-contain" />
+                            {exchange.showText && (
+                              <span className="text-white font-medium text-sm ml-1">{exchange.name}</span>
+                            )}
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+
+                  {/* Onchain Wallets */}
+                  <h3 className="text-xl font-bold text-white mb-4">Onchain Wallets</h3>
+                  <div className="grid grid-cols-3 gap-4 w-full">
+                    {[
+                      { name: 'INFINEX', url: 'https://app.infinex.xyz/', icon: '/Infinex_Logo_Cantaloupe.svg' },
+                      { name: 'Rabby', url: 'https://rabby.io/', icon: '/rabby-logo-white.svg' },
+                      { name: 'Phantom', url: 'https://phantom.com/', icon: '/Phantom-Logo-Purple.svg' }
+                    ].map((wallet) => (
+                      <a
+                        key={wallet.name}
+                        href={wallet.url}
+                        className="bg-[#1B2236]/70 hover:bg-[#1B2236]/90 text-white rounded-xl p-3 flex items-center justify-center transition-all duration-200"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <div className="h-10 w-24 flex items-center justify-center">
+                          <img src={wallet.icon} alt={wallet.name} className="max-h-8 max-w-full object-contain" />
+                        </div>
+                      </a>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
           </div>
           
-          {/* New message */}
-          <div className="w-full flex flex-col gap-4 mt-4">
+          {/* Remove spacer completely */}
+          
+          {/* New message - directly after swap section without spacer */}
+          <div className="w-full flex flex-col gap-4">
             {/* join the fam text */}
-            <h1 className="text-5xl font-bold text-center text-white">
+            <h1 className="text-5xl font-bold text-center text-white mb-4">
               join the fam
             </h1>
 
@@ -564,7 +652,8 @@ export default function Page() {
             </div>
           </div>
         </section>
-        <div className="w-full max-w-[1200px] mx-auto mb-8 p-4 mt-4">
+        {/* Reduce top margin for chart section */}
+        <div className="w-full max-w-[1200px] mx-auto mb-8 p-4 mt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* SPX6900 Holders Over Time */}
             <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
