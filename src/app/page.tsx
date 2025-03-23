@@ -140,18 +140,9 @@ export default function Page() {
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
         
-        const formattedData = data.map((row: any, index: number, array: any[]) => {
-          const prevDay = index > 0 ? array[index - 1].holder_count : row.holder_count;
-          const percentChange = ((row.holder_count - prevDay) / prevDay * 100).toFixed(2);
-          
-          return {
-            date: row.block_date.split(' ')[0],
-            holders: row.holder_count,
-            percentChange: Number(percentChange)
-          };
-        });
-        
-        setHoldersData(formattedData);
+        // The data is already formatted correctly by the API
+        // We can use it directly without additional transformation
+        setHoldersData(data);
       } catch (error) {
         console.error('Error fetching holders data:', error);
       }
@@ -335,15 +326,19 @@ export default function Page() {
           document.body
         )}
         <section className="templateSection flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-transparent px-2 py-4">
-          <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-center mb-8 p-4 relative">
-            {/* Background gradient div - modified for softer halo effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-gradient-to-r from-[#ff69b4]/10 via-[#ff8c00]/10 to-[#4caf50]/10 rounded-[100px] blur-[120px] -z-10"></div>
+          <div className="relative w-full max-w-3xl mx-auto mb-8">
+            {/* Background image/glow with reduced spread */}
+            <div className="absolute inset-0 z-0">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[100%] bg-gradient-to-r from-[#ff69b4]/10 via-[#ff8c00]/10 to-[#4caf50]/10 rounded-[40px] blur-[20px]"></div>
+            </div>
             
             {/* Text with gradient */}
-            <span className="relative bg-gradient-to-r from-[#ff69b4] via-[#ff8c00] to-[#4caf50] text-transparent bg-clip-text">
-              flip the stock market
-            </span>
-          </h1>
+            <h1 className="relative z-10 text-7xl sm:text-8xl md:text-9xl font-bold text-center p-4">
+              <span className="bg-gradient-to-r from-[#ff69b4] via-[#ff8c00] to-[#4caf50] text-transparent bg-clip-text">
+                flip the stock market
+              </span>
+            </h1>
+          </div>
           
           <div className="flex flex-row w-full gap-4 justify-center">
             {/* Price Comparison Section */}
@@ -386,6 +381,11 @@ export default function Page() {
                 {/* S&P 500 Price Card */}
                 <div className="flex-1 text-xl sm:text-2xl font-bold text-white text-center mb-2 bg-[#1B2236] bg-opacity-70 rounded-md p-2 sm:p-4 backdrop-blur-sm">
                   <div className="flex items-center justify-center mb-2">
+                    <img 
+                      src="/spx500-logo-circle.png" 
+                      alt="S&P 500" 
+                      className="w-6 h-6 sm:w-8 sm:h-8 mr-2"
+                    />
                     <span>S&P 500</span>
                   </div>
                   {parseHubData?.['investing.com'] && (
@@ -657,7 +657,7 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* SPX6900 Holders Over Time */}
             <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
-              <h2 className="text-xl font-bold mb-4 text-center text-white">$SPX6900 Holders Over Time</h2>
+              <h2 className="text-xl font-bold mb-4 text-center text-white">SPX6900 Holders Over Time</h2>
               <div className="w-full h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={holdersData}>
@@ -678,7 +678,7 @@ export default function Page() {
                           const color = percentChange < 0 ? '#ef4444' : '#22c55e';
                           return [
                             <span style={{ color }}>
-                              {value} ({percentChange >= 0 ? '+' : ''}{percentChange}%)
+                              {value.toLocaleString()} ({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)
                             </span>,
                             'Holders'
                           ];
