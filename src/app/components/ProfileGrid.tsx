@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import profiles from '../profiles.json';
 import Image from 'next/image';
-import { getStoredProfileImage } from '../../utils/ImageStorage';
 
 interface Profile {
   platform: string;
