@@ -5,8 +5,8 @@
 
 :root {
   /* Palette */
-  --palette-bg-black: #fff;
-  --palette-bg-white: rgb(21, 26, 38);
+  --palette-bg-black: #131827;
+  --palette-bg-white: #ffffff;
 
   /* Indicates that the element can be rendered using 
    * the operating system dark color scheme. 
@@ -23,6 +23,7 @@
 html {
   height: 100%;
   scroll-behavior: smooth;
+  background-color: var(--palette-bg-black);
 }
 
 html .font-robotoMono {
@@ -42,6 +43,8 @@ body {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 a {
