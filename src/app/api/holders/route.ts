@@ -1,47 +1,20 @@
-import { DuneClient } from "@duneanalytics/client-sdk";
-export const runtime = 'nodejs';
+import { Redis } from '@upstash/redis';
+import { NextResponse } from 'next/server';
 
-interface DuneRow {
-  day: string;
-  total_holders: number;
-  daily_change_percent: string;
-  daily_holder_change: number;
-  base_holders: number;
-  eth_holders: number;
-  sol_holders: number;
-}
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 export async function GET() {
   try {
-    const client = new DuneClient(process.env.NEXT_PUBLIC_DUNE_API_KEY ?? '');
-    
-    // Replace with your actual query ID
-    const query_result = await client.getLatestResult({queryId: 4890255});
-    if (!query_result.result) {
-      return Response.json([]);
+    const cachedData = await redis.get('cached_holders_data');
+    if (!cachedData) {
+      return NextResponse.json({ error: 'No cached data available' }, { status: 503 });
     }
-    
-    // Safe type casting
-    const rows = query_result.result.rows as unknown as DuneRow[];
-    
-    // Transform the data to match the expected format for your chart
-    const formattedData = rows.map(row => ({
-      date: row.day.split(' ')[0], // Use 'day' instead of 'date' and strip the time part
-      holders: row.total_holders, // Use 'total_holders' field
-      percentChange: parseFloat(row.daily_change_percent) // Use 'daily_change_percent' field and convert to number
-    }));
-    
-    // Sort the data chronologically (oldest first)
-    const sortedData = formattedData.sort((a, b) => {
-      // Parse the dates and compare them
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateA.getTime() - dateB.getTime(); // Ascending order (oldest first)
-    });
-    
-    return Response.json(sortedData);
+    return NextResponse.json(cachedData);
   } catch (error) {
-    console.error('Error fetching from Dune:', error);
-    return Response.error();
+    console.error('Error fetching cached holders data:', error);
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 } 

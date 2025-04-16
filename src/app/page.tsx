@@ -24,6 +24,9 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { ParseHubClient, type ParseHubProject } from '../utils/ParseHubClient';
 import ProfileGrid from './components/ProfileGrid';
 import WalletWrapper from '../components/WalletWrapper';
+import { ConnectWallet } from '@coinbase/onchainkit/wallet';
+import html2canvas from 'html2canvas';
+import { toast } from 'react-hot-toast';
 
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
@@ -51,6 +54,9 @@ export default function Page() {
 
   const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
   const { address } = useAccount();
+
+  // Add a ref for the price comparison section
+  const priceComparisonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchSpxPrice = async () => {
@@ -234,6 +240,145 @@ export default function Page() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleCoinbaseWalletClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent the original click from triggering the wallet connection
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Wait for the scroll to complete (smooth scroll takes about 500ms)
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Find and click the login button at the top
+    const loginButton = document.querySelector('[data-testid="ockConnectWallet_Container"]') as HTMLElement;
+    if (loginButton) {
+      loginButton.click();
+    }
+  };
+
+  const generatePriceImage = async () => {
+    if (!priceComparisonRef.current) return null;
+
+    try {
+      // Create canvas from the price comparison div
+      const canvas = await html2canvas(priceComparisonRef.current, {
+        backgroundColor: '#1B2236',
+        scale: 3, // Higher resolution
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        imageTimeout: 0,
+        onclone: (clonedDoc) => {
+          // Get the cloned element that will be rendered
+          const clonedElement = clonedDoc.querySelector('[data-price-comparison]');
+          if (clonedElement) {
+            // Force image dimensions and alignment in the cloned DOM
+            const images = clonedElement.getElementsByTagName('img');
+            for (const img of images) {
+              img.style.width = '24px';
+              img.style.height = '24px';
+              img.style.display = 'block';
+              img.style.objectFit = 'contain';
+              img.style.verticalAlign = 'middle';
+            }
+          }
+        }
+      });
+
+      // Get the canvas context for adding the watermark
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      // Set up the gradient for the text
+      const gradient = ctx.createLinearGradient(
+        canvas.width - 300, // Start x
+        canvas.height - 30, // Start y
+        canvas.width - 20,  // End x
+        canvas.height - 30  // End y
+      );
+      gradient.addColorStop(0, '#ff69b4');   // Pink
+      gradient.addColorStop(0.5, '#ff8c00');  // Orange
+      gradient.addColorStop(1, '#4caf50');    // Green
+
+      // Configure text style
+      ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+      ctx.fillStyle = gradient;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+
+      // Add the watermark text
+      ctx.fillText(
+        'Source: FlipTheStockMarket.com', 
+        canvas.width - 20,  // x position (20px from right)
+        canvas.height - 20  // y position (20px from bottom)
+      );
+
+      // Convert canvas to blob
+      return new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          }
+        }, 'image/png');
+      });
+    } catch (error) {
+      console.error('Error generating image:', error);
+      return null;
+    }
+  };
+
+  const handleShareToX = useCallback(async () => {
+    const loadingToast = toast.loading('Generating image...');
+
+    try {
+      const imageBlob = await generatePriceImage();
+      if (!imageBlob) {
+        throw new Error('Failed to generate image');
+      }
+
+      // Create form data for the image
+      const formData = new FormData();
+      formData.append('image', imageBlob, 'price-comparison.png');
+
+      // Upload to temporary storage
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server response:', errorText);
+        throw new Error(response.status === 429 
+          ? 'Rate limit exceeded. Please try again later.'
+          : 'Failed to upload image'
+        );
+      }
+
+      const data = await response.json();
+
+      // Create tweet text with a line break
+      const tweetText = `#SPX #SPX6900\n`;
+
+      // Open Twitter Web Intent with the image URL
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(data.imageUrl)}`,
+        '_blank'
+      );
+
+      toast.success('Ready to post!', {
+        id: loadingToast,
+      });
+    } catch (error) {
+      console.error('Error sharing to X:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to generate image', {
+        id: loadingToast,
+      });
+    }
+  }, [priceComparisonRef]);
+
   return (
     <>
       {/* Replace the GIF background div with the new color */}
@@ -343,71 +488,62 @@ export default function Page() {
           <div className="flex flex-row w-full gap-4 justify-center">
             {/* Price Comparison Section */}
             <div className="flex-1 p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl">
-              <div className="flex flex-row w-full gap-4 justify-center">
+              {/* Price comparison content - this will be captured in the screenshot */}
+              <div 
+                ref={priceComparisonRef}
+                data-price-comparison
+                className="flex flex-row w-full gap-4 justify-center"
+              >
                 {/* SPX6900 Price Card */}
-                <div className="flex-1 text-xl sm:text-2xl font-bold text-white text-center mb-2 bg-[#1B2236] bg-opacity-70 rounded-md p-2 sm:p-4 backdrop-blur-sm">
-                  <div className="flex items-center justify-center mb-2">
+                <div className="flex-1 text-white bg-[#1B2236] bg-opacity-70 rounded-md p-3 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 mb-2">
                     <img 
                       src="/spx6900.png" 
                       alt="SPX6900" 
-                      className="w-6 h-6 sm:w-8 sm:h-8 mr-2"
+                      className="w-6 h-6"
                     />
-                    <span>S&P 6900</span>
+                    <span className="text-xl font-bold">S&P 6900</span>
                   </div>
-                  {spxPrice !== null && (
-                    <>
-                      <div className="text-lg sm:text-2xl">${spxPrice.toLocaleString(undefined, {
-                        minimumFractionDigits: 4,
-                        maximumFractionDigits: 4
-                      })}
-                      {spx24hChange !== null && (
-                        <span className={spx24hChange >= 0 ? "text-green-400" : "text-red-400"}>
-                          {' '}({spx24hChange >= 0 ? '+' : ''}{spx24hChange.toFixed(2)}%)
-                        </span>
-                      )}
-                      </div>
-                      {spxMarketCap !== null && (
-                        <div className="text-sm sm:text-lg mt-1">
-                          Market Cap: <span className="text-green-400">${(spxMarketCap / 1000000).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          })}M</span>
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold">$0.4649</span>
+                    <span className="text-red-400">(-4.92%)</span>
+                  </div>
+                  <div className="text-sm mt-0.5">
+                    Market Cap: <span className="text-green-400">$429.55M</span>
+                  </div>
                 </div>
 
                 {/* S&P 500 Price Card */}
-                <div className="flex-1 text-xl sm:text-2xl font-bold text-white text-center mb-2 bg-[#1B2236] bg-opacity-70 rounded-md p-2 sm:p-4 backdrop-blur-sm">
-                  <div className="flex items-center justify-center mb-2">
+                <div className="flex-1 text-white bg-[#1B2236] bg-opacity-70 rounded-md p-3 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 mb-2">
                     <img 
                       src="/spx500-logo-circle.png" 
                       alt="S&P 500" 
-                      className="w-6 h-6 sm:w-8 sm:h-8 mr-2"
+                      className="w-6 h-6"
                     />
-                    <span>S&P 500</span>
+                    <span className="text-xl font-bold">S&P 500</span>
                   </div>
-                  {parseHubData?.['investing.com'] && (
-                    <>
-                      <div className="text-lg sm:text-2xl">${parseHubData['investing.com'].lastprice}
-                      {parseHubData['investing.com'].changepercent && (
-                        <span className={!parseHubData['investing.com'].changepercent.startsWith('-') ? "text-green-400" : "text-red-400"}>
-                          {' '}({parseHubData['investing.com'].changepercent})
-                        </span>
-                      )}
-                      </div>
-                      {parseHubData?.slickchart?.marketcap && (
-                        <div className="text-sm sm:text-lg mt-1">
-                          Market Cap: <span className="text-green-400">{parseHubData.slickchart.marketcap.replace(' trillion', 'T')}</span>
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold">$5,396.52</span>
+                    <span className="text-red-400">(-4.84%)</span>
+                  </div>
+                  <div className="text-sm mt-0.5">
+                    Market Cap: <span className="text-green-400">$45.388T</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Post to X Button - moved outside the screenshot section */}
+          <button
+            onClick={handleShareToX}
+            className="w-full max-w-[450px] mx-auto bg-[#1B2236] hover:bg-[#1B2236]/80 text-white rounded-md p-2.5 flex items-center justify-center gap-2 transition-all duration-200 backdrop-blur-sm mt-3"
+          >
+            <span className="flex items-center gap-2">
+              Post to <img src="/x-logo.svg" alt="X Logo" className="w-4 h-4" />
+            </span>
+          </button>
 
           {/* Market Cap Calculator Section */}
           <div className="w-full p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl mt-4">
@@ -523,13 +659,14 @@ export default function Page() {
                   {/* Recommended heading */}
                   <h3 className="text-xl font-bold text-white mb-4">Recommended</h3>
                   
-                  {/* Coinbase Wallet Button - changed from <a> to a button with WalletWrapper */}
+                  {/* Replace the existing Coinbase Wallet button section with this */}
                   <div className="w-full bg-[#1B2236]/70 hover:bg-[#1B2236]/90 text-white rounded-xl p-4 mb-8 flex items-center justify-center gap-3 transition-all duration-200">
                     <img src="/Coinbase_Coin_Primary.png" alt="Coinbase" className="h-8" />
                     <div className="flex flex-col items-center justify-center">
                       <WalletWrapper
-                        className="w-full bg-transparent hover:bg-transparent !p-0 !m-0 flex justify-center items-center"
                         text="Coinbase Wallet"
+                        withWalletAggregator={false}
+                        className="w-full bg-transparent hover:bg-transparent !p-0 !m-0 flex justify-center items-center"
                       />
                       <p className="text-sm opacity-75 text-center">(0% fees)</p>
                     </div>
@@ -665,25 +802,37 @@ export default function Page() {
                       dataKey="date" 
                       stroke="#ffffff"
                       tick={{ fontSize: 12, fill: "#ffffff" }}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return date.toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        });
+                      }}
                     />
                     <YAxis 
                       stroke="#ffffff"
                       tick={{ fontSize: 12, fill: "#ffffff" }}
                     />
                     <Tooltip 
-                      formatter={(value: any, name: string) => {
+                      formatter={(value: any, name: string, props: any) => {
                         if (name === 'holders') {
-                          const dataPoint = holdersData.find(d => d.holders === value);
-                          const percentChange = dataPoint?.percentChange ?? 0;
+                          const tooltipDataPoint = holdersData.find(d => d.holders === value);
+                          const percentChange = tooltipDataPoint?.percentChange ?? 0;
                           const color = percentChange < 0 ? '#ef4444' : '#22c55e';
                           return [
-                            <span style={{ color }}>
+                            <span key="tooltip" style={{ color }}>
                               {value.toLocaleString()} ({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)
                             </span>,
                             'Holders'
                           ];
                         }
                         return [value, name];
+                      }}
+                      contentStyle={{
+                        backgroundColor: '#1B2236',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px'
                       }}
                     />
                     <Line 
@@ -781,7 +930,7 @@ export default function Page() {
             <a 
               href="https://spx6900.com/"
               target="_blank" 
-              rel="noopener noreferrer" 
+              rel="noopener noreferrer"
               className="px-4 py-2 bg-[#1B2236] bg-opacity-70 text-white rounded-md text-center hover:bg-opacity-80 transition-colors flex items-center justify-center backdrop-blur-sm"
             >
               <img 
@@ -794,7 +943,7 @@ export default function Page() {
             <a 
               href="https://t.me/SPX6900" 
               target="_blank" 
-              rel="noopener noreferrer" 
+              rel="noopener noreferrer"
               className="px-4 py-2 bg-[#1B2236] bg-opacity-70 text-white rounded-md text-center hover:bg-opacity-80 transition-colors flex items-center justify-center backdrop-blur-sm"
             >
               <img 

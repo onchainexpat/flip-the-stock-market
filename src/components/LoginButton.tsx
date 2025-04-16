@@ -1,11 +1,16 @@
 'use client';
 import WalletWrapper from './WalletWrapper';
 
-export default function LoginButton() {
+type LoginButtonProps = {
+  text?: string;
+  className?: string;
+};
+
+export default function LoginButton({ text = "Log in", className = "min-w-[90px]" }: LoginButtonProps) {
   return (
     <WalletWrapper
-      className="min-w-[90px]"
-      text="Log in"
+      className={className}
+      text={text}
       withWalletAggregator={true}
     />
   );

@@ -19,7 +19,18 @@ function OnchainProviders({ children }: Props) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider apiKey={NEXT_PUBLIC_CDP_API_KEY} chain={base}>
-          <RainbowKitProvider modalSize="compact">
+          <RainbowKitProvider 
+            modalSize="compact"
+            customWalletModalStyles={{
+              dialog: {
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                margin: '0',
+              }
+            }}
+          >
             {children}
           </RainbowKitProvider>
         </OnchainKitProvider>

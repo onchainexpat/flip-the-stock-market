@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { NEXT_PUBLIC_URL } from '../config';
+import { Toaster } from 'react-hot-toast';
 
 import './global.css';
 import '@coinbase/onchainkit/styles.css';
@@ -19,20 +20,28 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Buy SPX6900',
-  description: 'Buy SPX6900 for 0% fees!',
+  title: 'SPX6900 - Flip The Stock Market',
+  description: 'Track SPX6900 vs S&P500 price and market cap comparison in real-time.',
   openGraph: {
-    title: 'Buy SPX6900',
-    description: 'Buy SPX6900 for 0% fees!',
-    images: [`${NEXT_PUBLIC_URL}/spx6900.png`],
-    url: 'https://flipthestockmarket.com', // Add the full URL of your site
-    type: 'website', // Specify the type of your content
+    title: 'SPX6900 - Flip The Stock Market',
+    description: 'Track SPX6900 vs S&P500 price and market cap comparison in real-time.',
+    images: [{
+      url: `${NEXT_PUBLIC_URL}/spx6900.png`,
+      width: 1200,
+      height: 630,
+      alt: 'SPX6900 vs S&P500',
+    }],
+    url: 'https://flipthestockmarket.com',
+    type: 'website',
+    siteName: 'Flip The Stock Market',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Flip The S&P500',
-    description: 'Buy SPX6900 for 0% fees!',
+    title: 'SPX6900 - Flip The Stock Market',
+    description: 'Track SPX6900 vs S&P500 price and market cap comparison in real-time.',
     images: [`${NEXT_PUBLIC_URL}/spx6900.png`],
+    creator: '@spx6900',
+    site: '@spx6900',
   },
 };
 
@@ -43,6 +52,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex items-center justify-center">
         <OnchainProviders>{children}</OnchainProviders>
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import profiles from '../profiles.json';
 import Image from 'next/image';
+import { getStoredProfileImage } from '../../utils/ImageStorage';
 
 interface Profile {
   platform: string;
@@ -15,6 +16,10 @@ export default function ProfileGrid() {
   const [isMobile, setIsMobile] = useState(false);
   const [popupPosition, setPopupPosition] = useState<'top' | 'bottom'>('top');
   const [columns, setColumns] = useState(8); // Default to mobile columns
+  const hideTimeoutRef = useRef<NodeJS.Timeout>();
+  const [imageCache, setImageCache] = useState<Record<string, string>>({});
+  const [loadedProfiles, setLoadedProfiles] = useState<Profile[]>([]);
+  const hasLoadedRef = useRef(false);
 
   // Check if device is mobile and handle resize
   useEffect(() => {
@@ -36,8 +41,52 @@ export default function ProfileGrid() {
     return () => window.removeEventListener('resize', updateLayout);
   }, []);
 
+  useEffect(() => {
+    const loadStoredImages = async () => {
+      if (hasLoadedRef.current) return;
+      hasLoadedRef.current = true;
+
+      const profilesToTry = profiles.slice(0, 120);
+      const usernames = profilesToTry.map(p => p.username).filter(Boolean);
+
+      try {
+        // Fetch all images in one request
+        const response = await fetch('/api/profile-images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usernames })
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const cache: Record<string, string> = {};
+        const availableProfiles: Profile[] = [];
+
+        // Process results
+        for (const profile of profilesToTry) {
+          if (profile.username && data[profile.username]) {
+            const imageData = data[profile.username];
+            cache[profile.username] = `data:${imageData.contentType};base64,${imageData.data}`;
+            availableProfiles.push(profile);
+          }
+        }
+
+        setImageCache(cache);
+        setLoadedProfiles(availableProfiles);
+      } catch (error) {
+        console.error('Failed to load images:', error);
+      }
+    };
+
+    loadStoredImages();
+  }, []);
+
   // Handle popup position based on scroll and viewport
   const handleMouseEnter = (profile: Profile, event: React.MouseEvent<HTMLDivElement>) => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+    }
     const element = event.currentTarget;
     const rect = element.getBoundingClientRect();
     const spaceAbove = rect.top;
@@ -47,20 +96,21 @@ export default function ProfileGrid() {
     setHoveredProfile(profile);
   };
 
-  // Filter out profiles with empty usernames or image URLs
-  const validProfiles = profiles
-    .filter(profile => profile.username && profile.image_url)
-    .slice(0, 120); // Get up to 120 valid profiles
-  
+  const handleMouseLeave = () => {
+    hideTimeoutRef.current = setTimeout(() => {
+      setHoveredProfile(null);
+    }, 2000); // 2000ms (2 seconds) delay before hiding
+  };
+
   // Calculate how many complete rows we can show
-  const completeRows = Math.floor(validProfiles.length / columns);
+  const completeRows = Math.floor(loadedProfiles.length / columns);
   const profilesToShow = Math.min(
     completeRows * columns,
-    Math.max(100, Math.floor(validProfiles.length / columns) * columns) // Ensure at least 100 profiles if available
+    Math.max(100, Math.floor(loadedProfiles.length / columns) * columns) // Ensure at least 100 profiles if available
   );
 
-  // Get only the profiles that will fill complete rows
-  const filteredProfiles = validProfiles.slice(0, profilesToShow);
+  // Use loadedProfiles directly since it's already limited
+  const filteredProfiles = loadedProfiles;
 
   return (
     <div className="container mx-auto px-1">
@@ -70,23 +120,18 @@ export default function ProfileGrid() {
             key={index}
             className="relative cursor-pointer w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] md:w-[38px] md:h-[38px] mx-auto"
             onMouseEnter={(e) => handleMouseEnter(profile, e)}
-            onMouseLeave={() => setHoveredProfile(null)}
+            onMouseLeave={handleMouseLeave}
           >
             <div className="relative aspect-square w-full h-full">
-              {profile.image_url ? (
+              {imageCache[profile.username] && (
                 <Image
-                  src={profile.image_url}
+                  src={imageCache[profile.username]}
                   alt={profile.username}
                   fill
                   sizes="(max-width: 640px) 32px, (max-width: 768px) 35px, 38px"
                   className="rounded-full object-cover hover:opacity-60 transition-opacity border border-white/10 hover:border-white/30"
                   quality={75}
-                  priority={index < 20}
                 />
-              ) : (
-                <div className="w-full h-full bg-[#131827] rounded-full flex items-center justify-center border border-white/10">
-                  <span className="text-gray-400 text-[8px]">No Image</span>
-                </div>
               )}
             </div>
 
@@ -97,14 +142,20 @@ export default function ProfileGrid() {
                 style={{
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  [popupPosition === 'top' ? 'bottom' : 'top']: 'calc(100% + 8px)',
+                  [popupPosition === 'top' ? 'bottom' : 'top']: '100%',
                 }}
+                onMouseEnter={() => {
+                  if (hideTimeoutRef.current) {
+                    clearTimeout(hideTimeoutRef.current);
+                  }
+                }}
+                onMouseLeave={handleMouseLeave}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  {profile.image_url && (
+                  {imageCache[profile.username] && (
                     <div className="relative w-[48px] h-[48px] flex-shrink-0">
                       <Image
-                        src={profile.image_url}
+                        src={imageCache[profile.username]}
                         alt={profile.username}
                         fill
                         sizes="48px"
@@ -129,11 +180,11 @@ export default function ProfileGrid() {
                   {profile.description.replace(/\\n/g, '\n').replace(/\"/g, '')}
                 </p>
 
-                {/* Arrow pointing to the profile picture */}
+                {/* Arrow pointing to the profile picture - adjusted position */}
                 <div 
                   className={`
                     absolute w-2 h-2 bg-[#1B2236] transform rotate-45 left-1/2 -translate-x-1/2
-                    ${popupPosition === 'top' ? '-bottom-1 border-b border-r' : '-top-1 border-t border-l'}
+                    ${popupPosition === 'top' ? 'bottom-0 translate-y-1/2 border-b border-r' : 'top-0 -translate-y-1/2 border-t border-l'}
                     border-white/10
                   `}
                 />

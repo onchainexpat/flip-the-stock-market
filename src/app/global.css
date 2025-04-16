@@ -185,3 +185,17 @@ a {
   scrollbar-width: thin;
   scrollbar-color: #2D3748 #1B2236;
 }
+
+/* Add this at the end of the file */
+[data-rk] {
+  --rk-radii-modal: 12px;
+  --rk-modal-margin: 0;
+}
+
+[data-rk] .rainbow-kit_dialog {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+}
