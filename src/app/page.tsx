@@ -21,7 +21,6 @@ import Confetti from 'react-confetti';
 import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { ParseHubClient, type ParseHubProject } from '../utils/ParseHubClient';
 import ProfileGrid from './components/ProfileGrid';
 import WalletWrapper from '../components/WalletWrapper';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
