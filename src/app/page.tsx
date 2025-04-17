@@ -263,64 +263,46 @@ export default function Page() {
     try {
       // Create canvas from the price comparison div
       const canvas = await html2canvas(priceComparisonRef.current, {
-        backgroundColor: '#1B2236',
-        scale: 3, // Higher resolution
+        backgroundColor: '#131827',
+        scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true,
         imageTimeout: 0,
+        width: 600, // Fixed width
+        height: 300, // Fixed height for 2:1 aspect ratio
         onclone: (clonedDoc) => {
-          // Get the cloned element that will be rendered
           const clonedElement = clonedDoc.querySelector('[data-price-comparison]');
           if (clonedElement) {
-            // Force image dimensions and alignment in the cloned DOM
-            const images = clonedElement.getElementsByTagName('img');
+            const element = clonedElement as HTMLElement;
+            // Force the container to the correct size
+            element.style.width = '600px';
+            element.style.height = '300px';
+            element.style.padding = '40px'; // Increased padding to center content better
+            element.style.boxSizing = 'border-box';
+            element.style.display = 'flex';
+            element.style.alignItems = 'center';
+            element.style.justifyContent = 'center';
+            
+            // Ensure images are loaded properly
+            const images = element.getElementsByTagName('img');
             for (const img of images) {
-              img.style.width = '24px';
-              img.style.height = '24px';
+              img.style.width = '32px'; // Slightly larger icons
+              img.style.height = '32px';
               img.style.display = 'block';
               img.style.objectFit = 'contain';
-              img.style.verticalAlign = 'middle';
             }
           }
         }
       });
 
-      // Get the canvas context for adding the watermark
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-
-      // Set up the gradient for the text
-      const gradient = ctx.createLinearGradient(
-        canvas.width - 300, // Start x
-        canvas.height - 30, // Start y
-        canvas.width - 20,  // End x
-        canvas.height - 30  // End y
-      );
-      gradient.addColorStop(0, '#ff69b4');   // Pink
-      gradient.addColorStop(0.5, '#ff8c00');  // Orange
-      gradient.addColorStop(1, '#4caf50');    // Green
-
-      // Configure text style
-      ctx.font = 'bold 24px Inter, system-ui, sans-serif';
-      ctx.fillStyle = gradient;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'bottom';
-
-      // Add the watermark text
-      ctx.fillText(
-        'Source: FlipTheStockMarket.com', 
-        canvas.width - 20,  // x position (20px from right)
-        canvas.height - 20  // y position (20px from bottom)
-      );
-
-      // Convert canvas to blob
+      // Convert canvas to blob with specific dimensions
       return new Promise<Blob>((resolve) => {
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(blob);
           }
-        }, 'image/png');
+        }, 'image/png', 1.0); // Use maximum quality
       });
     } catch (error) {
       console.error('Error generating image:', error);
@@ -501,43 +483,52 @@ export default function Page() {
               <div 
                 ref={priceComparisonRef}
                 data-price-comparison
-                className="flex flex-row w-full gap-4 justify-center"
+                className="flex flex-row w-full justify-center items-center"
+                style={{
+                  width: '100%',
+                  maxWidth: '600px',
+                  height: '140px',
+                  margin: '0 auto',
+                  padding: '12px',
+                  boxSizing: 'border-box',
+                  background: '#131827'
+                }}
               >
-                {/* SPX6900 Price Card */}
-                <div className="flex-1 text-white bg-[#1B2236] bg-opacity-70 rounded-md p-3 backdrop-blur-sm">
-                  <div className="flex items-center gap-2 mb-2">
+                {/* SPX6900 Side */}
+                <div className="flex-1 text-white flex flex-col items-start min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 w-full">
                     <img 
                       src="/spx6900.png" 
                       alt="SPX6900" 
-                      className="w-6 h-6"
+                      className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
                     />
-                    <span className="text-xl font-bold">S&P 6900</span>
+                    <span className="text-base sm:text-lg font-semibold text-white truncate">S&P 6900</span>
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold">$0.4649</span>
-                    <span className="text-red-400">(-4.92%)</span>
+                  <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 w-full">
+                    <span className="text-xl sm:text-2xl font-bold truncate">$0.4649</span>
+                    <span className="text-red-500 text-sm sm:text-base whitespace-nowrap">(-4.92%)</span>
                   </div>
-                  <div className="text-sm mt-0.5">
-                    Market Cap: <span className="text-green-400">$429.55M</span>
+                  <div className="text-xs sm:text-sm text-gray-300 w-full">
+                    Market Cap: <span className="text-green-400 truncate">$429.55M</span>
                   </div>
                 </div>
 
-                {/* S&P 500 Price Card */}
-                <div className="flex-1 text-white bg-[#1B2236] bg-opacity-70 rounded-md p-3 backdrop-blur-sm">
-                  <div className="flex items-center gap-2 mb-2">
+                {/* S&P 500 Side */}
+                <div className="flex-1 text-white flex flex-col items-start min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 w-full">
                     <img 
                       src="/spx500-logo-circle.png" 
                       alt="S&P 500" 
-                      className="w-6 h-6"
+                      className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
                     />
-                    <span className="text-xl font-bold">S&P 500</span>
+                    <span className="text-base sm:text-lg font-semibold text-white truncate">S&P 500</span>
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold">$5,396.52</span>
-                    <span className="text-red-400">(-4.84%)</span>
+                  <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 w-full">
+                    <span className="text-xl sm:text-2xl font-bold truncate">$5,396.52</span>
+                    <span className="text-red-500 text-sm sm:text-base whitespace-nowrap">(-4.84%)</span>
                   </div>
-                  <div className="text-sm mt-0.5">
-                    Market Cap: <span className="text-green-400">$45.388T</span>
+                  <div className="text-xs sm:text-sm text-gray-300 w-full">
+                    Market Cap: <span className="text-green-400 truncate">$45.388T</span>
                   </div>
                 </div>
               </div>
