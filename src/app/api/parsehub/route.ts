@@ -1,6 +1,9 @@
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 
+// Add this export to explicitly mark the route as dynamic
+export const dynamic = 'force-dynamic';
+
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
