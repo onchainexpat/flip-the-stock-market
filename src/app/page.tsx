@@ -36,7 +36,172 @@ type DuneDataPoint = {
   percentChange: number;
 };
 
+// First, let's create a separate component for the price comparison that will be used for the image generation
+const PriceComparisonForImage = () => (
+  <div 
+    className="flex flex-row w-full justify-center items-center"
+    style={{
+      width: '600px',
+      height: '300px',
+      margin: '0 auto',
+      padding: '30px 40px',
+      boxSizing: 'border-box',
+      background: '#131827'
+    }}
+  >
+    {/* SPX6900 Side */}
+    <div className="flex-1 text-white flex flex-col items-start">
+      <div className="flex items-center gap-2 mb-3">
+        <img 
+          src="/spx6900.png" 
+          alt="SPX6900" 
+          className="w-7 h-7"
+        />
+        <span className="text-xl font-bold text-white">S&P 6900</span>
+      </div>
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-3xl font-bold">$0.4649</span>
+        <span className="text-lg text-red-500">(-4.92%)</span>
+      </div>
+      <div className="text-base text-gray-300">
+        Market Cap: <span className="text-green-400">$429.55M</span>
+      </div>
+    </div>
+
+    <div className="w-px h-24 bg-gray-800 mx-12"></div>
+
+    {/* S&P 500 Side */}
+    <div className="flex-1 text-white flex flex-col items-start">
+      <div className="flex items-center gap-2 mb-3">
+        <img 
+          src="/spx500-logo-circle.png" 
+          alt="S&P 500" 
+          className="w-7 h-7"
+        />
+        <span className="text-xl font-bold text-white">S&P 500</span>
+      </div>
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-3xl font-bold">$5,396.52</span>
+        <span className="text-lg text-red-500">(-4.84%)</span>
+      </div>
+      <div className="text-base text-gray-300">
+        Market Cap: <span className="text-green-400">$45.388T</span>
+      </div>
+    </div>
+  </div>
+);
+
+// Update the main PriceComparison component to properly handle the ref
+const PriceComparison = ({ forwardedRef }: { forwardedRef: React.RefObject<HTMLDivElement> }) => (
+  <div 
+    ref={forwardedRef}
+    data-price-comparison
+    style={{
+      width: '600px',
+      height: '300px',
+      margin: '0 auto',
+      padding: '30px 40px',
+      boxSizing: 'border-box',
+      background: '#131827',
+      position: 'fixed',
+      left: '-9999px',
+      top: 0,
+      pointerEvents: 'none'
+    }}
+  >
+    {/* SPX6900 Side */}
+    <div className="flex-1 text-white flex flex-col items-start">
+      <div className="flex items-center gap-2 mb-3">
+        <img 
+          src="/spx6900.png" 
+          alt="SPX6900" 
+          className="w-7 h-7"
+        />
+        <span className="text-xl font-bold text-white">S&P 6900</span>
+      </div>
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-3xl font-bold">$0.4649</span>
+        <span className="text-lg text-red-500">(-4.92%)</span>
+      </div>
+      <div className="text-base text-gray-300">
+        Market Cap: <span className="text-green-400">$429.55M</span>
+      </div>
+    </div>
+
+    <div className="w-px h-24 bg-gray-800 mx-12"></div>
+
+    {/* S&P 500 Side */}
+    <div className="flex-1 text-white flex flex-col items-start">
+      <div className="flex items-center gap-2 mb-3">
+        <img 
+          src="/spx500-logo-circle.png" 
+          alt="S&P 500" 
+          className="w-7 h-7"
+        />
+        <span className="text-xl font-bold text-white">S&P 500</span>
+      </div>
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-3xl font-bold">$5,396.52</span>
+        <span className="text-lg text-red-500">(-4.84%)</span>
+      </div>
+      <div className="text-base text-gray-300">
+        Market Cap: <span className="text-green-400">$45.388T</span>
+      </div>
+    </div>
+  </div>
+);
+
+// Add the visible, responsive version
+const VisiblePriceComparison = () => (
+  <div className="flex flex-col sm:flex-row w-full justify-center items-center gap-6 sm:gap-0 p-4 sm:p-6 bg-[#131827] rounded-lg max-w-[600px] mx-auto">
+    {/* SPX6900 Side */}
+    <div className="w-full sm:flex-1 text-white flex flex-col items-center sm:items-start">
+      <div className="flex items-center gap-2 mb-3">
+        <img 
+          src="/spx6900.png" 
+          alt="SPX6900" 
+          className="w-6 sm:w-7 h-6 sm:h-7"
+        />
+        <span className="text-lg sm:text-xl font-bold text-white">S&P 6900</span>
+      </div>
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-2xl sm:text-3xl font-bold">$0.4649</span>
+        <span className="text-base sm:text-lg text-red-500">(-4.92%)</span>
+      </div>
+      <div className="text-sm sm:text-base text-gray-300">
+        Market Cap: <span className="text-green-400">$429.55M</span>
+      </div>
+    </div>
+
+    {/* Separator - hidden on mobile, shown on larger screens */}
+    <div className="hidden sm:block w-px h-24 bg-gray-800 mx-8 sm:mx-12"></div>
+
+    {/* Horizontal line for mobile */}
+    <div className="w-full h-px bg-gray-800 sm:hidden my-6"></div>
+
+    {/* S&P 500 Side */}
+    <div className="w-full sm:flex-1 text-white flex flex-col items-center sm:items-start">
+      <div className="flex items-center gap-2 mb-3">
+        <img 
+          src="/spx500-logo-circle.png" 
+          alt="S&P 500" 
+          className="w-6 sm:w-7 h-6 sm:h-7"
+        />
+        <span className="text-lg sm:text-xl font-bold text-white">S&P 500</span>
+      </div>
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-2xl sm:text-3xl font-bold">$5,396.52</span>
+        <span className="text-base sm:text-lg text-red-500">(-4.84%)</span>
+      </div>
+      <div className="text-sm sm:text-base text-gray-300">
+        Market Cap: <span className="text-green-400">$45.388T</span>
+      </div>
+    </div>
+  </div>
+);
+
 export default function Page() {
+  const priceComparisonRef = useRef<HTMLDivElement>(null);
   const [openDropdown, setOpenDropdown] = useState<'sponsoredBuys' | 'howToBuyVideo' | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
@@ -53,9 +218,6 @@ export default function Page() {
 
   const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
   const { address } = useAccount();
-
-  // Add a ref for the price comparison section
-  const priceComparisonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchSpxPrice = async () => {
@@ -258,54 +420,55 @@ export default function Page() {
   };
 
   const generatePriceImage = async () => {
-    if (!priceComparisonRef.current) return null;
+    console.log('Starting image generation...');
+    
+    if (!priceComparisonRef.current) {
+      console.error('No ref found');
+      return null;
+    }
 
     try {
-      // Create canvas from the price comparison div
+      console.log('Starting html2canvas...');
       const canvas = await html2canvas(priceComparisonRef.current, {
         backgroundColor: '#131827',
         scale: 2,
-        logging: false,
+        logging: true,
         useCORS: true,
         allowTaint: true,
-        imageTimeout: 0,
-        width: 600, // Fixed width
-        height: 300, // Fixed height for 2:1 aspect ratio
+        imageTimeout: 2000,
+        width: 600,
+        height: 300,
         onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.querySelector('[data-price-comparison]');
+          console.log('html2canvas clone callback triggered');
+          const clonedElement = clonedDoc.querySelector('[data-ref="price-comparison"]');
           if (clonedElement) {
-            const element = clonedElement as HTMLElement;
-            // Force the container to the correct size
-            element.style.width = '600px';
-            element.style.height = '300px';
-            element.style.padding = '40px'; // Increased padding to center content better
-            element.style.boxSizing = 'border-box';
-            element.style.display = 'flex';
-            element.style.alignItems = 'center';
-            element.style.justifyContent = 'center';
-            
-            // Ensure images are loaded properly
-            const images = element.getElementsByTagName('img');
-            for (const img of images) {
-              img.style.width = '32px'; // Slightly larger icons
-              img.style.height = '32px';
-              img.style.display = 'block';
-              img.style.objectFit = 'contain';
-            }
+            (clonedElement as HTMLElement).style.position = 'static';
+            (clonedElement as HTMLElement).style.left = '0';
+            (clonedElement as HTMLElement).style.top = '0';
           }
         }
       });
+      
+      console.log('Canvas generated successfully');
 
-      // Convert canvas to blob with specific dimensions
-      return new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
-          }
-        }, 'image/png', 1.0); // Use maximum quality
+      return new Promise<Blob>((resolve, reject) => {
+        try {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              console.log('Blob created successfully');
+              resolve(blob);
+            } else {
+              console.error('Blob creation failed');
+              reject(new Error('Failed to create blob'));
+            }
+          }, 'image/png', 1.0);
+        } catch (error) {
+          console.error('Error in blob creation:', error);
+          reject(error);
+        }
       });
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error('Detailed error in generatePriceImage:', error);
       return null;
     }
   };
@@ -319,11 +482,9 @@ export default function Page() {
         throw new Error('Failed to generate image');
       }
 
-      // Create form data for the image
       const formData = new FormData();
       formData.append('image', imageBlob, 'price-comparison.png');
 
-      // Upload to temporary storage
       const response = await fetch('/api/upload-image', {
         method: 'POST',
         body: formData,
@@ -332,7 +493,7 @@ export default function Page() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Server response:', errorText);
-        throw new Error(response.status === 429 
+        throw new Error(response.status === 429
           ? 'Rate limit exceeded. Please try again later.'
           : 'Failed to upload image'
         );
@@ -344,17 +505,14 @@ export default function Page() {
       // Extract the filename from the blob URL
       const filename = blobUrl.substring(blobUrl.lastIndexOf('/') + 1);
 
-      // Construct the URL for your new share page
-      // Make sure NEXT_PUBLIC_URL is set correctly in your env
+      // Construct the URL for your share page
       const siteUrl = process.env.NEXT_PUBLIC_URL || window.location.origin;
       const sharePageUrl = `${siteUrl}/share/${filename}`;
 
-      // Create tweet text with a line break
+      // Create tweet text
       const tweetText = `#SPX #SPX6900\n`;
 
-      // Open Twitter Web Intent with the *share page* URL
       window.open(
-        // Use sharePageUrl instead of blobUrl (data.imageUrl)
         `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(sharePageUrl)}`,
         '_blank'
       );
@@ -368,7 +526,7 @@ export default function Page() {
         id: loadingToast,
       });
     }
-  }, [priceComparisonRef]);
+  }, []);
 
   return (
     <>
@@ -479,59 +637,7 @@ export default function Page() {
           <div className="flex flex-row w-full gap-4 justify-center">
             {/* Price Comparison Section */}
             <div className="flex-1 p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl">
-              {/* Price comparison content - this will be captured in the screenshot */}
-              <div 
-                ref={priceComparisonRef}
-                data-price-comparison
-                className="flex flex-row w-full justify-center items-center"
-                style={{
-                  width: '100%',
-                  maxWidth: '600px',
-                  height: '140px',
-                  margin: '0 auto',
-                  padding: '12px',
-                  boxSizing: 'border-box',
-                  background: '#131827'
-                }}
-              >
-                {/* SPX6900 Side */}
-                <div className="flex-1 text-white flex flex-col items-start min-w-0">
-                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 w-full">
-                    <img 
-                      src="/spx6900.png" 
-                      alt="SPX6900" 
-                      className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-                    />
-                    <span className="text-base sm:text-lg font-semibold text-white truncate">S&P 6900</span>
-                  </div>
-                  <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 w-full">
-                    <span className="text-xl sm:text-2xl font-bold truncate">$0.4649</span>
-                    <span className="text-red-500 text-sm sm:text-base whitespace-nowrap">(-4.92%)</span>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-300 w-full">
-                    Market Cap: <span className="text-green-400 truncate">$429.55M</span>
-                  </div>
-                </div>
-
-                {/* S&P 500 Side */}
-                <div className="flex-1 text-white flex flex-col items-start min-w-0">
-                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2 w-full">
-                    <img 
-                      src="/spx500-logo-circle.png" 
-                      alt="S&P 500" 
-                      className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-                    />
-                    <span className="text-base sm:text-lg font-semibold text-white truncate">S&P 500</span>
-                  </div>
-                  <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 w-full">
-                    <span className="text-xl sm:text-2xl font-bold truncate">$5,396.52</span>
-                    <span className="text-red-500 text-sm sm:text-base whitespace-nowrap">(-4.84%)</span>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-300 w-full">
-                    Market Cap: <span className="text-green-400 truncate">$45.388T</span>
-                  </div>
-                </div>
-              </div>
+              <VisiblePriceComparison />
             </div>
           </div>
 
@@ -1004,6 +1110,60 @@ export default function Page() {
         </div>
 
         <Footer />
+      </div>
+
+      {/* This is the element we'll use for image generation */}
+      <div 
+        ref={priceComparisonRef}
+        className="fixed left-[-9999px] top-[-9999px] w-[600px] h-[300px] bg-[#131827] p-[30px_40px] flex flex-row justify-between items-center"
+      >
+        {/* SPX6900 Side */}
+        <div className="flex-1 text-white flex flex-col items-start">
+          <div className="flex items-center gap-2 mb-3">
+            <img 
+              src="/spx6900.png" 
+              alt="SPX6900" 
+              className="w-7 h-7"
+              crossOrigin="anonymous"
+            />
+            <span className="text-xl font-bold">S&P 6900</span>
+          </div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="text-3xl font-bold">$0.4649</span>
+            <span className="text-lg text-red-500">(-4.92%)</span>
+          </div>
+          <div className="text-base text-gray-300">
+            Market Cap: <span className="text-green-400">$429.55M</span>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="w-px h-24 bg-gray-800 mx-12"></div>
+
+        {/* S&P 500 Side */}
+        <div className="flex-1 text-white flex flex-col items-start">
+          <div className="flex items-center gap-2 mb-3">
+            <img 
+              src="/spx500-logo-circle.png" 
+              alt="S&P 500" 
+              className="w-7 h-7"
+              crossOrigin="anonymous"
+            />
+            <span className="text-xl font-bold">S&P 500</span>
+          </div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="text-3xl font-bold">$5,396.52</span>
+            <span className="text-lg text-red-500">(-4.84%)</span>
+          </div>
+          <div className="text-base text-gray-300">
+            Market Cap: <span className="text-green-400">$45.388T</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Visible version for display */}
+      <div className="flex flex-col sm:flex-row w-full justify-center items-center gap-6 sm:gap-0 p-4 sm:p-6 bg-[#131827] rounded-lg max-w-[600px] mx-auto">
+        {/* ... your existing VisiblePriceComparison content ... */}
       </div>
     </>
   );
