@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
 import { headers } from 'next/headers';
+import { put } from '@vercel/blob';
 import { RateLimiter } from '../../../utils/rateLimit';
-import { ImageCleanup } from '../../../utils/imageCleanup';
 
 // Initialize rate limiter (5 requests per minute)
 const rateLimiter = new RateLimiter(5, 60000);
-
-// Initialize image cleanup (1 hour max age, check every 15 minutes)
-const tempDir = join(process.cwd(), 'public', 'temp');
-const imageCleanup = new ImageCleanup(tempDir, 3600000);
-imageCleanup.startPeriodicCleanup(900000);
 
 export async function POST(request: Request) {
   try {
@@ -38,7 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate image size (max 5MB)
+    // Validate image size (max 5MB - adjust if Vercel Blob has different Hobby limits)
     if (image.size > 5 * 1024 * 1024) {
       return NextResponse.json(
         { error: 'Image too large. Maximum size is 5MB.' },
@@ -46,29 +39,26 @@ export async function POST(request: Request) {
       );
     }
 
-    // Convert blob to buffer
-    const buffer = Buffer.from(await image.arrayBuffer());
-
     // Generate unique filename with timestamp and random string
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
+    // Optional: Prefix with a folder structure, e.g., 'uploads/'
     const filename = `price-comparison-${timestamp}-${randomString}.png`;
 
-    // Ensure temp directory exists
-    const filepath = join(tempDir, filename);
-    
-    // Save to public directory
-    await writeFile(filepath, buffer);
+    // Save to public directory - Replace with Vercel Blob upload
+    const blob = await put(filename, image, {
+      access: 'public', // Make the blob publicly accessible
+      // Optional: Add cache control headers if needed
+      // cacheControlMaxAge: 3600 // Example: Cache for 1 hour
+    });
 
-    // Return the URL
-    const imageUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/temp/${filename}`;
-
-    // Trigger cleanup
-    imageCleanup.cleanup().catch(console.error);
+    // Return the URL - Use the URL from the Vercel Blob response
+    const imageUrl = blob.url; // Use the direct URL from Vercel Blob
 
     return NextResponse.json({ imageUrl });
   } catch (error) {
     console.error('Error uploading image:', error);
+    // Consider checking error type for more specific messages (e.g., BlobError)
     return NextResponse.json(
       { error: 'Failed to upload image' },
       { status: 500 }
