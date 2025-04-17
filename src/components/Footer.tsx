@@ -13,7 +13,7 @@ export default function Footer() {
   return (
     <footer className="w-full bg-[#131827] text-white py-4 px-6 flex flex-col items-center gap-2">
       <a 
-        href="https://github.com/coinbase/onchainkit" 
+        href="https://github.com/onchainexpat/flip-the-stock-market" 
         target="_blank" 
         rel="noopener noreferrer" 
         className="flex items-center gap-2 hover:underline"
@@ -21,7 +21,7 @@ export default function Footer() {
         Open Source and Built with OnchainKit ↗
       </a>
       <a 
-        href="https://x.twitter.com/onchainexpat" 
+        href="https://x.com/onchainexpat" 
         target="_blank" 
         rel="noopener noreferrer" 
         className="flex items-center gap-2 hover:underline"
