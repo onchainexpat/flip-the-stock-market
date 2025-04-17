@@ -357,13 +357,23 @@ export default function Page() {
       }
 
       const data = await response.json();
+      const blobUrl = data.imageUrl;
+
+      // Extract the filename from the blob URL
+      const filename = blobUrl.substring(blobUrl.lastIndexOf('/') + 1);
+
+      // Construct the URL for your new share page
+      // Make sure NEXT_PUBLIC_URL is set correctly in your env
+      const siteUrl = process.env.NEXT_PUBLIC_URL || window.location.origin;
+      const sharePageUrl = `${siteUrl}/share/${filename}`;
 
       // Create tweet text with a line break
       const tweetText = `#SPX #SPX6900\n`;
 
-      // Open Twitter Web Intent with the image URL
+      // Open Twitter Web Intent with the *share page* URL
       window.open(
-        `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(data.imageUrl)}`,
+        // Use sharePageUrl instead of blobUrl (data.imageUrl)
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(sharePageUrl)}`,
         '_blank'
       );
 
