@@ -1,17 +1,15 @@
 'use client';
-import WalletWrapper from './WalletWrapper';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
-type LoginButtonProps = {
-  text?: string;
-  className?: string;
-};
+export default function LoginButton() {
+  const { openConnectModal } = useConnectModal();
 
-export default function LoginButton({ text = "Log in", className = "min-w-[90px]" }: LoginButtonProps) {
   return (
-    <WalletWrapper
-      className={className}
-      text={text}
-      withWalletAggregator={true}
-    />
+    <button
+      onClick={openConnectModal}
+      className="min-w-[120px] bg-[#1B2335] hover:bg-[#1B2335]/80 py-2 px-4 text-white rounded-lg"
+    >
+      Log in
+    </button>
   );
 }

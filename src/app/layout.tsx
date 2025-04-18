@@ -17,6 +17,10 @@ const OnchainProviders = dynamic(
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: 'yes',
+  viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -50,7 +54,7 @@ export default function RootLayout({
 }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="flex items-center justify-center">
+      <body className="flex min-h-screen w-full max-w-full overflow-x-hidden">
         <OnchainProviders>{children}</OnchainProviders>
         <Toaster position="bottom-center" />
       </body>

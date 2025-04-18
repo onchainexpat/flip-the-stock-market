@@ -14,6 +14,7 @@ export default function ProfileGrid() {
   const [hoveredProfile, setHoveredProfile] = useState<Profile | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [popupPosition, setPopupPosition] = useState<'top' | 'bottom'>('top');
+  const [popupAlignment, setPopupAlignment] = useState<'left' | 'center' | 'right'>('center');
   const [columns, setColumns] = useState(8); // Default to mobile columns
   const hideTimeoutRef = useRef<NodeJS.Timeout>();
   const [imageCache, setImageCache] = useState<Record<string, string>>({});
@@ -81,8 +82,8 @@ export default function ProfileGrid() {
     loadStoredImages();
   }, []);
 
-  // Handle popup position based on scroll and viewport
-  const handleMouseEnter = (profile: Profile, event: React.MouseEvent<HTMLDivElement>) => {
+  // Handle popup position based on scroll, viewport, and grid position
+  const handleMouseEnter = (profile: Profile, event: React.MouseEvent<HTMLDivElement>, index: number) => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
     }
@@ -91,7 +92,31 @@ export default function ProfileGrid() {
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
     
+    // Set vertical position based on available space
     setPopupPosition(spaceAbove > spaceBelow ? 'top' : 'bottom');
+
+    // Calculate column position (0-based index)
+    const columnIndex = index % columns;
+    
+    // For mobile view, adjust horizontal alignment based on column position
+    if (isMobile) {
+      // If in the first third of columns, align right
+      if (columnIndex < columns / 3) {
+        setPopupAlignment('right');
+      }
+      // If in the last third of columns, align left
+      else if (columnIndex >= (2 * columns) / 3) {
+        setPopupAlignment('left');
+      }
+      // If in the middle third of columns, center align
+      else {
+        setPopupAlignment('center');
+      }
+    } else {
+      // For desktop, keep center alignment
+      setPopupAlignment('center');
+    }
+    
     setHoveredProfile(profile);
   };
 
@@ -111,6 +136,36 @@ export default function ProfileGrid() {
   // Use loadedProfiles directly since it's already limited
   const filteredProfiles = loadedProfiles;
 
+  // Helper function to get popup transform and position styles
+  const getPopupStyles = () => {
+    const baseStyles: React.CSSProperties = {
+      position: 'absolute',
+      zIndex: 9999,
+      [popupPosition === 'top' ? 'bottom' : 'top']: '100%',
+    };
+
+    switch (popupAlignment) {
+      case 'left':
+        return {
+          ...baseStyles,
+          right: '0',
+          transform: 'none',
+        };
+      case 'right':
+        return {
+          ...baseStyles,
+          left: '0',
+          transform: 'none',
+        };
+      default: // center
+        return {
+          ...baseStyles,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        };
+    }
+  };
+
   return (
     <div className="container mx-auto px-1">
       <div className="grid grid-cols-8 xs:grid-cols-9 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-[2px] sm:gap-1">
@@ -118,7 +173,7 @@ export default function ProfileGrid() {
           <div 
             key={index}
             className="relative cursor-pointer w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] md:w-[38px] md:h-[38px] mx-auto"
-            onMouseEnter={(e) => handleMouseEnter(profile, e)}
+            onMouseEnter={(e) => handleMouseEnter(profile, e, index)}
             onMouseLeave={handleMouseLeave}
           >
             <div className="relative aspect-square w-full h-full">
@@ -137,12 +192,8 @@ export default function ProfileGrid() {
             {/* Hover Popup */}
             {hoveredProfile === profile && (
               <div 
-                className="absolute z-[9999] w-72 bg-[#1B2236] bg-opacity-95 backdrop-blur-md text-white rounded-lg p-3 shadow-xl border border-white/10"
-                style={{
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  [popupPosition === 'top' ? 'bottom' : 'top']: '100%',
-                }}
+                className="w-72 bg-[#1B2236] bg-opacity-95 backdrop-blur-md text-white rounded-lg p-3 shadow-xl border border-white/10"
+                style={getPopupStyles()}
                 onMouseEnter={() => {
                   if (hideTimeoutRef.current) {
                     clearTimeout(hideTimeoutRef.current);
@@ -182,9 +233,12 @@ export default function ProfileGrid() {
                 {/* Arrow pointing to the profile picture - adjusted position */}
                 <div 
                   className={`
-                    absolute w-2 h-2 bg-[#1B2236] transform rotate-45 left-1/2 -translate-x-1/2
+                    absolute w-2 h-2 bg-[#1B2236] transform rotate-45
                     ${popupPosition === 'top' ? 'bottom-0 translate-y-1/2 border-b border-r' : 'top-0 -translate-y-1/2 border-t border-l'}
                     border-white/10
+                    ${popupAlignment === 'left' ? 'right-4' : 
+                      popupAlignment === 'right' ? 'left-4' : 
+                      'left-1/2 -translate-x-1/2'}
                   `}
                 />
               </div>
