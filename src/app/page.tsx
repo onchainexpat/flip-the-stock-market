@@ -22,7 +22,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import ProfileGrid from './components/ProfileGrid';
 //import LoginButton from '../components/LoginButton';
 import html2canvas from 'html2canvas';
-//import { toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import React from 'react';
 import WalletWrapper from '../components/WalletWrapper';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
