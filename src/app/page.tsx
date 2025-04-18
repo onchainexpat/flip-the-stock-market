@@ -20,14 +20,14 @@ import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import ProfileGrid from './components/ProfileGrid';
-import LoginButton from '../components/LoginButton';
+//import LoginButton from '../components/LoginButton';
 import html2canvas from 'html2canvas';
-import { toast } from 'react-hot-toast';
+//import { toast } from 'react-hot-toast';
 import React from 'react';
 import WalletWrapper from '../components/WalletWrapper';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import profiles from '../profiles.json';
-import NextImage from 'next/image';
+//import profiles from '../profiles.json';
+//import NextImage from 'next/image';
 
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
