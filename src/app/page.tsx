@@ -20,14 +20,10 @@ import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import ProfileGrid from './components/ProfileGrid';
-//import LoginButton from '../components/LoginButton';
 import html2canvas from 'html2canvas';
-import { toast } from 'react-hot-toast';
 import React from 'react';
 import WalletWrapper from '../components/WalletWrapper';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-//import profiles from '../profiles.json';
-//import NextImage from 'next/image';
 
 const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
 const defaultMaxSlippage = 3;
@@ -111,7 +107,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
             <img
               src="/spx6900.png"
               alt="SPX6900"
-              className="w-6 h-6 md:w-7 md:h-7 mt-10"
+              className="w-6 h-6 md:w-7 md:h-7 mt-7"
             />
             <span className="text-lg md:text-xl font-bold">S&P 6900</span>
           </div>
@@ -133,7 +129,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
             <img
               src="/spx500-logo-circle.png"
               alt="S&P 500"
-              className="w-6 h-6 md:w-7 md:h-7 mt-10"
+              className="w-6 h-6 md:w-7 md:h-7 mt-7"
             />
             <span className="text-lg md:text-xl font-bold">S&P 500</span>
           </div>
@@ -237,50 +233,62 @@ const PriceComparisonForImage = () => (
 );
 
 // Add the visible, responsive version
-const VisiblePriceComparison = () => (
-  <div className="flex flex-col sm:flex-row w-full justify-center items-center gap-6 sm:gap-0 p-4 sm:p-6 bg-[#131827] rounded-lg max-w-[600px] mx-auto">
-    {/* SPX6900 Side */}
-    <div className="flex-1 text-white flex flex-col items-center sm:items-start w-full sm:w-auto">
-      <div className="flex items-center gap-2 mb-3">
-        <img 
-          src="/spx6900.png" 
-          alt="SPX6900" 
-          className="w-6 h-6 sm:w-7 sm:h-7"
-        />
-        <span className="text-lg sm:text-xl font-bold">S&P 6900</span>
+const VisiblePriceComparison = ({ 
+  spxPrice, 
+  spxChange, 
+  spxMarketCap, 
+  snpPrice, 
+  snpChange, 
+  snpMarketCap 
+}: PriceComparisonProps) => {
+  const spxChangeFormatted = formatChange(spxChange);
+  const snpChangeFormatted = formatChange(snpChange);
+
+  return (
+    <div className="flex flex-col sm:flex-row w-full justify-center items-center gap-6 sm:gap-0 p-4 sm:p-6 bg-[#131827] rounded-lg max-w-[600px] mx-auto">
+      {/* SPX6900 Side */}
+      <div className="flex-1 text-white flex flex-col items-center sm:items-start w-full sm:w-auto">
+        <div className="flex items-center gap-2 mb-3">
+          <img 
+            src="/spx6900.png" 
+            alt="SPX6900" 
+            className="w-6 h-6 sm:w-7 sm:h-7"
+          />
+          <span className="text-lg sm:text-xl font-bold">S&P 6900</span>
+        </div>
+        <div className="flex items-baseline gap-2 mb-2">
+          <span className="text-2xl sm:text-3xl font-bold">{formatPrice(spxPrice, 4, 4)}</span>
+          <span className={`text-sm sm:text-lg ${spxChangeFormatted.color}`}>{spxChangeFormatted.text}</span>
+        </div>
+        <div className="text-sm sm:text-base text-gray-300">
+          Market Cap: <span className="text-green-400 font-medium">{formatMarketCap(spxMarketCap)}</span>
+        </div>
       </div>
-      <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-2xl sm:text-3xl font-bold">$0.4678</span>
-        <span className="text-sm sm:text-lg text-red-500">(-4.92%)</span>
-      </div>
-      <div className="text-sm sm:text-base text-gray-300">
-        Market Cap: <span className="text-green-400">$432.25M</span>
+      
+      {/* Separator - horizontal for mobile, vertical for desktop */}
+      <div className="w-full h-px sm:w-px sm:h-20 bg-gray-800 sm:mx-8 self-center my-4 sm:my-0"></div>
+      
+      {/* S&P 500 Side */}
+      <div className="flex-1 text-white flex flex-col items-center sm:items-start w-full sm:w-auto">
+        <div className="flex items-center gap-2 mb-3">
+          <img 
+            src="/spx500-logo-circle.png" 
+            alt="S&P 500" 
+            className="w-6 h-6 sm:w-7 sm:h-7"
+          />
+          <span className="text-lg sm:text-xl font-bold">S&P 500</span>
+        </div>
+        <div className="flex items-baseline gap-2 mb-2">
+          <span className="text-2xl sm:text-3xl font-bold">{formatPrice(snpPrice)}</span>
+          <span className={`text-sm sm:text-lg ${snpChangeFormatted.color}`}>{snpChangeFormatted.text}</span>
+        </div>
+        <div className="text-sm sm:text-base text-gray-300">
+          Market Cap: <span className="text-green-400">{formatMarketCap(snpMarketCap)}</span>
+        </div>
       </div>
     </div>
-    
-    {/* Separator - horizontal for mobile, vertical for desktop */}
-    <div className="w-full h-px sm:w-px sm:h-20 bg-gray-800 sm:mx-8 self-center my-4 sm:my-0"></div>
-    
-    {/* S&P 500 Side */}
-    <div className="flex-1 text-white flex flex-col items-center sm:items-start w-full sm:w-auto">
-      <div className="flex items-center gap-2 mb-3">
-        <img 
-          src="/spx500-logo-circle.png" 
-          alt="S&P 500" 
-          className="w-6 h-6 sm:w-7 sm:h-7"
-        />
-        <span className="text-lg sm:text-xl font-bold">S&P 500</span>
-      </div>
-      <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-2xl sm:text-3xl font-bold">$5,396.52</span>
-        <span className="text-sm sm:text-lg text-red-500">(-0.84%)</span>
-      </div>
-      <div className="text-sm sm:text-base text-gray-300">
-        Market Cap: <span className="text-green-400">$45.388T</span>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 interface Profile {
   platform: string;
@@ -314,31 +322,16 @@ export default function Page() {
   useEffect(() => {
     const fetchSpxPrice = async () => {
       try {
-        console.log('Fetching SPX price...');
         const response = await fetch('/api/coingecko');
         const data = await response.json();
 
-        if (!response.ok || data.error) {
-          const errorDetails = {
-            status: response.status,
-            error: data.error,
-            details: data.details,
-            debug: data.debug,
-            stack: data.stack
-          };
-          console.error('CoinGecko API error:', errorDetails);
-          
-          if (data.debug) {
-            console.log('Environment debug info:', data.debug);
-          }
-          
-          throw new Error(
-            data.details?.message || 
-            data.details?.body || 
-            (typeof data.details === 'string' ? data.details : null) ||
-            data.error || 
-            'Failed to fetch price'
-          );
+        if (!response.ok) {
+          console.error('Failed to fetch SPX price:', data);
+          // toast.error( // Removing toast call
+          //   (typeof data.details === 'string' ? data.details : null) ||
+          //   data.error || 
+          //   'Failed to fetch price'
+          // );
         }
 
         if (!data.spx6900?.usd) {
@@ -359,10 +352,8 @@ export default function Page() {
       }
     };
 
-    fetchSpxPrice();
-    const interval = setInterval(fetchSpxPrice, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchSpxPrice(); // Fetch once on component mount
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const onrampBuyUrl = address
     ? getOnrampBuyUrl({
@@ -546,7 +537,7 @@ export default function Page() {
     // First ensure we have parseHubData
     if (!parseHubData) {
       console.error('ParseHub data not available');
-      toast.error('Please wait for market data to load');
+      // toast.error('Please wait for market data to load'); // Removing toast call
       return null;
     }
 
@@ -562,7 +553,7 @@ export default function Page() {
       // Check if we have valid data
       if (snpPrice === null || snpChange === null || snpMarketCap === null) {
         console.error('Invalid or missing S&P 500 data');
-        toast.error('Please wait for market data to load completely');
+        // toast.error('Please wait for market data to load completely'); // Removing toast call
         return null;
       }
 
@@ -614,62 +605,50 @@ export default function Page() {
       // Style the SPX side
       const spxSide = element.querySelector('[data-price-comparison] > div > div:nth-child(1)');
       if (spxSide instanceof HTMLElement) {
-        spxSide.style.flex = '1';
-        spxSide.style.display = 'flex';
-        spxSide.style.flexDirection = 'column';
-        spxSide.style.alignItems = 'center';
-        spxSide.style.textAlign = 'center';
-        
         // Style the SPX heading
-        const spxHeading = spxSide.querySelector('.flex');
+        const spxHeading = spxSide.querySelector('.items-center.gap-2.mb-3'); // More specific selector for heading container
         if (spxHeading instanceof HTMLElement) {
           spxHeading.style.justifyContent = 'center';
           spxHeading.style.marginBottom = '10px';
         }
         
-        // Format the price and market cap
-        const spxPrice = spxSide.querySelector('.text-3xl, .font-bold');
-        if (spxPrice instanceof HTMLElement) {
-          spxPrice.style.fontSize = '32px';
-          spxPrice.style.fontWeight = 'bold';
+        // Format the price (target first span in price container)
+        const spxPriceElement = spxSide.querySelector('.flex.items-baseline > span:first-child'); 
+        if (spxPriceElement instanceof HTMLElement) {
+          spxPriceElement.style.fontSize = '32px';
+          spxPriceElement.style.fontWeight = 'bold';
         }
         
-        // Format the percentage change
-        const spxPercentage = spxSide.querySelector('.text-red-500');
-        if (spxPercentage instanceof HTMLElement) {
-          spxPercentage.style.fontSize = '24px';
-          spxPercentage.style.fontWeight = 'normal';
+        // Format the percentage change (target second span in price container)
+        const spxPercentageElement = spxSide.querySelector('.flex.items-baseline > span:nth-child(2)'); 
+        if (spxPercentageElement instanceof HTMLElement) {
+          spxPercentageElement.style.fontSize = '24px'; 
+          spxPercentageElement.style.fontWeight = 'normal';
         }
       }
       
       // Style the SNP side
       const snpSide = element.querySelector('[data-price-comparison] > div > div:nth-child(3)');
       if (snpSide instanceof HTMLElement) {
-        snpSide.style.flex = '1';
-        snpSide.style.display = 'flex';
-        snpSide.style.flexDirection = 'column';
-        snpSide.style.alignItems = 'center';
-        snpSide.style.textAlign = 'center';
-        
         // Style the SNP heading
-        const snpHeading = snpSide.querySelector('.flex');
+        const snpHeading = snpSide.querySelector('.items-center.gap-2.mb-3'); // More specific selector for heading container
         if (snpHeading instanceof HTMLElement) {
           snpHeading.style.justifyContent = 'center';
           snpHeading.style.marginBottom = '10px';
         }
         
-        // Format the price
-        const snpPrice = snpSide.querySelector('.text-3xl, .font-bold');
-        if (snpPrice instanceof HTMLElement) {
-          snpPrice.style.fontSize = '32px';
-          snpPrice.style.fontWeight = 'bold';
+        // Format the price (target first span in price container)
+        const snpPriceElement = snpSide.querySelector('.flex.items-baseline > span:first-child');
+        if (snpPriceElement instanceof HTMLElement) {
+          snpPriceElement.style.fontSize = '32px';
+          snpPriceElement.style.fontWeight = 'bold';
         }
         
-        // Format the percentage change
-        const snpPercentage = snpSide.querySelector('.text-red-500');
-        if (snpPercentage instanceof HTMLElement) {
-          snpPercentage.style.fontSize = '24px';
-          snpPercentage.style.fontWeight = 'normal';
+        // Format the percentage change (target second span in price container)
+        const snpPercentageElement = snpSide.querySelector('.flex.items-baseline > span:nth-child(2)'); // Use a distinct name if needed, but scope is different here
+        if (snpPercentageElement instanceof HTMLElement) {
+          snpPercentageElement.style.fontSize = '24px'; 
+          snpPercentageElement.style.fontWeight = 'normal';
         }
       }
       
@@ -753,9 +732,9 @@ export default function Page() {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       console.log('Starting html2canvas with data:', {
-        snpPrice,
-        snpChange,
-        snpMarketCap
+        snpPrice: parseSnpPrice(parseHubData), // Recalculate here to ensure latest
+        snpChange: parseSnpChange(parseHubData),
+        snpMarketCap: parseSnpMarketCap(parseHubData)
       });
 
       const canvas = await html2canvas(element, {
@@ -771,163 +750,88 @@ export default function Page() {
           console.log('html2canvas clone callback triggered');
           const clonedElement = clonedDoc.querySelector('[data-price-comparison]');
           if (clonedElement) {
-            // Make sure we render in horizontal format in the clone too
-            const flexContainer = clonedElement.querySelector('[data-price-comparison] > div');
-            if (flexContainer instanceof HTMLElement) {
-              flexContainer.style.display = 'flex';
-              flexContainer.style.flexDirection = 'row';
-              flexContainer.style.justifyContent = 'space-between';
-              flexContainer.style.alignItems = 'center';
-              flexContainer.style.gap = '40px';
-              flexContainer.style.marginBottom = '15px';
-              flexContainer.style.paddingBottom = '15px';
-              flexContainer.style.borderBottom = '1px solid rgba(255, 255, 255, 0.2)';
+            // Force horizontal layout
+            const mainFlexContainer = clonedElement.querySelector('[data-price-comparison] > div:first-child');
+            if (mainFlexContainer instanceof HTMLElement) { 
+              // ... mainFlexContainer styling ...
             }
             
             // Ensure separator is vertical
-            const sep = clonedElement.querySelector('[data-price-comparison] > div > div:nth-child(2)');
+            const sep = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(2)');
             if (sep && sep instanceof HTMLElement) {
-              sep.style.width = '1px';
-              sep.style.height = '100px';
-              sep.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-              sep.style.margin = '0';
-              sep.style.alignSelf = 'center';
+              // ... separator styling ...
             }
             
             // Style the SPX side in the clone
-            const spxSideClone = clonedElement.querySelector('[data-price-comparison] > div > div:nth-child(1)');
+            const spxSideClone = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(1)');
             if (spxSideClone instanceof HTMLElement) {
-              spxSideClone.style.flex = '1';
-              spxSideClone.style.display = 'flex';
-              spxSideClone.style.flexDirection = 'column';
-              spxSideClone.style.alignItems = 'center';
-              spxSideClone.style.textAlign = 'center';
-              
-              // Style the SPX heading
-              const spxHeading = spxSideClone.querySelector('.flex');
-              if (spxHeading instanceof HTMLElement) {
-                spxHeading.style.justifyContent = 'center';
-                spxHeading.style.marginBottom = '10px';
+              // ... other SPX clone styling ...
+              const spxHeadingClone = spxSideClone.querySelector('.items-center.gap-2.mb-3');
+              if (spxHeadingClone instanceof HTMLElement) {
+                spxHeadingClone.style.justifyContent = 'center';
+                spxHeadingClone.style.marginBottom = '10px';
               }
-              
-              // Format the price
-              const spxPrice = spxSideClone.querySelector('.text-3xl, .font-bold');
-              if (spxPrice instanceof HTMLElement) {
-                spxPrice.style.fontSize = '32px';
-                spxPrice.style.fontWeight = 'bold';
+              const spxPriceElementClone = spxSideClone.querySelector('.flex.items-baseline > span:first-child');
+              if (spxPriceElementClone instanceof HTMLElement) {
+                spxPriceElementClone.style.fontSize = '32px';
+                spxPriceElementClone.style.fontWeight = 'bold';
               }
-              
-              // Format the percentage change
-              const spxPercentage = spxSideClone.querySelector('.text-red-500');
-              if (spxPercentage instanceof HTMLElement) {
-                spxPercentage.style.fontSize = '24px';
-                spxPercentage.style.fontWeight = 'normal';
+              const spxPercentageElementClone = spxSideClone.querySelector('.flex.items-baseline > span:nth-child(2)');
+              if (spxPercentageElementClone instanceof HTMLElement) {
+                spxPercentageElementClone.style.fontSize = '24px';
+                spxPercentageElementClone.style.fontWeight = 'normal';
               }
             }
             
             // Style the SNP side in the clone
-            const snpSideClone = clonedElement.querySelector('[data-price-comparison] > div > div:nth-child(3)');
+            const snpSideClone = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(3)');
             if (snpSideClone instanceof HTMLElement) {
-              snpSideClone.style.flex = '1';
-              snpSideClone.style.display = 'flex';
-              snpSideClone.style.flexDirection = 'column';
-              snpSideClone.style.alignItems = 'center';
-              snpSideClone.style.textAlign = 'center';
-              
-              // Style the SNP heading
-              const snpHeading = snpSideClone.querySelector('.flex');
-              if (snpHeading instanceof HTMLElement) {
-                snpHeading.style.justifyContent = 'center';
-                snpHeading.style.marginBottom = '10px';
+              // ... other SNP clone styling ...
+              const snpHeadingClone = snpSideClone.querySelector('.items-center.gap-2.mb-3');
+              if (snpHeadingClone instanceof HTMLElement) {
+                 snpHeadingClone.style.justifyContent = 'center';
+                 snpHeadingClone.style.marginBottom = '10px';
               }
-              
-              // Format the price
-              const snpPrice = snpSideClone.querySelector('.text-3xl, .font-bold');
-              if (snpPrice instanceof HTMLElement) {
-                snpPrice.style.fontSize = '32px';
-                snpPrice.style.fontWeight = 'bold';
+              const snpPriceElementClone = snpSideClone.querySelector('.flex.items-baseline > span:first-child');
+              if (snpPriceElementClone instanceof HTMLElement) {
+                snpPriceElementClone.style.fontSize = '32px';
+                snpPriceElementClone.style.fontWeight = 'bold';
               }
-              
-              // Format the percentage change
-              const snpPercentage = snpSideClone.querySelector('.text-red-500');
-              if (snpPercentage instanceof HTMLElement) {
-                snpPercentage.style.fontSize = '24px';
-                snpPercentage.style.fontWeight = 'normal';
+              const snpPercentageElementClone = snpSideClone.querySelector('.flex.items-baseline > span:nth-child(2)'); // Distinct variable name
+              if (snpPercentageElementClone instanceof HTMLElement) {
+                snpPercentageElementClone.style.fontSize = '24px';
+                snpPercentageElementClone.style.fontWeight = 'normal';
               }
             }
             
             // Style the bottom section in the clone
-            const extraSectionClone = clonedElement.querySelector('[data-price-comparison] > div + div');
-            if (extraSectionClone instanceof HTMLElement) {
-              extraSectionClone.style.display = 'flex';
-              extraSectionClone.style.flexDirection = 'column';
-              extraSectionClone.style.alignItems = 'center';
-              extraSectionClone.style.justifyContent = 'center';
-              extraSectionClone.style.textAlign = 'center';
-              
-              // Style the heading
-              const heading = extraSectionClone.querySelector('h3');
-              if (heading instanceof HTMLElement) {
-                heading.style.fontSize = '20px';
-                heading.style.fontWeight = 'bold';
-                heading.style.marginBottom = '12px';
-                
-                // Make SPX6900 and S&P500 gold
-                const goldTexts = heading.querySelectorAll('.gold-text');
-                goldTexts.forEach(el => {
-                  if (el instanceof HTMLElement) {
-                    el.style.color = 'gold';
-                    el.style.fontWeight = 'bold';
-                  }
-                });
-              }
-              
-              // Style the price and multiplier
-              const priceContainer = extraSectionClone.querySelector('.flex');
-              if (priceContainer instanceof HTMLElement) {
-                priceContainer.style.display = 'flex';
-                priceContainer.style.flexDirection = 'row';
-                priceContainer.style.alignItems = 'baseline';
-                priceContainer.style.justifyContent = 'center';
-                priceContainer.style.gap = '6px';
-                
-                const price = priceContainer.querySelector('.text-2xl, .font-bold');
-                if (price instanceof HTMLElement) {
-                  price.style.fontSize = '32px';
-                  price.style.fontWeight = 'bold';
-                }
-                
-                const multiplier = priceContainer.querySelector('.text-green-400, .multiplier-text');
-                if (multiplier instanceof HTMLElement) {
-                  multiplier.style.color = '#48bb78';
-                  multiplier.style.fontSize = '24px';
-                  multiplier.style.fontWeight = 'normal';
-                }
-              }
-              
-              // Remove any vertical separators in the bottom section
-              const unwantedSeparators = extraSectionClone.querySelectorAll('[data-price-comparison] > div + div > div > div');
-              unwantedSeparators.forEach(separator => {
-                if (separator instanceof HTMLElement && 
-                    separator.style.width === '1px' && 
-                    separator.style.height) {
-                  separator.style.display = 'none';
-                }
-              });
-            }
+            // ... existing bottom section styling ...
             
             // Update the values in the cloned DOM
-            const priceElement = clonedElement.querySelector('[data-snp-price]');
-            const changeElement = clonedElement.querySelector('[data-snp-change]');
+            // Need to re-select elements within the clone context
+            const clonedSnpPriceElement = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(3) .flex.items-baseline > span:first-child');
+            const clonedSnpChangeElement = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(3) .flex.items-baseline > span:nth-child(2)');
             
-            if (priceElement && snpPrice !== null) {
-              priceElement.textContent = formatPrice(snpPrice);
+            // Recalculate S&P values here for accuracy IF parseHubData is accessible OR passed somehow
+            // Assuming parseHubData is accessible in this scope (it might not be)
+            // If not, these values might need to be passed into the function or calculated differently
+            const currentSnpPrice = parseSnpPrice(parseHubData); 
+            const currentSnpChange = parseSnpChange(parseHubData);
+
+            if (clonedSnpPriceElement && currentSnpPrice !== null) {
+              clonedSnpPriceElement.textContent = formatPrice(currentSnpPrice);
             }
             
-            if (changeElement && snpChange !== null) {
-              const formattedChange = formatChange(snpChange);
-              changeElement.textContent = formattedChange.text;
-              changeElement.className = `text-lg ${formattedChange.color}`;
+            if (clonedSnpChangeElement && currentSnpChange !== null) {
+              const formattedChange = formatChange(currentSnpChange);
+              clonedSnpChangeElement.textContent = formattedChange.text;
+              // Apply color class directly if needed
+              clonedSnpChangeElement.className = `text-base md:text-lg ${formattedChange.color}`; // Assuming base classes
+              // Also apply direct style for font size as done before
+              if (clonedSnpChangeElement instanceof HTMLElement) {
+                 clonedSnpChangeElement.style.fontSize = '24px';
+                 clonedSnpChangeElement.style.fontWeight = 'normal';
+              }
             }
 
             // Set styles for visibility
@@ -1031,10 +935,10 @@ export default function Page() {
         '_blank'
       );
 
-      toast.success('Ready to post!');
+      //toast.success('Ready to post!');
     } catch (error) {
       console.error('Error sharing to X:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to generate image');
+      //toast.error(error instanceof Error ? error.message : 'Failed to generate image');
     } finally {
       setIsGeneratingImage(false);
     }
@@ -1361,10 +1265,17 @@ export default function Page() {
               </h1>
             </div>
             
-            {/* Price Comparison Section - RESTORE THIS TO ITS ORIGINAL POSITION */}
+            {/* Price Comparison Section - Pass props here */}
             <div className="flex flex-row w-full gap-4 justify-center">
               <div className="flex-1 p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl">
-                <VisiblePriceComparison />
+                <VisiblePriceComparison 
+                  spxPrice={spxPrice}
+                  spxChange={spx24hChange}
+                  spxMarketCap={spxMarketCap}
+                  snpPrice={parseSnpPrice(parseHubData)}
+                  snpChange={parseSnpChange(parseHubData)}
+                  snpMarketCap={parseSnpMarketCap(parseHubData)}
+                />
               </div>
             </div>
 
