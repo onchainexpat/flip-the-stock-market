@@ -509,10 +509,10 @@ export default function Page() {
       }
     };
 
-    fetchParseHubProjects();
-    const interval = setInterval(fetchParseHubProjects, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchParseHubProjects(); // Fetch once on component mount
+    // const interval = setInterval(fetchParseHubProjects, 60000); // Removed interval polling
+    // return () => clearInterval(interval); // Removed interval cleanup
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleCoinbaseWalletClick = useCallback((event: React.MouseEvent) => {
     // Prevent default
