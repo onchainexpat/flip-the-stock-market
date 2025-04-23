@@ -281,22 +281,30 @@ export async function downloadAndStoreProfileImages(profiles: any[]) {
                     console.warn(`[Download] 400x400 failed for ${profile.username} (404). Trying base URL as last resort: ${baseImageUrl}`);
                     imageUrlToFetch = baseImageUrl; // Revert to the URL *before* 400x400 was applied
                     try {
-                         response = await fetch(imageUrlToFetch, { // Fetch again
-                              headers: { /* ... */ },
-                              redirect: 'follow',
-                              signal: AbortSignal.timeout(15000)
-                          });
-                         // If this *still* fails, the main check below will catch it
+                         // Check if the reverted imageUrlToFetch (baseImageUrl) is actually valid before fetching
+                         if (imageUrlToFetch) {
+                            response = await fetch(imageUrlToFetch, { // Fetch again
+                                headers: { /* ... */ },
+                                redirect: 'follow',
+                                signal: AbortSignal.timeout(15000)
+                            });
+                            // If this *still* fails, the main check below will catch it
+                         } else {
+                            // If baseImageUrl was null, we can't retry
+                            console.warn(`[Download] Cannot retry fetch for ${profile.username} because baseImageUrl was null.`);
+                         }
                     } catch (error) {
-                         console.warn(`[Download] Last resort fetch failed for ${profile.username} from ${imageUrlToFetch}. Error: ${error}`);
-                         results.failed++;
-                         continue;
+                         // Determine the URL attempted for the error message
+                         const urlAttempted = imageUrlToFetch ?? baseImageUrl ?? 'unknown URL';
+                         console.warn(`[Download] Last resort fetch failed for ${profile.username} from ${urlAttempted}. Error: ${error}`);
+                         // Allow the outer check to handle the failure
                     }
                }
 
                // Check final response status after potential fallback
                if (!response.ok) {
-                   console.warn(`[Download] Final HTTP error for ${profile.username} from ${imageUrlToFetch}: ${response.status}, skipping...`);
+                   const urlAttempted = imageUrlToFetch ?? baseImageUrl ?? 'unknown URL';
+                   console.warn(`[Download] Final HTTP error for ${profile.username} from ${urlAttempted}: ${response.status}, skipping...`);
                    results.failed++;
                    continue;
                }
