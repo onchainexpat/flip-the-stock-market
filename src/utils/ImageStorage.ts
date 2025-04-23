@@ -224,12 +224,13 @@ export async function downloadAndStoreProfileImages(profiles: any[]) {
 
 
           // --- Apply _400x400 Logic ---
-          let imageUrlToFetch = baseImageUrl; // Should not be null if we reached here
+          let imageUrlToFetch = baseImageUrl; // Can still be null here
           let finalUrlIs400x400 = false; // Flag to know if we are attempting the 400x400 version
 
-          if (imageUrlToFetch.includes('pbs.twimg.com/profile_images/')) {
+          // Check if imageUrlToFetch is non-null before proceeding
+          if (imageUrlToFetch && imageUrlToFetch.includes('pbs.twimg.com/profile_images/')) {
               // Replace suffixes like _mini, _normal, _bigger with _400x400
-              const potentialNewUrl = imageUrlToFetch.replace(/_(mini|normal|bigger|\d+x\d+)\.(jpg|jpeg|png|gif)$/i, '_400x400.$2');
+              const potentialNewUrl = imageUrlToFetch.replace(/_(mini|normal|bigger|\\d+x\\d+)\\.(jpg|jpeg|png|gif)$/i, '_400x400.$2');
 
               if (potentialNewUrl !== imageUrlToFetch) {
                   imageUrlToFetch = potentialNewUrl;
@@ -237,20 +238,26 @@ export async function downloadAndStoreProfileImages(profiles: any[]) {
                   console.log(`Attempting 400x400 version for ${profile.username}: ${imageUrlToFetch}`);
               } else {
                   // Log if no suffix was found or the pattern didn't match
-                  console.log(`No known size suffix found on ${profile.username}'s image URL or pattern mismatch. Using as is: ${imageUrlToFetch}`);
+                  console.log(`No known size suffix found on ${profile.username}\'s image URL or pattern mismatch. Using as is: ${imageUrlToFetch}`);
               }
-          } else {
+          } else if (imageUrlToFetch) { // Added check for the else case too
               // Log if it's not a standard Twitter profile image URL
               console.log(`URL for ${profile.username} may not be a standard Twitter image URL or needs no resizing. Using as is: ${imageUrlToFetch}`);
+          } else {
+              // Handle the case where imageUrlToFetch is still null after URL determination
+              console.warn(`  Could not determine a valid imageUrlToFetch for ${profile.username}. Skipping download.`);
+              results.skipped++; // Or results.failed depending on desired behavior
+              continue; // Skip to the next profile
           }
           // --- End _400x400 Logic ---
 
 
           // --- Download image ---
-          console.log(`[Download] Fetching final image: ${imageUrlToFetch}`);
+          // Now imageUrlToFetch is guaranteed to be a string if we reach here
+          console.log(`[Download] Fetching final image: ${imageUrlToFetch}`); 
           let response;
           try {
-              response = await fetch(imageUrlToFetch, { // Use the potentially modified URL
+              response = await fetch(imageUrlToFetch, { // OK to use imageUrlToFetch here
                   headers: { // Use consistent headers
                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
