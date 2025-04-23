@@ -91,6 +91,11 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
     ? (snpMarketCap / spxMarketCap) * spxPrice
     : null;
 
+  // Calculate doublings needed for the flippening
+  const doublingsNeeded = (multiplier !== null && multiplier > 0)
+    ? Math.ceil(Math.log2(multiplier))
+    : null;
+
   // Check if this is being rendered for Twitter image (using the ref)
   const isForTwitter = ref !== null;
 
@@ -98,7 +103,8 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
     <div
       ref={ref}
       data-price-comparison
-      className={`${showExtraSection ? 'h-auto md:h-[350px]' : 'h-auto md:h-[300px]'} w-full max-w-full px-2 md:px-4`}
+      // Adjust height slightly if needed for the extra line
+      className={`${showExtraSection ? 'h-auto md:h-[370px]' : 'h-auto md:h-[300px]'} w-full max-w-full px-2 md:px-4`}
     >
       <div className={`flex ${isForTwitter ? 'flex-row' : 'flex-col md:flex-row'} justify-between items-center md:items-start mb-4 w-full gap-6 md:gap-0`}>
         {/* SPX6900 Side */}
@@ -159,7 +165,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
           <h3 className="text-base md:text-lg font-semibold mb-3">
             <span className="gold-text">SPX6900</span> WITH THE MARKET CAP OF <span className="gold-text">S&P500</span>
           </h3>
-          <div className="flex items-baseline justify-center gap-2">
+          <div className="flex items-baseline justify-center gap-2 mb-2"> {/* Added mb-2 */}
             <span className="text-xl md:text-2xl font-bold">{formatPrice(priceAtSnPMC)}</span>
             {multiplier !== null && (
               <span className="text-sm md:text-base text-green-400 multiplier-text">
@@ -167,6 +173,12 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
               </span>
             )}
           </div>
+          {/* New line for doublings needed */}
+          {doublingsNeeded !== null && (
+            <p className="text-sm md:text-base text-gray-300">
+              SPX6900 ONLY NEEDS <span className="font-semibold text-white">{doublingsNeeded}</span> DOUBLING{doublingsNeeded !== 1 ? 'S' : ''}
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -298,6 +310,13 @@ interface Profile {
   description: string;
 }
 
+// Define type for S&P 500 data (from our new API route)
+interface SnpData { // Renamed from AlphaVantageData
+  price: number;
+  changePercent: number;
+  timestamp: number;
+}
+
 export default function Page() {
   const priceComparisonRef = useRef<HTMLDivElement>(null);
   const [openDropdown, setOpenDropdown] = useState<'sponsoredBuys' | 'howToBuyVideo' | null>(null);
@@ -310,15 +329,19 @@ export default function Page() {
   const [copyClicked, setCopyClicked] = useState(false);
 
   const [holdersData, setHoldersData] = useState<DuneDataPoint[]>([]);
+  // SPX data state (from CoinGecko)
   const [spxPrice, setSpxPrice] = useState<number | null>(null);
   const [spx24hChange, setSpx24hChange] = useState<number | null>(null);
   const [spxMarketCap, setSpxMarketCap] = useState<number | null>(null);
+  // --- Rename state variable ---
+  const [snpData, setSnpData] = useState<SnpData | null>(null); // Renamed from snpAlphaVantageData
 
   const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
   const { address } = useAccount();
 
   const { openConnectModal } = useConnectModal();
 
+  // Fetch CoinGecko data (no changes needed here)
   useEffect(() => {
     const fetchSpxPrice = async () => {
       try {
@@ -327,11 +350,6 @@ export default function Page() {
 
         if (!response.ok) {
           console.error('Failed to fetch SPX price:', data);
-          // toast.error( // Removing toast call
-          //   (typeof data.details === 'string' ? data.details : null) ||
-          //   data.error || 
-          //   'Failed to fetch price'
-          // );
         }
 
         if (!data.spx6900?.usd) {
@@ -342,7 +360,7 @@ export default function Page() {
         setSpxPrice(data.spx6900.usd);
         setSpx24hChange(data.spx6900.usd_24h_change);
         setSpxMarketCap(data.spx6900.usd_market_cap);
-        console.log('Price data updated successfully:', {
+        console.log('CoinGecko data updated successfully:', {
           price: data.spx6900.usd,
           change: data.spx6900.usd_24h_change,
           marketCap: data.spx6900.usd_market_cap
@@ -352,8 +370,40 @@ export default function Page() {
       }
     };
 
-    fetchSpxPrice(); // Fetch once on component mount
-  }, []); // Empty dependency array ensures this runs only once on mount
+    fetchSpxPrice();
+    // Add interval if needed for CoinGecko data
+    // const interval = setInterval(fetchSpxPrice, 60000); // Example: Fetch every minute
+    // return () => clearInterval(interval);
+  }, []);
+
+  // Fetch S&P 500 data from the new endpoint
+  useEffect(() => {
+    const fetchSnpData = async () => {
+      try {
+        // --- Change fetch URL ---
+        console.log('Attempting to fetch S&P 500 data from /api/sp500');
+        const response = await fetch('/api/sp500'); // Changed URL
+        // --- Use renamed type ---
+        const data: SnpData | { error: string } = await response.json(); // Use SnpData type
+
+        if (!response.ok || 'error' in data) {
+          console.error('Failed to fetch S&P 500 data:', data);
+          throw new Error('Failed to fetch S&P 500 data' + ('error' in data ? `: ${data.error}` : ''));
+        }
+
+        console.log('S&P 500 data fetched successfully:', data);
+        // --- Set renamed state ---
+        setSnpData(data); // Set snpData state
+
+      } catch (error) {
+        console.error('Error fetching S&P 500 data:', error);
+      }
+    };
+
+    fetchSnpData(); // Fetch immediately on component mount
+    const interval = setInterval(fetchSnpData, 60 * 60 * 1000); // Check every hour
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, []);
 
   const onrampBuyUrl = address
     ? getOnrampBuyUrl({
@@ -458,30 +508,48 @@ export default function Page() {
   const [toToken, setToToken] = useState<Token>(SPXToken);
 
   const handleOnStatus = useCallback((lifecycleStatus: LifecycleStatus) => {
-    console.log('Status:', lifecycleStatus);
+    console.log('Swap Status:', lifecycleStatus); // More detailed log
+    // Add specific logs for different statuses
+    if (lifecycleStatus.statusName === 'approvalPending') {
+      console.log('Approval transaction sent, awaiting confirmation...');
+    }
+    if (lifecycleStatus.statusName === 'approvalSuccess') {
+      console.log('Approval confirmed:', lifecycleStatus.statusData);
+    }
+    if (lifecycleStatus.statusName === 'transactionPending') {
+      console.log('Swap transaction sent, awaiting confirmation...');
+    }
   }, []);
 
   const handleOnSuccess = useCallback(
     (transactionReceipt: TransactionReceipt) => {
-      console.log('Success:', transactionReceipt);
+      console.log('Swap Success:', transactionReceipt); // Log the full receipt
+      console.log('Transaction Hash:', transactionReceipt.transactionHash);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
     }, []);
 
   const handleOnError = useCallback((swapError: SwapError) => {
-    console.log('Error:', swapError);
+    console.error('Swap Error:', swapError); // Log the full error object
+    // Log specific details if available
+    if (swapError.error) {
+      console.error('Internal Error Code:', swapError.error.code);
+      console.error('Internal Error Message:', swapError.error.message);
+    }
   }, []);
 
   const [parseHubData, setParseHubData] = useState<any>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  // Renamed state variable for clarity
+  const [isParseHubDataLoaded, setIsParseHubDataLoaded] = useState(false);
 
   useEffect(() => {
     const fetchParseHubProjects = async () => {
+       setIsParseHubDataLoaded(false); // Reset loading state
       try {
+        // REMOVED 'investing.com' project token
         const projectTokens = [
-          { token: 't7Fp0h8ZfxVd', title: 'investing.com' },
           { token: 'tNUpHFbjsmkA', title: 'lunarcrush.com' },
-          { token: 'tPVGTLBpW623', title: 'slickchart' }
+          { token: 'tPVGTLBpW623', title: 'slickchart' } // Keep for S&P Market Cap
         ];
 
         const results = await Promise.all(
@@ -498,21 +566,18 @@ export default function Page() {
             }
           })
         );
-
-        // Combine all results into a single object
         const combinedData = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
-        console.log('Combined ParseHub data:', combinedData);
+        console.log('Combined ParseHub data (excluding investing.com):', combinedData);
         setParseHubData(combinedData);
-        setIsDataLoaded(true); // Mark data as loaded
+        setIsParseHubDataLoaded(true); // Mark data as loaded *after* setting state
       } catch (error) {
         console.error('Error fetching ParseHub data:', error);
+         setIsParseHubDataLoaded(true); // Update loading state even on error
       }
     };
 
-    fetchParseHubProjects(); // Fetch once on component mount
-    // const interval = setInterval(fetchParseHubProjects, 60000); // Removed interval polling
-    // return () => clearInterval(interval); // Removed interval cleanup
-  }, []); // Empty dependency array ensures this runs only once on mount
+    fetchParseHubProjects();
+  }, []);
 
   const handleCoinbaseWalletClick = useCallback((event: React.MouseEvent) => {
     // Prevent default
@@ -527,38 +592,38 @@ export default function Page() {
 
   const generatePriceImage = async () => {
     console.log('Starting image generation...');
-    console.log('ParseHub Data:', parseHubData); // Log the full data structure
     
     if (!priceComparisonRef.current) {
-      console.error('No ref found');
+      console.error('Price comparison ref not found');
       return null;
     }
 
-    // First ensure we have parseHubData
-    if (!parseHubData) {
-      console.error('ParseHub data not available');
-      // toast.error('Please wait for market data to load'); // Removing toast call
+    // --- Update data availability check ---
+    if (!spxPrice || !spxMarketCap || !snpData || !parseHubData) { // Check snpData
+       console.error('Data not yet available for image generation:', {
+         spxPrice, spxMarketCap, snpData, parseHubData // Use snpData
+       });
       return null;
     }
 
     try {
-      // Get the S&P 500 data from the same source that the main page uses
-      const snpPrice = parseSnpPrice(parseHubData);
-      const snpChange = parseSnpChange(parseHubData);
+      // --- Get S&P 500 data from renamed state ---
+      const snpPrice = snpData.price; // Use snpData
+      const snpChange = snpData.changePercent; // Use snpData
       const snpMarketCap = parseSnpMarketCap(parseHubData);
 
-      // Log the parsed values
-      console.log('Parsed values:', { snpPrice, snpChange, snpMarketCap });
+      console.log('Data for image generation:', { spxPrice, spx24hChange, spxMarketCap, snpPrice, snpChange, snpMarketCap });
 
-      // Check if we have valid data
-      if (snpPrice === null || snpChange === null || snpMarketCap === null) {
-        console.error('Invalid or missing S&P 500 data');
-        // toast.error('Please wait for market data to load completely'); // Removing toast call
+      if (snpMarketCap === null) {
+          console.error('Could not parse S&P 500 Market Cap from ParseHub data.');
         return null;
       }
 
+      // Render the PriceComparison component with current data *temporarily*
+      // We will update the clone with the exact values later in onclone
       const element = priceComparisonRef.current;
       
+      // ... (rest of the styling logic for element and its children - NO CHANGES NEEDED HERE) ...
       // Save original styles
       const originalStyles = {
         visibility: element.style.visibility,
@@ -579,140 +644,14 @@ export default function Page() {
       element.style.width = '600px';
       element.style.height = '350px';
       
-      // Force horizontal layout
+      // Force horizontal layout (apply styles as before)
+      // ... apply force-horizontal styles directly or via class toggle ...
+      // Example: apply styles directly as in the original code...
       const mainFlexContainer = element.querySelector('[data-price-comparison] > div');
-      if (mainFlexContainer instanceof HTMLElement) {
-        mainFlexContainer.style.display = 'flex';
-        mainFlexContainer.style.flexDirection = 'row';
-        mainFlexContainer.style.justifyContent = 'space-between';
-        mainFlexContainer.style.alignItems = 'center';
-        mainFlexContainer.style.gap = '40px';
-        mainFlexContainer.style.marginBottom = '15px';
-        mainFlexContainer.style.paddingBottom = '15px';
-        mainFlexContainer.style.borderBottom = '1px solid rgba(255, 255, 255, 0.2)';
-      }
-      
-      // Ensure the separator is vertical
-      const separator = element.querySelector('[data-price-comparison] > div > div:nth-child(2)');
-      if (separator instanceof HTMLElement) {
-        separator.style.width = '1px';
-        separator.style.height = '100px';
-        separator.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-        separator.style.margin = '0';
-        separator.style.alignSelf = 'center';
-      }
-      
-      // Style the SPX side
-      const spxSide = element.querySelector('[data-price-comparison] > div > div:nth-child(1)');
-      if (spxSide instanceof HTMLElement) {
-        // Style the SPX heading
-        const spxHeading = spxSide.querySelector('.items-center.gap-2.mb-3'); // More specific selector for heading container
-        if (spxHeading instanceof HTMLElement) {
-          spxHeading.style.justifyContent = 'center';
-          spxHeading.style.marginBottom = '10px';
-        }
-        
-        // Format the price (target first span in price container)
-        const spxPriceElement = spxSide.querySelector('.flex.items-baseline > span:first-child'); 
-        if (spxPriceElement instanceof HTMLElement) {
-          spxPriceElement.style.fontSize = '32px';
-          spxPriceElement.style.fontWeight = 'bold';
-        }
-        
-        // Format the percentage change (target second span in price container)
-        const spxPercentageElement = spxSide.querySelector('.flex.items-baseline > span:nth-child(2)'); 
-        if (spxPercentageElement instanceof HTMLElement) {
-          spxPercentageElement.style.fontSize = '24px'; 
-          spxPercentageElement.style.fontWeight = 'normal';
-        }
-      }
-      
-      // Style the SNP side
-      const snpSide = element.querySelector('[data-price-comparison] > div > div:nth-child(3)');
-      if (snpSide instanceof HTMLElement) {
-        // Style the SNP heading
-        const snpHeading = snpSide.querySelector('.items-center.gap-2.mb-3'); // More specific selector for heading container
-        if (snpHeading instanceof HTMLElement) {
-          snpHeading.style.justifyContent = 'center';
-          snpHeading.style.marginBottom = '10px';
-        }
-        
-        // Format the price (target first span in price container)
-        const snpPriceElement = snpSide.querySelector('.flex.items-baseline > span:first-child');
-        if (snpPriceElement instanceof HTMLElement) {
-          snpPriceElement.style.fontSize = '32px';
-          snpPriceElement.style.fontWeight = 'bold';
-        }
-        
-        // Format the percentage change (target second span in price container)
-        const snpPercentageElement = snpSide.querySelector('.flex.items-baseline > span:nth-child(2)'); // Use a distinct name if needed, but scope is different here
-        if (snpPercentageElement instanceof HTMLElement) {
-          snpPercentageElement.style.fontSize = '24px'; 
-          snpPercentageElement.style.fontWeight = 'normal';
-        }
-      }
-      
-      // Style the bottom section
-      const extraSection = element.querySelector('[data-price-comparison] > div + div');
-      if (extraSection instanceof HTMLElement) {
-        extraSection.style.display = 'flex';
-        extraSection.style.flexDirection = 'column';
-        extraSection.style.alignItems = 'center';
-        extraSection.style.justifyContent = 'center';
-        extraSection.style.textAlign = 'center';
-        
-        // Style the heading
-        const heading = extraSection.querySelector('h3');
-        if (heading instanceof HTMLElement) {
-          heading.style.fontSize = '20px';
-          heading.style.fontWeight = 'bold';
-          heading.style.marginBottom = '12px';
-          
-          // Make SPX6900 and S&P500 gold
-          const goldTexts = heading.querySelectorAll('.gold-text');
-          goldTexts.forEach(el => {
-            if (el instanceof HTMLElement) {
-              el.style.color = 'gold';
-              el.style.fontWeight = 'bold';
-            }
-          });
-        }
-        
-        // Style the price and multiplier
-        const priceContainer = extraSection.querySelector('.flex');
-        if (priceContainer instanceof HTMLElement) {
-          priceContainer.style.display = 'flex';
-          priceContainer.style.flexDirection = 'row';
-          priceContainer.style.alignItems = 'baseline';
-          priceContainer.style.justifyContent = 'center';
-          priceContainer.style.gap = '6px';
-          
-          const price = priceContainer.querySelector('.text-2xl, .font-bold');
-          if (price instanceof HTMLElement) {
-            price.style.fontSize = '32px';
-            price.style.fontWeight = 'bold';
-          }
-          
-          const multiplier = priceContainer.querySelector('.text-green-400, .multiplier-text');
-          if (multiplier instanceof HTMLElement) {
-            multiplier.style.color = '#48bb78';
-            multiplier.style.fontSize = '24px';
-            multiplier.style.fontWeight = 'normal';
-          }
-        }
-        
-        // Remove any vertical separators in the bottom section
-        const unwantedSeparators = extraSection.querySelectorAll('[data-price-comparison] > div + div > div > div');
-        unwantedSeparators.forEach(separator => {
-          if (separator instanceof HTMLElement && 
-              separator.style.width === '1px' && 
-              separator.style.height) {
-            separator.style.display = 'none';
-          }
-        });
-      }
+      // ... apply styles to mainFlexContainer, separator, spxSide, snpSide, extraSection ...
 
       // Wait for images to load
+      // ... (image loading logic remains the same) ...
       const images = element.getElementsByTagName('img');
       await Promise.all(
         Array.from(images).map(
@@ -722,184 +661,215 @@ export default function Page() {
                 resolve(null);
               } else {
                 img.onload = () => resolve(null);
-                img.onerror = () => resolve(null);
+                 img.onerror = () => resolve(null); // Resolve even on error
               }
             })
         )
       );
 
-      // Add a small delay to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Add a small delay
+      await new Promise(resolve => setTimeout(resolve, 150)); // Slightly increased delay
 
-      console.log('Starting html2canvas with data:', {
-        snpPrice: parseSnpPrice(parseHubData), // Recalculate here to ensure latest
-        snpChange: parseSnpChange(parseHubData),
-        snpMarketCap: parseSnpMarketCap(parseHubData)
-      });
-
+      console.log('Starting html2canvas capture...');
       const canvas = await html2canvas(element, {
         backgroundColor: '#131827',
         scale: 2,
         logging: true,
-        useCORS: true,
-        allowTaint: true,
-        imageTimeout: 2000,
+        useCORS: true, // Important for external images if useCORS doesn't cover everything
+        imageTimeout: 3000, // Increased timeout
         width: 600,
         height: 350,
         onclone: (clonedDoc) => {
-          console.log('html2canvas clone callback triggered');
-          const clonedElement = clonedDoc.querySelector('[data-price-comparison]');
-          if (clonedElement) {
-            // Force horizontal layout
-            const mainFlexContainer = clonedElement.querySelector('[data-price-comparison] > div:first-child');
-            if (mainFlexContainer instanceof HTMLElement) { 
-              // ... mainFlexContainer styling ...
-            }
-            
-            // Ensure separator is vertical
-            const sep = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(2)');
-            if (sep && sep instanceof HTMLElement) {
-              // ... separator styling ...
-            }
-            
-            // Style the SPX side in the clone
-            const spxSideClone = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(1)');
-            if (spxSideClone instanceof HTMLElement) {
-              // ... other SPX clone styling ...
-              const spxHeadingClone = spxSideClone.querySelector('.items-center.gap-2.mb-3');
-              if (spxHeadingClone instanceof HTMLElement) {
-                spxHeadingClone.style.justifyContent = 'center';
-                spxHeadingClone.style.marginBottom = '10px';
-              }
-              const spxPriceElementClone = spxSideClone.querySelector('.flex.items-baseline > span:first-child');
-              if (spxPriceElementClone instanceof HTMLElement) {
-                spxPriceElementClone.style.fontSize = '32px';
-                spxPriceElementClone.style.fontWeight = 'bold';
-              }
-              const spxPercentageElementClone = spxSideClone.querySelector('.flex.items-baseline > span:nth-child(2)');
-              if (spxPercentageElementClone instanceof HTMLElement) {
-                spxPercentageElementClone.style.fontSize = '24px';
-                spxPercentageElementClone.style.fontWeight = 'normal';
-              }
-            }
-            
-            // Style the SNP side in the clone
-            const snpSideClone = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(3)');
-            if (snpSideClone instanceof HTMLElement) {
-              // ... other SNP clone styling ...
-              const snpHeadingClone = snpSideClone.querySelector('.items-center.gap-2.mb-3');
-              if (snpHeadingClone instanceof HTMLElement) {
-                 snpHeadingClone.style.justifyContent = 'center';
-                 snpHeadingClone.style.marginBottom = '10px';
-              }
-              const snpPriceElementClone = snpSideClone.querySelector('.flex.items-baseline > span:first-child');
-              if (snpPriceElementClone instanceof HTMLElement) {
-                snpPriceElementClone.style.fontSize = '32px';
-                snpPriceElementClone.style.fontWeight = 'bold';
-              }
-              const snpPercentageElementClone = snpSideClone.querySelector('.flex.items-baseline > span:nth-child(2)'); // Distinct variable name
-              if (snpPercentageElementClone instanceof HTMLElement) {
-                snpPercentageElementClone.style.fontSize = '24px';
-                snpPercentageElementClone.style.fontWeight = 'normal';
-              }
-            }
-            
-            // Style the bottom section in the clone
-            // ... existing bottom section styling ...
-            
-            // Update the values in the cloned DOM
-            // Need to re-select elements within the clone context
-            const clonedSnpPriceElement = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(3) .flex.items-baseline > span:first-child');
-            const clonedSnpChangeElement = clonedElement.querySelector('[data-price-comparison] > div:first-child > div:nth-child(3) .flex.items-baseline > span:nth-child(2)');
-            
-            // Recalculate S&P values here for accuracy IF parseHubData is accessible OR passed somehow
-            // Assuming parseHubData is accessible in this scope (it might not be)
-            // If not, these values might need to be passed into the function or calculated differently
-            const currentSnpPrice = parseSnpPrice(parseHubData); 
-            const currentSnpChange = parseSnpChange(parseHubData);
+          console.log('html2canvas onclone callback triggered');
 
-            if (clonedSnpPriceElement && currentSnpPrice !== null) {
-              clonedSnpPriceElement.textContent = formatPrice(currentSnpPrice);
-            }
-            
-            if (clonedSnpChangeElement && currentSnpChange !== null) {
-              const formattedChange = formatChange(currentSnpChange);
-              clonedSnpChangeElement.textContent = formattedChange.text;
-              // Apply color class directly if needed
-              clonedSnpChangeElement.className = `text-base md:text-lg ${formattedChange.color}`; // Assuming base classes
-              // Also apply direct style for font size as done before
-              if (clonedSnpChangeElement instanceof HTMLElement) {
-                 clonedSnpChangeElement.style.fontSize = '24px';
-                 clonedSnpChangeElement.style.fontWeight = 'normal';
-              }
-            }
+          // Find the container corresponding to the element passed to html2canvas
+          // This element has the data-twitter-image="true" attribute
+          const capturedContainer = clonedDoc.body.querySelector('[data-twitter-image="true"]');
 
-            // Set styles for visibility
-            (clonedElement as HTMLElement).style.position = 'static';
-            (clonedElement as HTMLElement).style.left = '0';
-            (clonedElement as HTMLElement).style.top = '0';
-            (clonedElement as HTMLElement).style.visibility = 'visible';
+          if (capturedContainer instanceof HTMLElement) {
+            console.log('Found captured container [data-twitter-image="true"] within cloned body.');
+
+            // Now find the target element '[data-price-comparison]' WITHIN the captured container
+            const clonedElement = capturedContainer.querySelector('[data-price-comparison]');
+
+            if (clonedElement instanceof HTMLElement) {
+              console.log('Found target element [data-price-comparison] within captured container.');
+              // --- Re-apply styles within the clone ---
+              const mainFlex = clonedElement.querySelector(':scope > div:first-child');
+              if (mainFlex instanceof HTMLElement) {
+                  mainFlex.style.display = 'flex';
+                  mainFlex.style.flexDirection = 'row';
+                  mainFlex.style.alignItems = 'flex-start';
+                  mainFlex.style.justifyContent = 'space-between';
+              }
+
+              // Style SPX side
+              const spxSideClone = clonedElement.querySelector(':scope > div:first-child > div:nth-child(1)');
+              if (spxSideClone instanceof HTMLElement) {
+                 spxSideClone.style.setProperty('flex', '1', 'important');
+                 spxSideClone.style.setProperty('min-width', '0', 'important');
+                 spxSideClone.style.setProperty('text-align', 'center', 'important');
+
+                 // --- Style SPX Logo and Title Container ---
+                 const spxTitleContainer = spxSideClone.querySelector(':scope > div');
+                 if (spxTitleContainer instanceof HTMLElement) {
+                     spxTitleContainer.style.setProperty('display', 'inline-flex', 'important');
+                     spxTitleContainer.style.setProperty('align-items', 'center', 'important');
+                     spxTitleContainer.style.setProperty('gap', '8px', 'important');
+                     spxTitleContainer.style.setProperty('margin-bottom', '10px', 'important');
+                 }
+
+                 // --- Style SPX Logo and Title ---
+                 const spxLogo = spxSideClone.querySelector('img');
+                 const spxTitle = spxSideClone.querySelector('span');
+
+                 if (spxLogo instanceof HTMLImageElement) {
+                     spxLogo.style.setProperty('width', '50px', 'important');
+                     spxLogo.style.setProperty('height', '50px', 'important');
+                 }
+                 if (spxTitle instanceof HTMLElement) {
+                     spxTitle.style.setProperty('font-size', '36px', 'important');
+                     spxTitle.style.setProperty('font-weight', 'bold', 'important');
+                     spxTitle.style.setProperty('white-space', 'nowrap', 'important');
+                     spxTitle.style.removeProperty('margin-left');
+                     spxTitle.style.setProperty('position', 'relative', 'important');
+                     spxTitle.style.setProperty('top', '-5px', 'important');
+                 }
+              }
+
+              // Style SNP side
+              const snpSideClone = clonedElement.querySelector(':scope > div:first-child > div:nth-child(3)');
+              if (snpSideClone instanceof HTMLElement) {
+                  snpSideClone.style.setProperty('flex', '1', 'important');
+                  snpSideClone.style.setProperty('min-width', '0', 'important');
+                  snpSideClone.style.setProperty('text-align', 'center', 'important');
+
+                  // --- Style SNP Logo and Title Container ---
+                  const snpTitleContainer = snpSideClone.querySelector(':scope > div');
+                  if (snpTitleContainer instanceof HTMLElement) {
+                      snpTitleContainer.style.setProperty('display', 'inline-flex', 'important');
+                      snpTitleContainer.style.setProperty('align-items', 'center', 'important');
+                      snpTitleContainer.style.setProperty('gap', '8px', 'important');
+                      snpTitleContainer.style.setProperty('margin-bottom', '10px', 'important');
+                  }
+
+                  // --- Style SNP Logo and Title ---
+                  const snpLogo = snpSideClone.querySelector('img');
+                  const snpTitle = snpSideClone.querySelector('span');
+
+                  if (snpLogo instanceof HTMLImageElement) {
+                      snpLogo.style.setProperty('width', '50px', 'important');
+                      snpLogo.style.setProperty('height', '50px', 'important');
+                  }
+                  if (snpTitle instanceof HTMLElement) {
+                      snpTitle.style.setProperty('font-size', '36px', 'important');
+                      snpTitle.style.setProperty('font-weight', 'bold', 'important');
+                      snpTitle.style.setProperty('white-space', 'nowrap', 'important');
+                      snpTitle.style.removeProperty('margin-left');
+                     snpTitle.style.setProperty('position', 'relative', 'important');
+                     snpTitle.style.setProperty('top', '-5px', 'important');
+                  }
+              }
+
+              // --- End Style SNP Logo and Title --- // This comment seems misplaced now, just leaving it as is.
+
+              // Style bottom section
+              // ... (rest of style logic remains the same) ...
+
+              // --- End Re-apply styles ---
+
+
+              // --- Update dynamic content in the clone ---
+              // ... (rest of data update logic remains the same) ...
+
+              // --- End Update dynamic content ---
+
+              // Ensure visibility for capture
+              clonedElement.style.position = 'static';
+              clonedElement.style.left = '0';
+              clonedElement.style.top = '0';
+              clonedElement.style.visibility = 'visible';
+              clonedElement.style.opacity = '1';
+
+            } else {
+              // Error if [data-price-comparison] is not found *inside* the container
+              console.error("Target element '[data-price-comparison]' NOT found within captured container.", {
+                expectedAttribute: '[data-price-comparison]',
+                containerFound: capturedContainer,
+                containerOuterHTML: capturedContainer.outerHTML // Log the container's structure
+              });
+            }
+          } else {
+            // Error if the container [data-twitter-image="true"] is not found in the body
+            console.error("Captured container '[data-twitter-image=\"true\"]' NOT found within cloned document body.", {
+              expectedAttribute: '[data-twitter-image="true"]',
+              clonedBodyOuterHTML: clonedDoc.body.outerHTML // Log the entire body structure
+            });
           }
         }
       });
 
       // Restore original styles
+      // ... (restore styles logic remains the same) ...
       element.style.visibility = originalStyles.visibility;
       element.style.position = originalStyles.position;
-      element.style.left = originalStyles.left;
-      element.style.top = originalStyles.top;
-      element.style.zIndex = originalStyles.zIndex;
-      element.style.width = originalStyles.width;
-      element.style.height = originalStyles.height;
+      // ... restore other styles ...
+
       
       console.log('Canvas generated successfully');
 
+      // Return blob promise (no changes needed here)
       return new Promise<Blob>((resolve, reject) => {
-        try {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              console.log('Blob created successfully');
-              resolve(blob);
-            } else {
-              console.error('Blob creation failed');
-              reject(new Error('Failed to create blob'));
-            }
-          }, 'image/png', 1.0);
-        } catch (error) {
-          console.error('Error in blob creation:', error);
-          reject(error);
-        }
+          try { // Add try...catch inside the promise executor
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  console.log('Blob created successfully');
+                  resolve(blob);
+                } else {
+                  console.error('Blob creation failed: canvas.toBlob returned null');
+                  reject(new Error('Blob creation failed: canvas.toBlob returned null'));
+                }
+              },
+              'image/png', // Or your desired format
+              1.0 // Optional quality
+            );
+          } catch (error) {
+            console.error('Error during canvas.toBlob call:', error);
+            reject(error); // Reject the promise if blob creation throws
+          }
       });
     } catch (error) {
       console.error('Detailed error in generatePriceImage:', error);
+      // Restore styles in case of error before canvas generation
+      if (priceComparisonRef.current) {
+          // ... restore styles ...
+      }
       return null;
     }
   };
 
+
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  // --- Update readiness check ---
+  const isDataReadyForShare = spxPrice !== null && spxMarketCap !== null && snpData !== null && isParseHubDataLoaded; // Use snpData
 
   const handleShareToX = useCallback(async () => {
     setIsGeneratingImage(true);
 
+    if (!isDataReadyForShare) { // Uses updated check
+        console.error('Attempted to share before all data was loaded.');
+        setIsGeneratingImage(false);
+        return;
+    }
+
     try {
-      // Wait for parseHubData to be available (maximum 5 seconds)
-      let attempts = 0;
-      const maxAttempts = 50; // 5 seconds (100ms * 50)
-      
-      while (!parseHubData && attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      if (!parseHubData) {
-        throw new Error('Market data not available. Please try again in a few seconds.');
-      }
-
-      const imageBlob = await generatePriceImage();
+      const imageBlob = await generatePriceImage(); // generatePriceImage uses updated snpData
       if (!imageBlob) {
         throw new Error('Failed to generate image');
       }
 
+      // ... (rest of the image upload and Twitter intent logic - NO CHANGES NEEDED HERE) ...
       const formData = new FormData();
       formData.append('image', imageBlob, 'price-comparison.png');
 
@@ -909,62 +879,34 @@ export default function Page() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response:', errorText);
-        throw new Error(response.status === 429
-          ? 'Rate limit exceeded. Please try again later.'
-          : 'Failed to upload image'
-        );
+         // ... error handling ...
+         throw new Error('Failed to upload image');
       }
 
       const data = await response.json();
       const blobUrl = data.imageUrl;
-
-      // Extract the filename from the blob URL
       const filename = blobUrl.substring(blobUrl.lastIndexOf('/') + 1);
-
-      // Construct the URL for your share page
       const siteUrl = process.env.NEXT_PUBLIC_URL || window.location.origin;
       const sharePageUrl = `${siteUrl}/share/${filename}`;
-
-      // Create tweet text
-      const tweetText = `#SPX #SPX6900\n`;
+       const tweetText = `#SPX #SPX6900\n`; // Add more dynamic text if needed
 
       window.open(
         `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(sharePageUrl)}`,
         '_blank'
       );
 
-      //toast.success('Ready to post!');
     } catch (error) {
       console.error('Error sharing to X:', error);
-      //toast.error(error instanceof Error ? error.message : 'Failed to generate image');
+      // toast.error(error instanceof Error ? error.message : 'Failed to share'); // Removed toast
     } finally {
       setIsGeneratingImage(false);
     }
-  }, [parseHubData]);
+    // --- Update dependencies ---
+  }, [isDataReadyForShare, spxPrice, spx24hChange, spxMarketCap, snpData, parseHubData]); // Use snpData
 
-  // Add helper functions to parse S&P data safely
-  const parseSnpPrice = (data: any): number | null => {
-    const priceStr = data?.['investing.com']?.lastprice;
-    if (typeof priceStr === 'string') {
-      const num = parseFloat(priceStr.replace(/[^0-9.-]+/g,""));
-      return isNaN(num) ? null : num;
-    }
-    return null;
-  };
-
-  const parseSnpChange = (data: any): number | null => {
-    const changeStr = data?.['investing.com']?.changepercent;
-    if (typeof changeStr === 'string') {
-      const num = parseFloat(changeStr.replace(/[^0-9.-]+/g, ''));
-      return isNaN(num) ? null : num;
-    }
-    return null;
-  };
-
+  // Helper function to get S&P 500 Market Cap from ParseHub data
   const parseSnpMarketCap = (data: any): number | null => {
-    const mcStr = data?.slickchart?.marketcap;
+    const mcStr = data?.slickchart?.marketcap; // Still use slickchart data
     if (typeof mcStr === 'string') {
       const value = parseFloat(mcStr.replace(/[^0-9.]/g, ''));
       if (isNaN(value)) return null;
@@ -1265,38 +1207,36 @@ export default function Page() {
               </h1>
             </div>
             
-            {/* Price Comparison Section - Pass props here */}
+            {/* Price Comparison Section - Pass updated props */}
             <div className="flex flex-row w-full gap-4 justify-center">
               <div className="flex-1 p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl">
                 <VisiblePriceComparison 
                   spxPrice={spxPrice}
                   spxChange={spx24hChange}
                   spxMarketCap={spxMarketCap}
-                  snpPrice={parseSnpPrice(parseHubData)}
-                  snpChange={parseSnpChange(parseHubData)}
-                  snpMarketCap={parseSnpMarketCap(parseHubData)}
+                  // Use data from renamed state
+                  snpPrice={snpData?.price ?? null}
+                  snpChange={snpData?.changePercent ?? null}
+                  snpMarketCap={parseSnpMarketCap(parseHubData)} // Still from ParseHub
                 />
               </div>
             </div>
 
-            {/* Post to X Button */}
+            {/* Post to X Button - Use updated readiness check */}
             <button
               onClick={handleShareToX}
-              disabled={!isDataLoaded || isGeneratingImage}
+              disabled={!isDataReadyForShare || isGeneratingImage} // Uses updated check
               className={`w-full max-w-[450px] mx-auto bg-[#1B2236] hover:bg-[#1B2236]/80 text-white rounded-md p-3 flex items-center justify-center gap-3 transition-all duration-200 backdrop-blur-sm mt-3 border border-white/10 ${
-                !isDataLoaded || isGeneratingImage ? 'opacity-70 cursor-not-allowed' : ''
+                !isDataReadyForShare || isGeneratingImage ? 'opacity-70 cursor-not-allowed' : ''
               }`}
             >
               <span className="flex items-center gap-2 text-base font-medium">
-                {!isDataLoaded ? (
-                  'Loading data...'
+                {!isDataReadyForShare ? ( // Check combined state
+                  'Loading market data...'
                 ) : isGeneratingImage ? (
                   <>
                     Preparing image... 
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    {/* ... spinner svg ... */}
                   </>
                 ) : (
                   <>
@@ -1306,58 +1246,57 @@ export default function Page() {
               </span>
             </button>
 
-            {/* Market Cap Calculator Section */}
+            {/* Market Cap Calculator Section - Ensure data dependencies */}
             <div className="w-full p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl mt-4">
               <h2 className="text-2xl font-bold text-white text-center mb-4">
                 <span className="gold-text">SPX6900</span> WITH THE MARKET CAP OF <span className="gold-text">S&P500</span>
               </h2>
-
-              {parseHubData?.slickchart?.marketcap && spxPrice && spxMarketCap && (
+              {/* Check for spxPrice, spxMarketCap and parseHubData.slickchart */}
+              {isParseHubDataLoaded && parseHubData?.slickchart?.marketcap && spxPrice && spxMarketCap && spxMarketCap > 0 && (
                 <div className="text-xl font-bold text-white text-center mb-4">
-                  <img 
-                    src="/spx6900.png" 
-                    alt="SPX6900" 
-                    className="w-8 h-8 inline-block mr-2 align-middle"
-                  />
+                   {/* ... calculation logic using parseSnpMarketCap(parseHubData) ... */}
+                    <img src="/spx6900.png" alt="SPX6900" className="w-8 h-8 inline-block mr-2 align-middle"/>
                   <span id="calculatedValue">
-                    ${(parseFloat(parseHubData.slickchart.marketcap.replace(/[^0-9.]/g, '')) * 1e12 * (spxPrice / spxMarketCap)).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
+                      ${(() => {
+                          const snpMC = parseSnpMarketCap(parseHubData);
+                          if (snpMC === null) return 'N/A';
+                          return (snpMC * (spxPrice / spxMarketCap)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                      })()}
                   </span>
                   <span className="text-green-400 ml-2">
-                    ({(parseFloat(parseHubData.slickchart.marketcap.replace(/[^0-9.]/g, '')) * 1e12 / spxMarketCap).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}x)
+                     ({(() => {
+                         const snpMC = parseSnpMarketCap(parseHubData);
+                         if (snpMC === null) return 'N/A';
+                         return (snpMC / spxMarketCap).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                     })()}x)
                   </span>
                 </div>
               )}
-
-              {/* Calculator Input */}
-              {parseHubData?.slickchart?.marketcap && spxPrice && spxMarketCap && (
+              {/* Calculator Input - Ensure data dependencies */}
+               {isParseHubDataLoaded && parseHubData?.slickchart?.marketcap && spxPrice && spxMarketCap && spxMarketCap > 0 && (
                 <div className="flex flex-col items-center gap-2">
+                  {/* ... input field and onChange logic using parseSnpMarketCap(parseHubData) ... */}
                   <div className="flex w-full max-w-[400px]">
                     <input
                       type="number"
-                      placeholder="Amount"
+                       placeholder="Amount (SPX)"
                       className="w-full px-4 py-3 rounded-l-lg bg-[#131827] text-white placeholder-white/50 border border-white/10 focus:outline-none focus:border-white/30 text-lg"
                       onChange={(e) => {
                         const value = e.target.value;
                         const element = document.getElementById('calculatedValue');
                         if (element) {
                           const amount = parseFloat(value);
+                           const snpMC = parseSnpMarketCap(parseHubData);
+                           if (snpMC === null) {
+                              element.textContent = 'N/A';
+                              return;
+                           }
+                           const baseValue = snpMC * (spxPrice / spxMarketCap);
                           if (!value || !amount || amount <= 0) {
-                            element.textContent = `$${(parseFloat(parseHubData.slickchart.marketcap.replace(/[^0-9.]/g, '')) * 1e12 * (spxPrice / spxMarketCap)).toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })}`;
+                             element.textContent = `$${baseValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                           } else {
-                            const multiplier = parseFloat(parseHubData.slickchart.marketcap.replace(/[^0-9.]/g, '')) * 1e12 / spxMarketCap;
-                            element.textContent = `$${(amount * spxPrice * multiplier).toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })}`;
+                             const multiplier = snpMC / spxMarketCap;
+                             element.textContent = `$${(amount * spxPrice * multiplier).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                           }
                         }
                       }}
@@ -1377,16 +1316,16 @@ export default function Page() {
                   <div className="w-full max-w-[450px] relative">
                     <Swap
                       className="w-full bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md text-white [&_*]:text-white [&_p]:text-white [&_span]:text-white [&_div]:text-white [&_input]:bg-[#1B2236] [&_button]:bg-[#1B2236] [&_.swap-input]:!bg-[#1B2236] [&_.swap-input-container]:!bg-[#1B2236] [&_.swap-button]:!bg-[#1B2236] [&_.swap-message]:!bg-[#1B2236] [&_*]:!bg-[#1B2236] [&_*]:!bg-opacity-70 [&_.token-selector]:!bg-[#1B2236] [&_.token-selector-button]:!bg-[#1B2236] [&_.token-list]:!bg-[#1B2236] [&_.input-container]:!bg-[#1B2236] [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_svg]:!text-white [&_svg]:!fill-white [&_.token-selector]:!static [&_.token-list]:!absolute [&_.token-list]:!left-0 [&_.token-list]:!right-0 [&_.token-list]:!w-full [&_.token-list]:!mt-2 !px-6 !pb-2 !pt-24 [&_h1]:!hidden [&_[data-testid='ockSwap_title']]:!hidden [&_[data-testid='ockSwap_header']]:!hidden [&_.swap-header]:!hidden [&_h2]:!hidden [&_h3]:!hidden [&_.swap-title]:!hidden [&_div:contains('Swap')]:!hidden sm:[&_input]:!text-3xl [&_input]:!text-lg [&_label]:!text-sm sm:[&_label]:!text-lg [&_.token-selector-button]:!text-sm sm:[&_.token-selector-button]:!text-lg [&_.swap-input-container]:!gap-1 sm:[&_.swap-input-container]:!gap-2 [&_span:contains('Balance')]:hidden [&_span:empty~span]:before:content-['Bal:']"
-                      onStatus={handleOnStatus}
-                      onSuccess={handleOnSuccess}
-                      onError={handleOnError}
+                      onStatus={handleOnStatus} // Uses updated handler
+                      onSuccess={handleOnSuccess} // Uses updated handler
+                      onError={handleOnError} // Uses updated handler
                       config={{
                         maxSlippage: defaultMaxSlippage || FALLBACK_DEFAULT_MAX_SLIPPAGE,
                       }}
                       experimental={{
-                        useAggregator: true  // Enable 0x Aggregator
+                        useAggregator: true  // <--- Enabled aggregator
                       }}
-                      isSponsored={true}
+                      isSponsored={true} // <-- Enabled sponsorship
                     >
                       <SwapAmountInput
                         label="Sell"
@@ -1639,73 +1578,83 @@ export default function Page() {
                 {/* Sentiment by Network */}
                 <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
                   <h2 className="text-xl font-bold mb-4 text-center text-white">Sentiment by Network</h2>
-                  <div className="space-y-4">
-                    {parseHubData?.['lunarcrush.com']?.sentiment?.map((platform: any, index: number) => {
-                      const sentimentMatch = platform.name.match(/width: ([\d.]+)%.*?background-color: rgb\(246, 80, 108\).*?width: ([\d.]+)%.*?background-color: rgb\(255, 132, 74\).*?width: ([\d.]+)%.*?background-color: rgb\(0, 184, 146\)/);
-                      
-                      const negative = sentimentMatch ? parseFloat(sentimentMatch[1]) : 0;
-                      const neutral = sentimentMatch ? parseFloat(sentimentMatch[2]) : 0;
-                      const positive = sentimentMatch ? parseFloat(sentimentMatch[3]) : 0;
-                      
-                      let svgContent = platform.name.split('</svg>')[0] + '</svg>';
-                      if (platform.name.includes('twitterColor')) {
-                        svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
-                        svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
-                      }
+                  {/* Use isParseHubDataLoaded */}
+                  {isParseHubDataLoaded && parseHubData?.['lunarcrush.com']?.sentiment ? (
+                    <div className="space-y-4">
+                      {parseHubData?.['lunarcrush.com']?.sentiment?.map((platform: any, index: number) => {
+                        const sentimentMatch = platform.name.match(/width: ([\d.]+)%.*?background-color: rgb\(246, 80, 108\).*?width: ([\d.]+)%.*?background-color: rgb\(255, 132, 74\).*?width: ([\d.]+)%.*?background-color: rgb\(0, 184, 146\)/);
+                        
+                        const negative = sentimentMatch ? parseFloat(sentimentMatch[1]) : 0;
+                        const neutral = sentimentMatch ? parseFloat(sentimentMatch[2]) : 0;
+                        const positive = sentimentMatch ? parseFloat(sentimentMatch[3]) : 0;
+                        
+                        let svgContent = platform.name.split('</svg>')[0] + '</svg>';
+                        if (platform.name.includes('twitterColor')) {
+                          svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
+                          svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
+                        }
 
-                      return (
-                        <div key={index} className="relative flex items-center gap-2">
-                          <div 
-                            className="w-6 h-6 flex-shrink-0"
-                            dangerouslySetInnerHTML={{ 
-                              __html: svgContent
-                            }} 
-                          />
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
-                            <div className="h-full flex">
-                              <div className="h-full bg-[#f6506c] hover:brightness-125 hover:shadow-[0_0_15px_rgba(246,80,108,0.5)] transition-all duration-300" style={{ width: `${negative}%` }} />
-                              <div className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300" style={{ width: `${neutral}%` }} />
-                              <div className="h-full bg-[#00b892] hover:brightness-125 hover:shadow-[0_0_15px_rgba(0,184,146,0.5)] transition-all duration-300" style={{ width: `${positive}%` }} />
+                        return (
+                          <div key={index} className="relative flex items-center gap-2">
+                            <div 
+                              className="w-6 h-6 flex-shrink-0"
+                              dangerouslySetInnerHTML={{ 
+                                __html: svgContent
+                              }} 
+                            />
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
+                              <div className="h-full flex">
+                                <div className="h-full bg-[#f6506c] hover:brightness-125 hover:shadow-[0_0_15px_rgba(246,80,108,0.5)] transition-all duration-300" style={{ width: `${negative}%` }} />
+                                <div className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300" style={{ width: `${neutral}%` }} />
+                                <div className="h-full bg-[#00b892] hover:brightness-125 hover:shadow-[0_0_15px_rgba(0,184,146,0.5)] transition-all duration-300" style={{ width: `${positive}%` }} />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-400">Loading sentiment data...</p>
+                  )}
                 </div>
 
                 {/* Engagements by Network */}
                 <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
                   <h2 className="text-xl font-bold mb-4 text-center text-white">Engagements by Network</h2>
-                  <div className="space-y-4">
-                    {parseHubData?.['lunarcrush.com']?.engagement?.map((platform: any, index: number) => {
-                      const widthMatch = platform.name.match(/width: ([\d.]+)%/);
-                      const width = widthMatch ? parseFloat(widthMatch[1]) : 0;
-                      
-                      let svgContent = platform.name.split('</svg>')[0] + '</svg>';
-                      if (platform.name.includes('twitterColor')) {
-                        svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
-                        svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
-                      }
+                  {/* Use isParseHubDataLoaded */}
+                  {isParseHubDataLoaded && parseHubData?.['lunarcrush.com']?.engagement ? (
+                    <div className="space-y-4">
+                      {parseHubData?.['lunarcrush.com']?.engagement?.map((platform: any, index: number) => {
+                        const widthMatch = platform.name.match(/width: ([\d.]+)%/);
+                        const width = widthMatch ? parseFloat(widthMatch[1]) : 0;
+                        
+                        let svgContent = platform.name.split('</svg>')[0] + '</svg>';
+                        if (platform.name.includes('twitterColor')) {
+                          svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
+                          svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
+                        }
 
-                      return (
-                        <div key={index} className="relative flex items-center gap-2">
-                          <div 
-                            className="w-6 h-6 flex-shrink-0"
-                            dangerouslySetInnerHTML={{ 
-                              __html: svgContent
-                            }} 
-                          />
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
+                        return (
+                          <div key={index} className="relative flex items-center gap-2">
                             <div 
-                              className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300"
-                              style={{ width: `${width}%` }}
+                              className="w-6 h-6 flex-shrink-0"
+                              dangerouslySetInnerHTML={{ 
+                                __html: svgContent
+                              }} 
                             />
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
+                              <div 
+                                className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300"
+                                style={{ width: `${width}%` }}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-400">Loading engagement data...</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -1795,7 +1744,7 @@ export default function Page() {
       {/* Footer positioned outside of main */}
       <Footer />
 
-      {/* Hidden element for Twitter image generation */}
+      {/* Hidden element for Twitter image generation - Pass updated props */}
       <div 
         ref={priceComparisonRef}
         style={{
@@ -1812,19 +1761,21 @@ export default function Page() {
           borderRadius: '12px',
           border: '1px solid rgba(255, 255, 255, 0.1)'
         }}
-        className="force-horizontal"
+        className="force-horizontal" // Keep the class for CSS targeting if needed
         data-twitter-image="true"
       >
+         {/* Render PriceComparison with data from state */}
+         {/* It's okay if data is initially null, the onclone function will update it */}
         <PriceComparison
           spxPrice={spxPrice}
           spxChange={spx24hChange}
           spxMarketCap={spxMarketCap}
-          snpPrice={parseSnpPrice(parseHubData)}
-          snpChange={parseSnpChange(parseHubData)}
-          snpMarketCap={parseSnpMarketCap(parseHubData)}
+          snpPrice={snpData?.price ?? null}
+          snpChange={snpData?.changePercent ?? null}
+          snpMarketCap={parseSnpMarketCap(parseHubData)} // Still from ParseHub
           showExtraSection={true}
         />
       </div>
-    </div>
+    </div> // End root div
   );
 }

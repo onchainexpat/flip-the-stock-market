@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "ES2020",
     "lib": [
       "dom",
       "dom.iterable",
@@ -11,8 +11,8 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -22,13 +22,22 @@
         "name": "next"
       }
     ],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    },
+    "esm": false,
+    "transpileOnly": true
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/app/page.tsx"
   ],
   "exclude": [
     "node_modules"
