@@ -1761,7 +1761,7 @@ export default function Page() {
           height: '350px',
           visibility: 'hidden',
           backgroundColor: '#131827',
-          padding: '30px 40px',
+          padding: '20px 40px', // Reduced vertical padding from 30px to 20px
           boxSizing: 'border-box',
           fontFamily: 'sans-serif',
           borderRadius: '12px',
