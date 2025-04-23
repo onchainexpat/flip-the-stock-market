@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis'
 import puppeteer, { Browser, Page } from 'puppeteer';
+import * as cheerio from 'cheerio';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
