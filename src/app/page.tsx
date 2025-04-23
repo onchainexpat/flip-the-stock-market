@@ -510,13 +510,17 @@ export default function Page() {
   const handleOnStatus = useCallback((lifecycleStatus: LifecycleStatus) => {
     console.log('Swap Status:', lifecycleStatus); // More detailed log
     // Add specific logs for different statuses
-    if (lifecycleStatus.statusName === 'approvalPending') {
+    // Cast to 'any' to bypass the incorrect type definition from the library
+    const statusName = lifecycleStatus.statusName as any; 
+    
+    if (statusName === 'approvalPending') {
       console.log('Approval transaction sent, awaiting confirmation...');
     }
-    if (lifecycleStatus.statusName === 'approvalSuccess') {
+    // Also cast here if checking for approvalSuccess
+    if (statusName === 'approvalSuccess') {
       console.log('Approval confirmed:', lifecycleStatus.statusData);
     }
-    if (lifecycleStatus.statusName === 'transactionPending') {
+    if (statusName === 'transactionPending') {
       console.log('Swap transaction sent, awaiting confirmation...');
     }
   }, []);
