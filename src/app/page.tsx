@@ -536,9 +536,11 @@ export default function Page() {
   const handleOnError = useCallback((swapError: SwapError) => {
     console.error('Swap Error:', swapError); // Log the full error object
     // Log specific details if available
+    // Check if swapError.error exists and cast it to 'any' to access potential properties
     if (swapError.error) {
-      console.error('Internal Error Code:', swapError.error.code);
-      console.error('Internal Error Message:', swapError.error.message);
+      const internalError = swapError.error as any; 
+      console.error('Internal Error Code:', internalError.code);
+      console.error('Internal Error Message:', internalError.message);
     }
   }, []);
 
