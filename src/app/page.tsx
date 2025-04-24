@@ -561,7 +561,7 @@ export default function Page() {
             confirmedToToken = swappableTokens.find(
                 t => t.address.toLowerCase() === statusData.tokenTo.address?.toLowerCase() &&
                      t.chainId === statusData.tokenTo.chainId
-            );
+            ) ?? null;
              if (confirmedToToken) {
                console.log('Found matching token in swappableTokens:', confirmedToToken);
              } else {
