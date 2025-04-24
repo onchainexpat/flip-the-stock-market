@@ -176,7 +176,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
           {/* New line for doublings needed */}
           {doublingsNeeded !== null && (
             <p className="text-sm md:text-base text-gray-300">
-              SPX6900 ONLY NEEDS TO DOUBLE <span className="font-semibold text-white">{doublingsNeeded}</span> TIMES TO FLIP THE S&P500
+              SPX6900 ONLY NEEDS TO DOUBLE <span className="font-semibold text-white">{doublingsNeeded}</span> TIMES TO FLIP
             </p>
           )}
         </div>
