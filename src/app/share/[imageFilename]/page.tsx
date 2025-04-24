@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: { imageFilename: st
      };
   }
 
-  const title = "SPX Price Comparison";
+  const title = "";
   const description = "Check out this SPX6900 vs S&P 500 price comparison from FlipTheStockMarket.com";
 
   return {
