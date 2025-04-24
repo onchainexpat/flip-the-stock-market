@@ -176,7 +176,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
           {/* New line for doublings needed */}
           {doublingsNeeded !== null && (
             <p className="text-sm md:text-base text-gray-300">
-              SPX6900 ONLY NEEDS <span className="font-semibold text-white">{doublingsNeeded}</span> DOUBLING{doublingsNeeded !== 1 ? 'S' : ''}
+              SPX6900 ONLY NEEDS TO DOUBLE <span className="font-semibold text-white">{doublingsNeeded}</span> TIMES TO FLIP THE S&P500
             </p>
           )}
         </div>
@@ -324,6 +324,8 @@ export default function Page() {
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const confettiImage = useRef<HTMLImageElement | null>(null);
+  const [purchasedTokenLogoUrl, setPurchasedTokenLogoUrl] = useState<string | null>(null); // State for the dynamic logo URL
+  const [isConfettiImageReady, setIsConfettiImageReady] = useState(false); // State for image loading status
 
   // Remove backgroundImages state and related code
   const [copyClicked, setCopyClicked] = useState(false);
@@ -423,15 +425,54 @@ export default function Page() {
     updateWindowDimensions();
     window.addEventListener('resize', updateWindowDimensions);
 
-    // Load the confetti image - fixed to use the global Image constructor
-    const img = new window.Image();
-    img.src = 'spx6900.png';
-    img.onload = () => {
-      confettiImage.current = img;
-    };
+    // REMOVE initial static image loading from here
+    // const img = new window.Image();
+    // img.src = 'spx6900.png';
+    // img.onload = () => {
+    //   confettiImage.current = img;
+    // };
 
     return () => window.removeEventListener('resize', updateWindowDimensions);
   }, []);
+
+  // NEW useEffect: Load confetti image dynamically when purchasedTokenLogoUrl changes
+  useEffect(() => {
+    if (purchasedTokenLogoUrl) {
+      console.log(`Loading confetti image: ${purchasedTokenLogoUrl}`);
+      setIsConfettiImageReady(false); // Reset readiness state
+      const img = new window.Image();
+      img.crossOrigin = "anonymous"; // Attempt to handle potential CORS issues with external images
+      img.src = purchasedTokenLogoUrl;
+      img.onload = () => {
+        console.log(`Confetti image loaded successfully: ${purchasedTokenLogoUrl}`);
+        confettiImage.current = img;
+        setIsConfettiImageReady(true); // Mark as ready
+      };
+      img.onerror = (error) => {
+        console.error(`Failed to load confetti image: ${purchasedTokenLogoUrl}`, error);
+        // Optional: Fallback to a default image or handle the error
+        confettiImage.current = null; // Clear ref on error
+        setIsConfettiImageReady(false); // Ensure it's not marked as ready
+      };
+    }
+  }, [purchasedTokenLogoUrl]);
+
+  // NEW useEffect: Trigger confetti when the dynamic image is ready
+  useEffect(() => {
+    if (isConfettiImageReady) {
+      console.log('Confetti image is ready, triggering confetti!');
+      setShowConfetti(true);
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+        console.log('Confetti timeout reached, hiding confetti.');
+        // Optional: Reset purchasedTokenLogoUrl or isConfettiImageReady if needed
+        // setPurchasedTokenLogoUrl(null);
+         setIsConfettiImageReady(false);
+      }, 5000); // Stop confetti after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup timer on unmount or if readiness changes
+    }
+  }, [isConfettiImageReady]);
 
   useEffect(() => {
     const fetchHoldersData = async () => {
@@ -470,25 +511,16 @@ export default function Page() {
     decimals: 18,
     name: "ETH", // Or just "ETH" if using native ETH representation
     symbol: "ETH", // Or "ETH"
-    image: "https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png", // Original
-  };
-
-  const WETHToken: Token = {
-    address: '', // Or appropriate WETH address for Base
-    chainId: 8453,
-    decimals: 18,
-    name: "WETH", // Or just "ETH" if using native ETH representation
-    symbol: "WETH", // Or "ETH"
-    image: "https://basescan.org/token/images/weth_28.png", // Original
+    image: "/ETH-LOGO.png", // Use local path
   };
 
   const SPXToken: Token = {
     address: "0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C",
     chainId: 8453,
-    decimals: 8, // Check if this is correct for SPX6900, was 8 previously?
+    decimals: 8,
     name: "SPX6900",
     symbol: "SPX",
-    image: "https://assets.coingecko.com/coins/images/31401/standard/sticker_%281%29.jpg?1702371083" // Original
+    image: "/spx6900.png" // Original
   };
 
   const USDCToken: Token = {
@@ -497,41 +529,90 @@ export default function Page() {
     decimals: 6,
     name: "USDC",
     symbol: "USDC",
-    image: "https://dynamic-assets.coinbase.com/3c15df5e2ac7d4abbe9499ed9335041f00c620f28e8de2f93474a9f432058742cdf4674bd43f309e69778a26969372310135be97eb183d91c492154176d455b8/asset_icons/9d67b728b6c8f457717154b3a35f9ddc702eae7e76c4684ee39302c4d7fd0bb8.png", // Original
+    image: "/USDC-LOGO.png", // Use local path
   };
 
   // Update the swappable tokens array to include ETH
-  const swappableTokens: Token[] = [ETHToken, WETHToken, SPXToken, USDCToken];
+  const swappableTokens: Token[] = [ETHToken, SPXToken, USDCToken];
 
   // Add state for selected tokens
   const [fromToken, setFromToken] = useState<Token>(USDCToken);
   const [toToken, setToToken] = useState<Token>(SPXToken);
+  // const finalToTokenRef = useRef<Token | null>(null); // No longer needed
 
-  const handleOnStatus = useCallback((lifecycleStatus: LifecycleStatus) => {
-    console.log('Swap Status:', lifecycleStatus); // More detailed log
-    // Add specific logs for different statuses
-    // Cast to 'any' to bypass the incorrect type definition from the library
-    const statusName = lifecycleStatus.statusName as any; 
-    
-    if (statusName === 'approvalPending') {
-      console.log('Approval transaction sent, awaiting confirmation...');
-    }
-    // Also cast here if checking for approvalSuccess
-    if (statusName === 'approvalSuccess') {
-      console.log('Approval confirmed:', lifecycleStatus.statusData);
-    }
-    if (statusName === 'transactionPending') {
-      console.log('Swap transaction sent, awaiting confirmation...');
-    }
-  }, []);
+  const handleOnStatus = useCallback(
+    (lifecycleStatus: LifecycleStatus) => {
+      console.log('Swap Status:', lifecycleStatus);
+      const statusName = lifecycleStatus.statusName as any;
+      const statusData = lifecycleStatus.statusData as any; // Cast for easier access
 
-  const handleOnSuccess = useCallback(
-    (transactionReceipt: TransactionReceipt) => {
-      console.log('Swap Success:', transactionReceipt); // Log the full receipt
-      console.log('Transaction Hash:', transactionReceipt.transactionHash);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
-    }, []);
+      // --- Trigger confetti logic ONLY on 'success' status ---
+      if (statusName === 'success' && statusData?.tokenTo) {
+        console.log('Swap Success Status Data:', statusData);
+        let confirmedToToken: Token | null = null;
+
+        // Check if the image URL is directly available
+        if (statusData.tokenTo.image) {
+            console.log('Using token data directly from success statusData.');
+            confirmedToToken = statusData.tokenTo;
+        } else {
+            // Fallback: Find the full token object from our list
+            console.log('Image not directly in statusData.tokenTo, searching swappableTokens...');
+            confirmedToToken = swappableTokens.find(
+                t => t.address.toLowerCase() === statusData.tokenTo.address?.toLowerCase() &&
+                     t.chainId === statusData.tokenTo.chainId
+            );
+             if (confirmedToToken) {
+               console.log('Found matching token in swappableTokens:', confirmedToToken);
+             } else {
+               console.error("Could not find matching token in swappableTokens for:", statusData.tokenTo);
+             }
+        }
+
+        // --- Moved confetti logic here ---
+        if (confirmedToToken?.image) {
+          const imageUrl = confirmedToToken.image;
+          console.log(`Starting confetti for: ${imageUrl}`);
+
+          // Load the image and trigger confetti
+          const img = new window.Image();
+          img.crossOrigin = "anonymous";
+          img.src = imageUrl;
+
+          img.onload = () => {
+            console.log(`Confetti image loaded successfully: ${imageUrl}`);
+            confettiImage.current = img;
+            setShowConfetti(true); // Trigger confetti state
+            // --- REMOVE setTimeout from here ---
+            // setTimeout(() => {
+            //   setShowConfetti(false);
+            //   console.log('Confetti timeout reached, hiding confetti.');
+            // }, 5000);
+          };
+
+          img.onerror = (error) => {
+            console.error(`Failed to load confetti image: ${imageUrl}`, error);
+            confettiImage.current = null;
+          };
+        } else {
+          console.error("Could not determine confirmedToToken or its image URL for confetti.");
+        }
+        // --- End moved confetti logic ---
+
+      } // --- End of 'success' status block ---
+      else {
+        // Handle other statuses if needed (logging, UI updates, etc.)
+        if (statusName === 'transactionPending') {
+          console.log('Transaction Pending status...');
+        }
+        if (statusName === 'approvalPending') {
+          console.log('Approval transaction sent, awaiting confirmation...');
+        }
+        // ... other status logs ...
+      }
+    },
+    [swappableTokens] // Dependency for the lookup fallback
+  );
 
   const handleOnError = useCallback((swapError: SwapError) => {
     console.error('Swap Error:', swapError); // Log the full error object
@@ -1107,91 +1188,103 @@ export default function Page() {
     };
   }, []);
 
+  // Callback function for when confetti animation completes
+  const handleConfettiComplete = useCallback(() => {
+      console.log('Confetti animation complete, hiding confetti.');
+      setShowConfetti(false);
+      confettiImage.current = null; // Optional: clear the image ref after use
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden relative">
-      <main className="flex-1 w-full px-4 sm:px-6 py-8 mx-auto max-w-7xl pb-4">
-        {/* Replace the GIF background div with the new color */}
-        <div className="fixed inset-0 z-0 bg-[#131827]"></div>
+      {/* Fixed background MOVED OUTSIDE main */}
+      <div className="fixed inset-0 z-0 bg-[#131827]"></div>
 
-        {/* Hamburger Menu */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-[#131827]/50 backdrop-blur-sm">
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-            aria-label="Menu"
+      {/* Fixed Hamburger Menu MOVED OUTSIDE main */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-[#131827]/50 backdrop-blur-sm">
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
+          aria-label="Menu"
+        >
+          <svg 
+            className="w-6 h-6" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
           >
-            <svg 
-              className="w-6 h-6" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              {isMenuOpen ? (
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M6 18L18 6M6 6l12 12" 
-                />
-              ) : (
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M4 6h16M4 12h16M4 18h16" 
-                />
-              )}
-            </svg>
-          </button>
+            {isMenuOpen ? (
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M6 18L18 6M6 6l12 12" 
+              />
+            ) : (
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M4 6h16M4 12h16M4 18h16" 
+              />
+            )}
+          </svg>
+        </button>
 
-          <div className="flex items-center gap-3">
-            <WalletWrapper />
-          </div>
-          
-          {isMenuOpen && (
-            <div className="absolute top-full left-4 mt-2 bg-black/90 backdrop-blur-md rounded-lg shadow-lg border border-white/10">
-              <nav className="py-2">
-                <a 
-                  href="/" 
-                  className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Home
-                </a>
-                <a 
-                  href="https://spx6900merch.com/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Merch
-                </a>
-              </nav>
-            </div>
-          )}
+        <div className="flex items-center gap-3">
+          <WalletWrapper />
         </div>
+        
+        {isMenuOpen && (
+          <div className="absolute top-full left-4 mt-2 bg-black/90 backdrop-blur-md rounded-lg shadow-lg border border-white/10">
+            <nav className="py-2">
+              <a 
+                href="/" 
+                className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </a>
+              <a 
+                href="https://spx6900merch.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Merch
+              </a>
+            </nav>
+          </div>
+        )}
+      </div>
+
+      <main className="flex-1 w-full px-4 sm:px-6 py-8 mx-auto max-w-7xl pb-4">
+        {/* Removed fixed background div from here */}
+        {/* Removed fixed hamburger menu div from here */}
 
         {/* Main content wrapper */}
         <div className="relative z-10 pt-20 sm:pt-24">
-          {showConfetti && createPortal(
+          {showConfetti && confettiImage.current && createPortal(
             <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 10000 }}>
               <Confetti
                 width={windowDimensions.width}
                 height={windowDimensions.height}
-                recycle={false}
-                numberOfPieces={200}
-                gravity={0.5}
-                initialVelocityY={5}
+                recycle={false} // Keep recycle false so it eventually completes
+                numberOfPieces={200} // Adjust if needed
+                gravity={0.5} // Adjust if needed
+                initialVelocityY={5} // Adjust if needed
                 confettiSource={{
                   x: 0,
                   y: 0,
                   w: windowDimensions.width,
                   h: 0
                 }}
+                onConfettiComplete={handleConfettiComplete} // Add the completion handler
                 drawShape={ctx => {
                   if (confettiImage.current) {
-                    ctx.drawImage(confettiImage.current, 0, 0, 40, 40);
+                    const size = 40;
+                    ctx.drawImage(confettiImage.current, -size / 2, -size / 2, size, size);
                   }
                 }}
               />
@@ -1323,7 +1416,6 @@ export default function Page() {
                     <Swap
                       className="w-full bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md text-white [&_*]:text-white [&_p]:text-white [&_span]:text-white [&_div]:text-white [&_input]:bg-[#1B2236] [&_button]:bg-[#1B2236] [&_.swap-input]:!bg-[#1B2236] [&_.swap-input-container]:!bg-[#1B2236] [&_.swap-button]:!bg-[#1B2236] [&_.swap-message]:!bg-[#1B2236] [&_*]:!bg-[#1B2236] [&_*]:!bg-opacity-70 [&_.token-selector]:!bg-[#1B2236] [&_.token-selector-button]:!bg-[#1B2236] [&_.token-list]:!bg-[#1B2236] [&_.input-container]:!bg-[#1B2236] [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_svg]:!text-white [&_svg]:!fill-white [&_.token-selector]:!static [&_.token-list]:!absolute [&_.token-list]:!left-0 [&_.token-list]:!right-0 [&_.token-list]:!w-full [&_.token-list]:!mt-2 !px-6 !pb-2 !pt-24 [&_h1]:!hidden [&_[data-testid='ockSwap_title']]:!hidden [&_[data-testid='ockSwap_header']]:!hidden [&_.swap-header]:!hidden [&_h2]:!hidden [&_h3]:!hidden [&_.swap-title]:!hidden [&_div:contains('Swap')]:!hidden sm:[&_input]:!text-3xl [&_input]:!text-lg [&_label]:!text-sm sm:[&_label]:!text-lg [&_.token-selector-button]:!text-sm sm:[&_.token-selector-button]:!text-lg [&_.swap-input-container]:!gap-1 sm:[&_.swap-input-container]:!gap-2 [&_span:contains('Balance')]:hidden [&_span:empty~span]:before:content-['Bal:']"
                       onStatus={handleOnStatus} // Uses updated handler
-                      onSuccess={handleOnSuccess} // Uses updated handler
                       onError={handleOnError} // Uses updated handler
                       config={{
                         maxSlippage: defaultMaxSlippage || FALLBACK_DEFAULT_MAX_SLIPPAGE,

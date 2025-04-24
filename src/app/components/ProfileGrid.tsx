@@ -168,7 +168,7 @@ export default function ProfileGrid() {
 
   return (
     <div className="container mx-auto px-1">
-      <div className="grid grid-cols-8 xs:grid-cols-9 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-[2px] sm:gap-1">
+      <div className="grid justify-center grid-cols-8 xs:grid-cols-9 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-[2px] sm:gap-1">
         {filteredProfiles.map((profile, index) => (
           <div 
             key={index}
