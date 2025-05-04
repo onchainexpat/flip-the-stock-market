@@ -21,13 +21,15 @@ export class DuneClient {
       });
 
       if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Dune API error: ${response.status} ${response.statusText}. Body: ${errorBody}`);
         throw new Error(`Dune API error: ${response.statusText}`);
       }
 
       return await response.json();
     } catch (error) {
       console.error('Error fetching Dune data:', error);
-      return {};
+      throw error;
     }
   }
 } 
