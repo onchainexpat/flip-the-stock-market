@@ -1201,70 +1201,69 @@ export default function Page() {
       <div className="fixed inset-0 z-0 bg-[#131827]"></div>
 
       {/* Fixed Hamburger Menu MOVED OUTSIDE main */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-[#131827]/50 backdrop-blur-sm">
-        <button 
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-          aria-label="Menu"
-        >
-          <svg 
-            className="w-6 h-6" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#131827]/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Menu"
           >
-            {isMenuOpen ? (
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M6 18L18 6M6 6l12 12" 
-              />
-            ) : (
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M4 6h16M4 12h16M4 18h16" 
-              />
-            )}
-          </svg>
-        </button>
+            <svg 
+              className="w-6 h-6" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              {isMenuOpen ? (
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M6 18L18 6M6 6l12 12" 
+                />
+              ) : (
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 6h16M4 12h16M4 18h16" 
+                />
+              )}
+            </svg>
+          </button>
 
-        <div className="flex items-center gap-3">
-          <WalletWrapper />
+          <div className="flex items-center gap-3">
+            <WalletWrapper />
+          </div>
         </div>
         
-        {isMenuOpen && (
-          <div className="absolute top-full left-4 mt-2 bg-black/90 backdrop-blur-md rounded-lg shadow-lg border border-white/10">
-            <nav className="py-2">
-              <a 
-                href="/" 
-                className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </a>
-              <a 
-                href="https://spx6900merch.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Merch
-              </a>
-            </nav>
-          </div>
-        )}
+          {isMenuOpen && (
+            <div className="absolute top-full left-0 mt-2 bg-black/90 backdrop-blur-md rounded-lg shadow-lg border border-white/10">
+              <nav className="py-2">
+                <a 
+                  href="/" 
+                  className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Home
+                </a>
+                <a 
+                  href="https://spx6900merch.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Merch
+                </a>
+              </nav>
+            </div>
+          )}
       </div>
 
-      <main className="flex-1 w-full px-4 sm:px-6 py-8 mx-auto max-w-7xl pb-4">
-        {/* Removed fixed background div from here */}
-        {/* Removed fixed hamburger menu div from here */}
-
+      <main className="flex-1 w-full">
         {/* Main content wrapper */}
-        <div className="relative z-10 pt-20 sm:pt-24">
+        <div className="relative z-10 pt-28 sm:pt-32 px-4 sm:px-6 pb-8 mx-auto max-w-7xl">
           {showConfetti && confettiImage.current && createPortal(
             <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 10000 }}>
               <Confetti
@@ -1679,37 +1678,67 @@ export default function Page() {
                   {/* Use isParseHubDataLoaded */}
                   {isParseHubDataLoaded && parseHubData?.['lunarcrush.com']?.sentiment ? (
                     <div className="space-y-4">
-                      {parseHubData?.['lunarcrush.com']?.sentiment?.map((platform: any, index: number) => {
-                        const sentimentMatch = platform.name.match(/width: ([\d.]+)%.*?background-color: rgb\(246, 80, 108\).*?width: ([\d.]+)%.*?background-color: rgb\(255, 132, 74\).*?width: ([\d.]+)%.*?background-color: rgb\(0, 184, 146\)/);
+                      {(() => {
+                        // Parse the HTML string to extract individual platform data
+                        const htmlString = parseHubData?.['lunarcrush.com']?.sentiment?.[0]?.name || '';
                         
-                        const negative = sentimentMatch ? parseFloat(sentimentMatch[1]) : 0;
-                        const neutral = sentimentMatch ? parseFloat(sentimentMatch[2]) : 0;
-                        const positive = sentimentMatch ? parseFloat(sentimentMatch[3]) : 0;
+                        // Split by platform using SVG as delimiter, then reconstruct platform blocks
+                        const platforms = [];
+                        const svgMatches = [...htmlString.matchAll(/<svg[^>]*name="(twitter|youtube|tiktok|reddit)Color"[^>]*>.*?<\/svg>/g)];
                         
-                        let svgContent = platform.name.split('</svg>')[0] + '</svg>';
-                        if (platform.name.includes('twitterColor')) {
-                          svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
-                          svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
-                        }
-
-                        return (
+                        svgMatches.forEach((svgMatch, index) => {
+                          const svgElement = svgMatch[0];
+                          const platformName = svgMatch[1];
+                          
+                          // Find the platform section starting from this SVG
+                          const svgIndex = htmlString.indexOf(svgElement);
+                          const nextSvgIndex = index < svgMatches.length - 1 
+                            ? htmlString.indexOf(svgMatches[index + 1][0])
+                            : htmlString.length;
+                          
+                          const platformSection = htmlString.substring(svgIndex, nextSvgIndex);
+                          
+                          // Extract sentiment percentages from this platform section
+                          const sentimentMatch = platformSection.match(/width: ([\d.]+)%.*?background-color: rgb\(246, 80, 108\).*?width: ([\d.]+)%.*?background-color: rgb\(255, 132, 74\).*?width: ([\d.]+)%.*?background-color: rgb\(0, 184, 146\)/);
+                          
+                          const negative = sentimentMatch ? parseFloat(sentimentMatch[1]) : 0;
+                          const neutral = sentimentMatch ? parseFloat(sentimentMatch[2]) : 0;
+                          const positive = sentimentMatch ? parseFloat(sentimentMatch[3]) : 0;
+                          
+                          // Clean up SVG for display
+                          let svgContent = svgElement;
+                          if (platformName === 'twitter') {
+                            svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
+                            svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
+                          }
+                          
+                          platforms.push({
+                            svg: svgContent,
+                            negative,
+                            neutral,
+                            positive,
+                            platform: platformName
+                          });
+                        });
+                        
+                        return platforms.map((platform, index) => (
                           <div key={index} className="relative flex items-center gap-2">
                             <div 
                               className="w-6 h-6 flex-shrink-0"
                               dangerouslySetInnerHTML={{ 
-                                __html: svgContent
+                                __html: platform.svg
                               }} 
                             />
                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
                               <div className="h-full flex">
-                                <div className="h-full bg-[#f6506c] hover:brightness-125 hover:shadow-[0_0_15px_rgba(246,80,108,0.5)] transition-all duration-300" style={{ width: `${negative}%` }} />
-                                <div className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300" style={{ width: `${neutral}%` }} />
-                                <div className="h-full bg-[#00b892] hover:brightness-125 hover:shadow-[0_0_15px_rgba(0,184,146,0.5)] transition-all duration-300" style={{ width: `${positive}%` }} />
+                                <div className="h-full bg-[#f6506c] hover:brightness-125 hover:shadow-[0_0_15px_rgba(246,80,108,0.5)] transition-all duration-300" style={{ width: `${platform.negative}%` }} />
+                                <div className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300" style={{ width: `${platform.neutral}%` }} />
+                                <div className="h-full bg-[#00b892] hover:brightness-125 hover:shadow-[0_0_15px_rgba(0,184,146,0.5)] transition-all duration-300" style={{ width: `${platform.positive}%` }} />
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
+                        ));
+                      })()}
                     </div>
                   ) : (
                     <p className="text-center text-gray-400">Loading sentiment data...</p>
@@ -1722,33 +1751,61 @@ export default function Page() {
                   {/* Use isParseHubDataLoaded */}
                   {isParseHubDataLoaded && parseHubData?.['lunarcrush.com']?.engagement ? (
                     <div className="space-y-4">
-                      {parseHubData?.['lunarcrush.com']?.engagement?.map((platform: any, index: number) => {
-                        const widthMatch = platform.name.match(/width: ([\d.]+)%/);
-                        const width = widthMatch ? parseFloat(widthMatch[1]) : 0;
+                      {(() => {
+                        // Parse the HTML string to extract individual platform data
+                        const htmlString = parseHubData?.['lunarcrush.com']?.engagement?.[0]?.name || '';
                         
-                        let svgContent = platform.name.split('</svg>')[0] + '</svg>';
-                        if (platform.name.includes('twitterColor')) {
-                          svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
-                          svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
-                        }
-
-                        return (
+                        // Split by platform using SVG as delimiter, then reconstruct platform blocks
+                        const platforms = [];
+                        const svgMatches = [...htmlString.matchAll(/<svg[^>]*name="(twitter|youtube|tiktok|reddit)Color"[^>]*>.*?<\/svg>/g)];
+                        
+                        svgMatches.forEach((svgMatch, index) => {
+                          const svgElement = svgMatch[0];
+                          const platformName = svgMatch[1];
+                          
+                          // Find the platform section starting from this SVG
+                          const svgIndex = htmlString.indexOf(svgElement);
+                          const nextSvgIndex = index < svgMatches.length - 1 
+                            ? htmlString.indexOf(svgMatches[index + 1][0])
+                            : htmlString.length;
+                          
+                          const platformSection = htmlString.substring(svgIndex, nextSvgIndex);
+                          
+                          // Extract engagement width percentage from this platform section
+                          const widthMatch = platformSection.match(/width: ([\d.]+)%/);
+                          const width = widthMatch ? parseFloat(widthMatch[1]) : 0;
+                          
+                          // Clean up SVG for display
+                          let svgContent = svgElement;
+                          if (platformName === 'twitter') {
+                            svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
+                            svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
+                          }
+                          
+                          platforms.push({
+                            svg: svgContent,
+                            width,
+                            platform: platformName
+                          });
+                        });
+                        
+                        return platforms.map((platform, index) => (
                           <div key={index} className="relative flex items-center gap-2">
                             <div 
                               className="w-6 h-6 flex-shrink-0"
                               dangerouslySetInnerHTML={{ 
-                                __html: svgContent
+                                __html: platform.svg
                               }} 
                             />
                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
                               <div 
                                 className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300"
-                                style={{ width: `${width}%` }}
+                                style={{ width: `${platform.width}%` }}
                               />
                             </div>
                           </div>
-                        );
-                      })}
+                        ));
+                      })()}
                     </div>
                   ) : (
                     <p className="text-center text-gray-400">Loading engagement data...</p>
