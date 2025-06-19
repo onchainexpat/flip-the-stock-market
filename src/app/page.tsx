@@ -1683,7 +1683,13 @@ export default function Page() {
                         const htmlString = parseHubData?.['lunarcrush.com']?.sentiment?.[0]?.name || '';
                         
                         // Split by platform using SVG as delimiter, then reconstruct platform blocks
-                        const platforms = [];
+                        const platforms: Array<{
+                          svg: string;
+                          negative: number;
+                          neutral: number;
+                          positive: number;
+                          platform: string;
+                        }> = [];
                         const svgMatches = [...htmlString.matchAll(/<svg[^>]*name="(twitter|youtube|tiktok|reddit)Color"[^>]*>.*?<\/svg>/g)];
                         
                         svgMatches.forEach((svgMatch, index) => {
@@ -1756,7 +1762,11 @@ export default function Page() {
                         const htmlString = parseHubData?.['lunarcrush.com']?.engagement?.[0]?.name || '';
                         
                         // Split by platform using SVG as delimiter, then reconstruct platform blocks
-                        const platforms = [];
+                        const platforms: Array<{
+                          svg: string;
+                          width: number;
+                          platform: string;
+                        }> = [];
                         const svgMatches = [...htmlString.matchAll(/<svg[^>]*name="(twitter|youtube|tiktok|reddit)Color"[^>]*>.*?<\/svg>/g)];
                         
                         svgMatches.forEach((svgMatch, index) => {
