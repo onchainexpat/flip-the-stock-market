@@ -1540,7 +1540,7 @@ export default function Page() {
                     <h3 className="text-xl font-bold text-white mb-4">Onchain Wallets</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
                       {[
-                        { name: 'INFINEX', url: 'https://app.infinex.xyz/', icon: '/Infinex_Logo_Cantaloupe.svg' },
+                        { name: 'INFINEX', url: 'https://app.infinex.xyz?r=1ES7E678', icon: '/Infinex_Logo_Cantaloupe.svg' },
                         { name: 'Rabby', url: 'https://rabby.io/', icon: '/rabby-logo-white.svg' },
                         { name: 'Phantom', url: 'https://phantom.com/', icon: '/Phantom-Logo-Purple.svg' }
                       ].map((wallet) => (
