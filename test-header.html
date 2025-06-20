@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Header Test</title>
+    <script>
+        async function checkHeader() {
+            try {
+                const response = await fetch('http://localhost:3000');
+                const html = await response.text();
+                
+                // Check if ProfileDropdown is in the client bundle
+                const hasProfileDropdown = html.includes('ProfileDropdown');
+                const hasFixedHeader = html.includes('fixed top-0');
+                const hasHamburger = html.includes('hamburger') || html.includes('Menu');
+                
+                console.log('ProfileDropdown referenced:', hasProfileDropdown);
+                console.log('Fixed header found:', hasFixedHeader);
+                console.log('Menu/Hamburger found:', hasHamburger);
+                
+                document.getElementById('results').innerHTML = `
+                    <h2>Page Check Results:</h2>
+                    <p>ProfileDropdown: ${hasProfileDropdown ? '✅ Yes' : '❌ No'}</p>
+                    <p>Fixed Header: ${hasFixedHeader ? '✅ Yes' : '❌ No'}</p>
+                    <p>Menu Button: ${hasHamburger ? '✅ Yes' : '❌ No'}</p>
+                    <p>Check the top-left corner for a hamburger menu (☰)</p>
+                `;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body onload="checkHeader()">
+    <h1>Testing Header Visibility</h1>
+    <div id="results">Loading...</div>
+</body>
+</html>

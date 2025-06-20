@@ -1,12 +1,13 @@
-import { readdir, unlink, stat } from 'fs/promises';
 import { join } from 'path';
+import { readdir, stat, unlink } from 'fs/promises';
 
 export class ImageCleanup {
   private directory: string;
   private maxAgeMs: number;
   private isRunning: boolean;
 
-  constructor(directory: string, maxAgeMs: number = 3600000) { // Default 1 hour
+  constructor(directory: string, maxAgeMs = 3600000) {
+    // Default 1 hour
     this.directory = directory;
     this.maxAgeMs = maxAgeMs;
     this.isRunning = false;
@@ -44,9 +45,10 @@ export class ImageCleanup {
     }
   }
 
-  startPeriodicCleanup(intervalMs: number = 900000) { // Default 15 minutes
+  startPeriodicCleanup(intervalMs = 900000) {
+    // Default 15 minutes
     setInterval(() => {
       this.cleanup().catch(console.error);
     }, intervalMs);
   }
-} 
+}

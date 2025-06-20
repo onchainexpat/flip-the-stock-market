@@ -1,12 +1,15 @@
-import { downloadAndStoreProfileImages } from '../utils/ImageStorage';
-import profiles from '../app/profiles.json';
 import * as dotenv from 'dotenv';
+import profiles from '../app/profiles.json';
+import { downloadAndStoreProfileImages } from '../utils/ImageStorage';
 
 // Load environment variables
 dotenv.config();
 
 // Verify environment variables are loaded
-if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+if (
+  !process.env.UPSTASH_REDIS_REST_URL ||
+  !process.env.UPSTASH_REDIS_REST_TOKEN
+) {
   console.error('Missing required environment variables');
   process.exit(1);
 }
@@ -18,7 +21,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Script failed:', error);
   process.exit(1);
 });

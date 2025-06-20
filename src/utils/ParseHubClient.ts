@@ -17,7 +17,13 @@ export interface ParseHubProject {
 export interface ParseHubRun {
   project_token: string;
   run_token: string;
-  status: 'initialized' | 'queued' | 'running' | 'cancelled' | 'complete' | 'error';
+  status:
+    | 'initialized'
+    | 'queued'
+    | 'running'
+    | 'cancelled'
+    | 'complete'
+    | 'error';
   data_ready: boolean;
   start_time: string;
   end_time: string | null;
@@ -38,8 +44,13 @@ export class ParseHubClient {
     this.apiKey = config.apiKey;
   }
 
-  async getLastReadyData(projectToken: string, format: 'json' | 'csv' = 'json'): Promise<ParseHubResponse> {
-    const url = new URL(`${this.baseUrl}/projects/${projectToken}/last_ready_run/data`);
+  async getLastReadyData(
+    projectToken: string,
+    format: 'json' | 'csv' = 'json',
+  ): Promise<ParseHubResponse> {
+    const url = new URL(
+      `${this.baseUrl}/projects/${projectToken}/last_ready_run/data`,
+    );
     url.searchParams.append('api_key', this.apiKey);
     url.searchParams.append('format', format);
 
@@ -81,4 +92,4 @@ export class ParseHubClient {
 
     return await response.json();
   }
-} 
+}

@@ -56,7 +56,9 @@ export default function WalletWrapper({
                   >
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                      <span className="max-w-[100px] truncate">{account.displayName}</span>
+                      <span className="max-w-[100px] truncate">
+                        {account.displayName}
+                      </span>
                     </div>
                   </button>
                 </div>

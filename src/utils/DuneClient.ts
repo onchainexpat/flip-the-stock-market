@@ -12,17 +12,21 @@ export class DuneClient {
     this.apiKey = apiKey;
   }
 
-  async getLatestResult({ queryId }: { queryId: number }): Promise<DuneQueryResult> {
+  async getLatestResult({
+    queryId,
+  }: { queryId: number }): Promise<DuneQueryResult> {
     try {
       const response = await fetch(`${this.baseUrl}/query/${queryId}/results`, {
         headers: {
-          'x-dune-api-key': this.apiKey
-        }
+          'x-dune-api-key': this.apiKey,
+        },
       });
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error(`Dune API error: ${response.status} ${response.statusText}. Body: ${errorBody}`);
+        console.error(
+          `Dune API error: ${response.status} ${response.statusText}. Body: ${errorBody}`,
+        );
         throw new Error(`Dune API error: ${response.statusText}`);
       }
 
@@ -32,4 +36,4 @@ export class DuneClient {
       throw error;
     }
   }
-} 
+}

@@ -85,7 +85,7 @@ a {
 }
 
 .templateSection > div {
-  max-width: 100%;;
+  max-width: 100%;
 }
 
 .gif-container {
@@ -110,7 +110,8 @@ a {
 }
 
 @keyframes rotate-words {
-  0%, 30% {
+  0%,
+  30% {
     transform: rotateX(0deg);
     opacity: 1;
   }
@@ -118,7 +119,8 @@ a {
     transform: rotateX(-90deg);
     opacity: 0;
   }
-  36%, 63% {
+  36%,
+  63% {
     transform: rotateX(0deg);
     opacity: 1;
   }
@@ -126,7 +128,8 @@ a {
     transform: rotateX(-90deg);
     opacity: 0;
   }
-  69%, 96% {
+  69%,
+  96% {
     transform: rotateX(0deg);
     opacity: 1;
   }
@@ -139,7 +142,7 @@ a {
 .word-rotation::before {
   content: "SAFEST";
   animation: word-change 6s infinite;
-  color: #FFD700; /* Classic gold color */
+  color: #ffd700; /* Classic gold color */
   /* Alternative gold colors you could try:
   color: #DAA520; // Goldenrod
   color: #FDB347; // Warmer gold
@@ -148,19 +151,22 @@ a {
 }
 
 @keyframes word-change {
-  0%, 30% {
+  0%,
+  30% {
     content: "SAFEST";
   }
-  36%, 63% {
+  36%,
+  63% {
     content: "FASTEST";
   }
-  69%, 96% {
+  69%,
+  96% {
     content: "EASIEST";
   }
 }
 
 .gold-text {
-  color: #FFD700;
+  color: #ffd700;
 }
 
 /* Dark mode scrollbar styling */
@@ -169,22 +175,22 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1B2236;
+  background: #1b2236;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2D3748;
+  background: #2d3748;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4A5568;
+  background: #4a5568;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2D3748 #1B2236;
+  scrollbar-color: #2d3748 #1b2236;
 }
 
 /* Add this at the end of the file */

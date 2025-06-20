@@ -32,7 +32,9 @@ async function fetchFreshParseHubData(projectToken: string) {
     return data;
   } catch (error) {
     console.error(`Error fetching ParseHub data for ${projectToken}:`, error);
-    throw new Error(`Failed to fetch ParseHub data for ${projectToken}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to fetch ParseHub data for ${projectToken}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 
@@ -41,7 +43,10 @@ export async function GET(request: Request) {
   const projectToken = searchParams.get('projectToken');
 
   if (!projectToken) {
-    return NextResponse.json({ error: 'Project token is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Project token is required' },
+      { status: 400 },
+    );
   }
 
   const cacheKey = `${CACHE_PREFIX}${projectToken}`;
@@ -54,7 +59,10 @@ export async function GET(request: Request) {
       try {
         cachedResult = JSON.parse(cachedString) as CachedParseHubData;
       } catch (parseError) {
-        console.error(`Failed to parse cached ParseHub data for ${projectToken}:`, parseError);
+        console.error(
+          `Failed to parse cached ParseHub data for ${projectToken}:`,
+          parseError,
+        );
       }
     }
 
@@ -79,9 +87,13 @@ export async function GET(request: Request) {
     console.log(`ParseHub cache updated for ${projectToken}`);
 
     return NextResponse.json(freshData);
-
   } catch (error) {
     console.error(`Error in ParseHub API route for ${projectToken}:`, error);
-    return NextResponse.json({ error: `Failed to fetch ParseHub data: ${error instanceof Error ? error.message : 'Unknown error'}` }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: `Failed to fetch ParseHub data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      },
+      { status: 500 },
+    );
   }
-} 
+}
