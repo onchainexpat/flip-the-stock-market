@@ -1,7 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { serverDcaDatabase } from '../../../../../lib/serverDcaDatabase';
+import { Redis } from '@upstash/redis';
 
 export const runtime = 'edge';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 // Get execution history for a specific DCA order
 export async function GET(
@@ -13,56 +18,79 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const userAddress = searchParams.get('userAddress');
 
-    if (!orderId) {
+    if (!orderId || !userAddress) {
       return NextResponse.json(
-        { error: 'Order ID is required' },
+        { error: 'Order ID and userAddress are required' },
         { status: 400 },
       );
     }
 
-    // Get the order to verify ownership if userAddress is provided
-    if (userAddress) {
-      const order = await serverDcaDatabase.getOrder(orderId);
-      if (!order) {
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-      }
+    // Get the order to verify ownership
+    const orderKey = `dca:order:${orderId}`;
+    const orderData = await redis.get(orderKey);
 
-      // Verify the user owns this order
-      if (order.userAddress.toLowerCase() !== userAddress.toLowerCase()) {
-        return NextResponse.json(
-          {
-            error: 'Unauthorized: You can only view your own order executions',
-          },
-          { status: 403 },
-        );
-      }
+    if (!orderData) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Get executions for this order
-    const executions = await serverDcaDatabase.getOrderExecutions(orderId);
+    // Type assertion and verify the user owns the order
+    const order = orderData as any;
+    if (order.userAddress.toLowerCase() !== userAddress.toLowerCase()) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized: You can only view your own order executions',
+        },
+        { status: 403 },
+      );
+    }
 
-    // Format executions for frontend
-    const formattedExecutions = executions.map((execution) => ({
-      id: execution.id,
-      orderId: execution.orderId,
-      transactionHash: execution.txHash, // Map txHash to transactionHash for frontend
-      amountIn: execution.amountIn.toString(),
-      amountOut: execution.amountOut.toString(),
-      executedAt: new Date(execution.executedAt * 1000).toISOString(), // Convert from seconds to ms
-      status: execution.status,
-      gasUsed: execution.gasUsed?.toString() || '0',
-      gasPrice: execution.gasPrice?.toString() || '0',
-    }));
+    // Get executions from Redis ZADD storage (matches record-execution storage)
+    const executionKey = `dca:executions:${userAddress}:${orderId}`;
+    const executionData = await redis.zrange(executionKey, 0, -1);
+
+    console.log(`Raw execution data for ${executionKey}:`, executionData);
+
+    // Parse execution data - handle both string and object formats
+    const executions = executionData.map((item) => {
+      let execution;
+      try {
+        // If item is already an object, use it directly
+        if (typeof item === 'object' && item !== null) {
+          execution = item;
+        } else {
+          // If item is a string, parse it
+          execution = JSON.parse(item as string);
+        }
+      } catch (error) {
+        console.error('Failed to parse execution item:', item, error);
+        return null;
+      }
+
+      return {
+        id: execution.id,
+        orderId: execution.orderId,
+        transactionHash: execution.transactionHash,
+        amountIn: execution.amountIn,
+        amountOut: execution.amountOut,
+        executedAt: execution.executedAt,
+        status: execution.status,
+        swapProvider: execution.swapProvider,
+        exchangeRate: execution.exchangeRate,
+        gasUsed: execution.gasUsed || '0',
+        gasPrice: execution.gasPrice || '0',
+        priceImpact: execution.priceImpact,
+      };
+    }).filter(Boolean); // Remove any null entries from failed parsing
 
     console.log(
-      `Retrieved ${formattedExecutions.length} executions for order ${orderId}`,
+      `Retrieved ${executions.length} executions for order ${orderId}`,
     );
 
     return NextResponse.json({
       success: true,
       orderId,
-      executions: formattedExecutions,
-      totalExecutions: formattedExecutions.length,
+      executions,
+      totalExecutions: executions.length,
     });
   } catch (error) {
     console.error('Failed to get order executions:', error);

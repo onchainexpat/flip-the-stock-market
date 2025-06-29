@@ -16,6 +16,11 @@ interface ExecutionRecord {
   amountOut: string;
   transactionHash: string;
   status: 'completed' | 'failed';
+  swapProvider?: string;
+  exchangeRate?: string;
+  gasUsed?: string;
+  gasPrice?: string;
+  priceImpact?: string;
 }
 
 export async function POST(
@@ -24,7 +29,16 @@ export async function POST(
 ) {
   try {
     const { orderId } = params;
-    const { userAddress, txHash, amountIn, amountOut } = await request.json();
+    const { 
+      userAddress, 
+      txHash, 
+      amountIn, 
+      amountOut, 
+      swapProvider, 
+      gasUsed, 
+      gasPrice, 
+      priceImpact 
+    } = await request.json();
 
     if (!userAddress || !txHash || !amountIn || !amountOut) {
       return NextResponse.json(
@@ -49,6 +63,12 @@ export async function POST(
 
     // Create execution record
     const executionId = `exec_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    // Calculate exchange rate
+    const exchangeRate = amountOut !== '0' 
+      ? (Number(amountOut) / 1e8 / (Number(amountIn) / 1e6)).toFixed(6)
+      : '0';
+    
     const execution: ExecutionRecord = {
       id: executionId,
       orderId,
@@ -57,6 +77,11 @@ export async function POST(
       amountOut,
       transactionHash: txHash,
       status: 'completed',
+      swapProvider: swapProvider || 'unknown',
+      exchangeRate,
+      gasUsed,
+      gasPrice,
+      priceImpact,
     };
 
     // Store execution record

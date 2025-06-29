@@ -69,6 +69,12 @@ interface DCAExecution {
   amountOut: string;
   executedAt: string;
   status: 'pending' | 'completed' | 'failed';
+  swapProvider?: string;
+  exchangeRate?: string;
+  gasUsed?: string;
+  gasPrice?: string;
+  priceImpact?: string;
+  tradeDetails?: any; // To hold extra details from API
 }
 
 interface UserStats {
@@ -190,12 +196,44 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
+  const [selectedExecution, setSelectedExecution] = useState<DCAExecution | null>(null);
 
   // Wait for transaction receipt
   const { data: receipt, isLoading: isConfirming } =
     useWaitForTransactionReceipt({
       hash: pendingTxHash || undefined,
     });
+
+  const loadExecutionDetails = useCallback(async (execution: DCAExecution) => {
+    if (selectedExecution?.id === execution.id) {
+      setSelectedExecution(null);
+      return;
+    }
+
+    // Reset previous selection
+    setSelectedExecution(null);
+    toast.loading('Fetching trade details...', { id: `exec-${execution.id}` });
+
+    try {
+      const response = await fetch(
+        `/api/dca-orders/${execution.orderId}/executions/${execution.id}?userAddress=${address}`
+      );
+      if (response.ok) {
+        const details = await response.json();
+        setSelectedExecution(details);
+        toast.success('Details loaded', { id: `exec-${execution.id}` });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to load execution details');
+      }
+    } catch (error) {
+      console.error('Error loading execution details:', error);
+      toast.error(`Could not load trade details: ${error instanceof Error ? error.message : ''}`, { id: `exec-${execution.id}` });
+      // Still show basic info if details fail to load
+      setSelectedExecution(execution);
+    }
+  }, [address, selectedExecution]);
+
 
   const loadExecutions = useCallback(
     async (orderId: string) => {
@@ -379,7 +417,10 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
             return;
           }
 
+          // Dismiss all pending toast messages for this order
           toast.dismiss(`${swapInfo.orderId}-confirm`);
+          toast.dismiss(`${swapInfo.orderId}-sign`);
+          toast.dismiss(`${swapInfo.orderId}-submit`);
 
           if (receipt.status === 'success') {
             // Check if this was an approval transaction that needs a follow-up swap
@@ -450,6 +491,8 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                     spxAmount: swapInfo.spxAmount,
                     amountIn: swapInfo.amountIn,
                     amountOut: swapInfo.amountOut,
+                    swapProvider: swapInfo.swapProvider,
+                    priceImpact: swapInfo.priceImpact,
                     needsSwapAfterApproval: false,
                   };
                   localStorage.setItem('pendingSwap', JSON.stringify(serializeBigInt(swapData)));
@@ -482,6 +525,8 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                   txHash: pendingTxHash,
                   amountIn: swapInfo.amountIn,
                   amountOut: swapInfo.amountOut,
+                  swapProvider: swapInfo.swapProvider || 'openocean',
+                  priceImpact: swapInfo.priceImpact || '0',
                 }),
               },
             );
@@ -515,12 +560,28 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
             }
           } else {
             console.error('Transaction failed with status:', receipt.status);
+            // Dismiss all pending toasts before showing error
+            toast.dismiss(`${swapInfo.orderId}-sign`);
+            toast.dismiss(`${swapInfo.orderId}-submit`);
+            toast.dismiss(`${swapInfo.orderId}-approve`);
             toast.error('Transaction failed', { id: swapInfo.orderId });
             localStorage.removeItem('pendingSwap');
             setPendingTxHash(null);
           }
         } catch (error) {
           console.error('Error handling transaction confirmation:', error);
+          // Dismiss all pending toasts before showing error
+          const pendingSwapData = localStorage.getItem('pendingSwap');
+          if (pendingSwapData) {
+            try {
+              const swapInfo = JSON.parse(pendingSwapData);
+              toast.dismiss(`${swapInfo.orderId}-sign`);
+              toast.dismiss(`${swapInfo.orderId}-submit`);
+              toast.dismiss(`${swapInfo.orderId}-approve`);
+            } catch (e) {
+              console.warn('Failed to parse swap data for toast cleanup');
+            }
+          }
           toast.error('Error processing transaction confirmation');
           // Clean up on error
           localStorage.removeItem('pendingSwap');
@@ -885,6 +946,8 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                 spxAmount,
                 amountIn: swapData.sellAmount,
                 amountOut: swapData.buyAmount,
+                swapProvider: swapData.provider || 'openocean',
+                priceImpact: swapData.estimatedPriceImpact || '0',
                 needsSwapAfterApproval: true,
                 swapTransaction: {
                   to: swapData.to as `0x${string}`,
@@ -934,6 +997,8 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
               spxAmount,
               amountIn: swapData.sellAmount,
               amountOut: swapData.buyAmount,
+              swapProvider: swapData.provider || 'openocean',
+              priceImpact: swapData.estimatedPriceImpact || '0',
               needsSwapAfterApproval: false,
             };
             localStorage.setItem('pendingSwap', JSON.stringify(serializeBigInt(swapInfo)));
@@ -949,8 +1014,12 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
             });
           } catch (txError) {
             console.error('Transaction submission failed:', txError);
+            // Dismiss the "Swapping..." toast before showing error
+            toast.dismiss(`${orderId}-sign`);
+            toast.dismiss(`${orderId}-submit`);
             toast.error(
               `Transaction failed: ${txError instanceof Error ? txError.message : 'Unknown error'}`,
+              { id: orderId }
             );
             throw new Error(
               `Transaction submission failed: ${txError instanceof Error ? txError.message : 'Unknown error'}`,
@@ -1328,51 +1397,194 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                           ) : (
                             <div className="space-y-3">
                               {executions[order.id]?.map((execution) => (
-                                <div
-                                  key={execution.id}
-                                  className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    {execution.status === 'completed' ? (
-                                      <CheckCircle className="w-4 h-4 text-green-400" />
-                                    ) : execution.status === 'failed' ? (
-                                      <XCircle className="w-4 h-4 text-red-400" />
-                                    ) : (
-                                      <Clock className="w-4 h-4 text-yellow-400" />
-                                    )}
-                                    <div>
-                                      <div className="text-white text-sm font-medium">
-                                        $
-                                        {formatTokenAmount(
-                                          execution.amountIn,
-                                          6,
-                                        )}{' '}
-                                        USDC
-                                      </div>
-                                      <div className="text-gray-400 text-xs">
-                                        {new Date(
-                                          execution.executedAt,
-                                        ).toLocaleString()}
+                                <div key={execution.id}>
+                                  <div
+                                    onClick={() => loadExecutionDetails(execution)}
+                                    className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg cursor-pointer hover:bg-gray-800"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      {execution.status === 'completed' ? (
+                                        <CheckCircle className="w-4 h-4 text-green-400" />
+                                      ) : execution.status === 'failed' ? (
+                                        <XCircle className="w-4 h-4 text-red-400" />
+                                      ) : (
+                                        <Clock className="w-4 h-4 text-yellow-400" />
+                                      )}
+                                      <div>
+                                        <div className="text-white text-sm font-medium">
+                                          ${formatTokenAmount(execution.amountIn, 6)} USDC
+                                        </div>
+                                        <div className="text-gray-400 text-xs flex items-center gap-2">
+                                          {new Date(execution.executedAt).toLocaleString()}
+                                          {execution.swapProvider && (
+                                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs font-medium">
+                                              {execution.swapProvider.toUpperCase()}
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-white text-sm">
-                                      {execution.amountOut !== '0'
-                                        ? `${formatTokenAmount(execution.amountOut, 8)} SPX`
-                                        : 'Pending...'}
+                                    <div className="text-right">
+                                      <div className="text-white text-sm">
+                                        {execution.amountOut !== '0'
+                                          ? `${formatTokenAmount(execution.amountOut, 8)} SPX`
+                                          : 'Pending...'}
+                                      </div>
+                                      {execution.transactionHash !== '0x' && (
+                                        <a
+                                          href={`https://basescan.org/tx/${execution.transactionHash}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-400 text-xs hover:underline"
+                                        >
+                                          View TX
+                                        </a>
+                                      )}
                                     </div>
-                                    {execution.transactionHash !== '0x' && (
-                                      <a
-                                        href={`https://basescan.org/tx/${execution.transactionHash}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-400 text-xs hover:underline"
-                                      >
-                                        View TX
-                                      </a>
-                                    )}
                                   </div>
+                                  {selectedExecution?.id === execution.id && (
+                                    <div className="p-4 mt-2 bg-gray-900 rounded-lg">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-medium text-white">Execution Details</h4>
+                                        <div className="flex gap-2">
+                                          <a
+                                            href={`https://basescan.org/tx/${execution.transactionHash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
+                                          >
+                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                            BaseScan
+                                          </a>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        {/* Basic Execution Info */}
+                                        <div className="space-y-2">
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-400">Input:</span>
+                                            <span className="text-green-400 font-medium">
+                                              ${formatTokenAmount(execution.amountIn, 6)} USDC
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-400">Output:</span>
+                                            <span className="text-blue-400 font-medium">
+                                              {execution.amountOut !== '0'
+                                                ? `${formatTokenAmount(execution.amountOut, 8)} SPX`
+                                                : 'Pending...'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-400">Exchange Rate:</span>
+                                            <span className="text-white">
+                                              {execution.exchangeRate 
+                                                ? `1 USDC = ${Number(execution.exchangeRate).toFixed(4)} SPX`
+                                                : execution.amountOut !== '0' 
+                                                ? `1 USDC = ${(Number(execution.amountOut) / 1e8 / (Number(execution.amountIn) / 1e6)).toFixed(4)} SPX`
+                                                : 'Calculating...'}
+                                            </span>
+                                          </div>
+                                          {execution.swapProvider && (
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-400">DEX:</span>
+                                              <span className="text-blue-300 font-medium capitalize">
+                                                {execution.swapProvider}
+                                              </span>
+                                            </div>
+                                          )}
+                                          {execution.priceImpact && execution.priceImpact !== '0' && (
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-400">Price Impact:</span>
+                                              <span className={`font-medium ${
+                                                Number(execution.priceImpact) > 1 ? 'text-red-400' :
+                                                Number(execution.priceImpact) > 0.5 ? 'text-yellow-400' : 'text-green-400'
+                                              }`}>
+                                                {execution.priceImpact}%
+                                              </span>
+                                            </div>
+                                          )}
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-400">Status:</span>
+                                            <span className={`font-medium ${
+                                              execution.status === 'completed' ? 'text-green-400' :
+                                              execution.status === 'failed' ? 'text-red-400' : 'text-yellow-400'
+                                            }`}>
+                                              {execution.status.charAt(0).toUpperCase() + execution.status.slice(1)}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* Transaction Details */}
+                                        <div className="space-y-2">
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-400">Execution Time:</span>
+                                            <span className="text-white">
+                                              {new Date(execution.executedAt).toLocaleString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                              })}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-400">Transaction:</span>
+                                            <span className="text-gray-300 font-mono text-xs">
+                                              {execution.transactionHash.slice(0, 10)}...{execution.transactionHash.slice(-8)}
+                                            </span>
+                                          </div>
+                                          {selectedExecution.gasUsed && selectedExecution.gasUsed !== '0' && (
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-400">Gas Used:</span>
+                                              <span className="text-white">
+                                                {Number(selectedExecution.gasUsed).toLocaleString()}
+                                              </span>
+                                            </div>
+                                          )}
+                                          {selectedExecution.gasPrice && selectedExecution.gasPrice !== '0' && (
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-400">Gas Price:</span>
+                                              <span className="text-white">
+                                                {(Number(selectedExecution.gasPrice) / 1e9).toFixed(2)} Gwei
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Advanced Details from API */}
+                                      {selectedExecution.tradeDetails && (
+                                        <div className="mt-4 pt-4 border-t border-gray-700">
+                                          <h5 className="text-sm font-medium text-white mb-2">Trade Analysis</h5>
+                                          <div className="text-xs text-gray-300 space-y-1">
+                                            {selectedExecution.tradeDetails.side && (
+                                              <div className="flex justify-between">
+                                                <span>Side:</span>
+                                                <span>{selectedExecution.tradeDetails.side}</span>
+                                              </div>
+                                            )}
+                                            {selectedExecution.tradeDetails.usdValue && (
+                                              <div className="flex justify-between">
+                                                <span>USD Value:</span>
+                                                <span>${parseFloat(selectedExecution.tradeDetails.usdValue).toFixed(2)}</span>
+                                              </div>
+                                            )}
+                                            {selectedExecution.tradeDetails.fee && (
+                                              <div className="flex justify-between">
+                                                <span>Protocol Fee:</span>
+                                                <span>{selectedExecution.tradeDetails.fee}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
