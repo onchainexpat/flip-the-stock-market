@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
-import { PLATFORM_FEE_PERCENTAGE, TOKENS, zeroXApi } from '../../utils/0xApi';
+import { PLATFORM_FEE_PERCENTAGE, TOKENS, openOceanApi } from '../../utils/openOceanApi';
 import { coinbaseSmartWalletService } from '../../lib/coinbaseSmartWalletService';
 import AddMoneyButton from '../AddMoneyButton';
 import EmailLogin from '../EmailLogin';
@@ -131,7 +131,7 @@ export default function SimpleDCA({
   const fetchCurrentPrice = async () => {
     setPriceLoading(true);
     try {
-      const price = await zeroXApi.getSPX6900Price();
+      const price = await openOceanApi.getSPX6900Price();
       setCurrentPrice(price.price);
     } catch (error) {
       // Silent price fetch failure - use cached data if available
@@ -152,9 +152,9 @@ export default function SimpleDCA({
       const amountPerOrderInCents =
         (Number.parseFloat(formData.amount) / numberOfOrders) * 1e6; // Convert to base units
 
-      // Get full quote data including route information
+      // Get full quote data including route information from OpenOcean
       const response = await fetch(
-        `/api/0x-price?sellToken=${TOKENS.USDC}&buyToken=${TOKENS.SPX6900}&sellAmount=${Math.floor(amountPerOrderInCents)}`,
+        `/api/openocean-price?sellToken=${TOKENS.USDC}&buyToken=${TOKENS.SPX6900}&sellAmount=${Math.floor(amountPerOrderInCents)}`,
       );
       const data = await response.json();
 

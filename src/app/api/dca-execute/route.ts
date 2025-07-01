@@ -2,7 +2,7 @@ import { Redis } from '@upstash/redis';
 import { type NextRequest, NextResponse } from 'next/server';
 import { http, createPublicClient } from 'viem';
 import { base } from 'viem/chains';
-import { TOKENS } from '../../../utils/0xApi';
+import { TOKENS } from '../../../utils/openOceanApi';
 
 export const runtime = 'edge';
 
@@ -281,7 +281,7 @@ async function executeOrder(
     // For automatic execution, we would need proper infrastructure
     // For now, just get a price quote
     const priceResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/0x-price?` +
+      `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/openocean-price?` +
         `sellToken=${TOKENS.USDC}&buyToken=${TOKENS.SPX6900}&sellAmount=${netAmount.toString()}`,
     );
 

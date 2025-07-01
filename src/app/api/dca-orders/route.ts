@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { serverDcaDatabase } from '../../../lib/serverDcaDatabase';
-import { TOKENS } from '../../../utils/0xApi';
+import { TOKENS } from '../../../utils/openOceanApi';
 
 export const runtime = 'edge';
 
@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
       userAddress,
       sessionKeyAddress,
       sessionKeyData, // Store the full session key data
+      destinationAddress: userAddress, // SPX tokens go to user's external wallet
       fromToken: TOKENS.USDC,
       toToken: TOKENS.SPX6900,
       totalAmount: totalAmountBigInt,

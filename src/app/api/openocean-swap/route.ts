@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
       buyToken,
       sellAmount,
       takerAddress,
-      slippagePercentage = 0.015,
+      receiverAddress,  // Optional: where to send the output tokens
+      slippagePercentage = 0.03, // Increased to 3% for better execution success
     } = body;
 
     if (!sellToken || !buyToken || !sellAmount || !takerAddress) {
@@ -39,6 +40,12 @@ export async function POST(request: NextRequest) {
       slippage: slippagePercentage.toString(), // Decimal format (0.015 for 1.5%)
       gasPriceDecimals: currentGasPrice, // Gas price in wei - v4 parameter
     });
+    
+    // Add receiver address if different from taker (for direct token delivery)
+    if (receiverAddress && receiverAddress !== takerAddress) {
+      params.append('receiver', receiverAddress);
+      console.log('🎯 Receiver address specified:', receiverAddress);
+    }
 
     const url = `https://open-api.openocean.finance/v4/8453/swap?${params}`;
     
