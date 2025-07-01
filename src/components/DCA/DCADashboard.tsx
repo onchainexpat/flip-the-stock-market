@@ -21,8 +21,9 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi';
 // Removed useSmartWallet - using direct Coinbase Smart Wallet integration
-import { formatTokenAmount } from '../../utils/0xApi';
+import { formatTokenAmount } from '../../utils/openOceanApi';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
+import { useClearSigning } from '../../hooks/useClearSigning';
 // SmartWalletWarning removed - smart wallets deployed automatically with Coinbase SDK
 
 // Extend window object for pending DCA swaps
@@ -59,6 +60,9 @@ interface DCAOrder {
   nextExecutionAt: string;
   createdAt: string;
   amountPerOrder: string;
+  fromToken?: string; // Optional for backward compatibility
+  toToken?: string; // Optional for backward compatibility
+  executionsCount?: number; // Optional for backward compatibility
 }
 
 interface DCAExecution {
@@ -184,6 +188,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
     address: smartWalletAddress,
     isReady: smartWalletReady,
   } = useUnifiedSmartWallet();
+  const { signWithClearMessage } = useClearSigning();
   const [orders, setOrders] = useState<DCAOrder[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [executions, setExecutions] = useState<Record<string, DCAExecution[]>>(
@@ -450,7 +455,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                   const swapProvider = 'openocean'; // Must match the initial quote provider
                   const swapEndpoint = swapProvider === 'openocean' ? '/api/openocean-swap' : 
                                       swapProvider === 'uniswap' ? '/api/uniswap-direct' :
-                                      '/api/0x-swap';
+                                      '/api/openocean-swap';
 
                   console.log(`🔄 Getting fresh quote from ${swapProvider}...`);
 
@@ -464,7 +469,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                       buyToken: '0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C', // SPX6900
                       sellAmount: Math.floor(parseFloat(swapInfo.usdcAmount) * 1e6).toString(), // Convert to USDC wei
                       takerAddress: smartWalletAddress || '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE', // Smart wallet address
-                      slippagePercentage: 0.015, // 1.5% slippage
+                      slippagePercentage: 0.03, // 3% slippage for better execution success
                     }),
                   });
 
@@ -476,6 +481,28 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                   console.log('Fresh swap data:', freshSwapData);
 
                   toast.dismiss(`${swapInfo.orderId}-quote-refresh`);
+
+                  // Get clear authorization for the fresh swap
+                  const order = orders.find(o => o.id === swapInfo.orderId);
+                  if (order) {
+                    const usdcAmount = (Number(freshSwapData.sellAmount) / 1e6).toFixed(4);
+                    const spxDecimals = freshSwapData.tokenInfo?.output?.decimals || 8;
+                    const spxAmount = (Number(freshSwapData.buyAmount) / (10 ** spxDecimals)).toFixed(6);
+                    
+                    await signWithClearMessage(
+                      'Execute DCA Swap (Post-Approval)',
+                      'Complete the swap execution after USDC approval',
+                      {
+                        'Order ID': swapInfo.orderId.slice(0, 12) + '...',
+                        'From Token': `${usdcAmount} USDC`,
+                        'To Token': `~${spxAmount} SPX6900`,
+                        'Exchange Rate': `1 USDC = ${(Number(spxAmount) / Number(usdcAmount)).toFixed(4)} SPX`,
+                        'Status': 'USDC approved, executing swap',
+                        'Gas': 'Sponsored (FREE)',
+                        'SPX Delivery': 'Your external wallet',
+                      }
+                    );
+                  }
 
                   const swapTxHash = await sendSmartWalletTransaction({
                     to: freshSwapData.to as `0x${string}`,
@@ -603,6 +630,26 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   const handlePauseOrder = async (orderId: string) => {
     try {
       console.log('Pausing order:', orderId);
+      
+      // Get the order details for clear signing
+      const order = orders.find(o => o.id === orderId);
+      if (!order) {
+        toast.error('Order not found');
+        return;
+      }
+
+      // Request clear signature for pausing
+      await signWithClearMessage(
+        'Pause DCA Order',
+        'Temporarily pause automated DCA execution',
+        {
+          'Order ID': orderId.slice(0, 12) + '...',
+          'Token Pair': `${order.fromToken || 'USDC'} → ${order.toToken || 'SPX6900'}`,
+          'Remaining Orders': `${order.totalExecutions - (order.executionsCount || 0)} of ${order.totalExecutions}`,
+          'Status': 'Will be paused',
+          'Resume': 'You can resume anytime',
+        }
+      );
 
       const response = await fetch(`/api/dca-orders/${orderId}`, {
         method: 'PATCH',
@@ -637,6 +684,26 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   const handleResumeOrder = async (orderId: string) => {
     try {
       console.log('Resuming order:', orderId);
+      
+      // Get the order details for clear signing
+      const order = orders.find(o => o.id === orderId);
+      if (!order) {
+        toast.error('Order not found');
+        return;
+      }
+
+      // Request clear signature for resuming
+      await signWithClearMessage(
+        'Resume DCA Order',
+        'Resume automated DCA execution',
+        {
+          'Order ID': orderId.slice(0, 12) + '...',
+          'Token Pair': `${order.fromToken || 'USDC'} → ${order.toToken || 'SPX6900'}`,
+          'Remaining Orders': `${order.totalExecutions - (order.executionsCount || 0)} of ${order.totalExecutions}`,
+          'Status': 'Will be resumed',
+          'Next Execution': 'As per schedule',
+        }
+      );
 
       const response = await fetch(`/api/dca-orders/${orderId}`, {
         method: 'PATCH',
@@ -742,7 +809,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
           const swapProvider = 'openocean'; // Can be 'openocean', 'uniswap', or '0x'
           const swapEndpoint = swapProvider === 'openocean' ? '/api/openocean-swap' : 
                               swapProvider === 'uniswap' ? '/api/uniswap-direct' :
-                              '/api/0x-swap';
+                              '/api/openocean-swap';
 
           console.log(`🔄 Using ${swapProvider} for swap quote...`);
 
@@ -756,7 +823,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
               buyToken: result.swapParams.buyToken,
               sellAmount: result.swapParams.sellAmount,
               takerAddress: result.swapParams.smartWalletAddress || result.swapParams.userAddress,
-              slippagePercentage: 0.015, // 1.5% slippage
+              slippagePercentage: 0.03, // 3% slippage for better execution success
             }),
           });
 
@@ -931,6 +998,25 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
               );
               console.log('Submitting approval transaction...', approveData);
 
+              // Get clear authorization for approval
+              const order = orders.find(o => o.id === orderId);
+              if (order) {
+                const usdcAmount = (Number(swapData.sellAmount) / 1e6).toFixed(4);
+                
+                await signWithClearMessage(
+                  'USDC Approval for Swap',
+                  'Approve USDC spending for automated swap execution',
+                  {
+                    'Order ID': orderId.slice(0, 12) + '...',
+                    'Token': 'USDC',
+                    'Amount': `${usdcAmount} USDC`,
+                    'Spender': allowanceTarget.slice(0, 8) + '...',
+                    'Purpose': 'Enable swap execution',
+                    'Gas': 'Sponsored (FREE)',
+                  }
+                );
+              }
+
               // Send approval through smart wallet
               const approvalTxHash = await sendSmartWalletTransaction({
                 to: approveData.to,
@@ -981,6 +1067,29 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
               value: swapData.value,
               gas: swapData.gas,
             });
+
+            // Get clear authorization before executing swap
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+              const amountPerOrder = Number(order.totalAmount) / order.totalExecutions;
+              const usdcAmount = (Number(swapData.sellAmount) / 1e6).toFixed(4);
+              const spxAmount = (Number(swapData.buyAmount) / (10 ** spxDecimals)).toFixed(6);
+              
+              await signWithClearMessage(
+                'Manual DCA Swap Execution',
+                'Execute one DCA swap with gas sponsorship',
+                {
+                  'Order ID': orderId.slice(0, 12) + '...',
+                  'From Token': `${usdcAmount} USDC`,
+                  'To Token': `~${spxAmount} SPX6900`,
+                  'Exchange Rate': `1 USDC = ${(Number(spxAmount) / Number(usdcAmount)).toFixed(4)} SPX`,
+                  'Router': swapData.to?.slice(0, 8) + '...',
+                  'Gas': 'Sponsored (FREE)',
+                  'SPX Delivery': 'Your external wallet',
+                  'Slippage': '1.5% max',
+                }
+              );
+            }
 
             // Send transaction through smart wallet
             const txHash = await sendSmartWalletTransaction({

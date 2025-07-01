@@ -16,10 +16,11 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
-import { PLATFORM_FEE_PERCENTAGE, TOKENS, zeroXApi } from '../../utils/0xApi';
+import { PLATFORM_FEE_PERCENTAGE, TOKENS, openOceanApi } from '../../utils/openOceanApi';
 import AddMoneyButton from '../AddMoneyButton';
 import UnifiedLogin from '../UnifiedLogin';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
+import { useClearSigning } from '../../hooks/useClearSigning';
 import { coinbaseSmartWalletService } from '../../lib/coinbaseSmartWalletService';
 import { createDCASetupBatch, createDCASessionPermissions } from '../../utils/smartWalletBatching';
 
@@ -48,6 +49,14 @@ export default function SimpleDCAv2({
     error: smartWalletError,
     activeWallet,
   } = useUnifiedSmartWallet();
+  
+  const {
+    signDCAOrder,
+    signSessionKeyAuthorization,
+    signFundTransfer,
+    signWithClearMessage,
+    signCompleteDCASetup,
+  } = useClearSigning();
 
   // For balance checking and funding, use external wallet address (better UX)
   // The smart wallet will be managed behind the scenes
@@ -150,7 +159,7 @@ export default function SimpleDCAv2({
   const fetchCurrentPrice = async () => {
     setPriceLoading(true);
     try {
-      const price = await zeroXApi.getSPX6900Price();
+      const price = await openOceanApi.getSPX6900Price();
       setCurrentPrice(price.price);
     } catch (error) {
       if (currentPrice !== null) {
@@ -163,20 +172,44 @@ export default function SimpleDCAv2({
 
   // Fetch price impact and route data for individual orders
   const fetchPriceImpact = async () => {
-    if (!formData.amount || !numberOfOrders) return;
+    const amount = Number.parseFloat(formData.amount);
+    const orders = calculateOrders();
+    
+    if (!amount || !orders || orders === 0) {
+      setPriceImpact(0);
+      return;
+    }
 
     setImpactLoading(true);
     try {
-      const amountPerOrderInCents =
-        (Number.parseFloat(formData.amount) / numberOfOrders) * 1e6;
+      const amountPerOrderInCents = (amount / orders) * 1e6;
+      
+      // Ensure we have a valid amount
+      if (amountPerOrderInCents < 1) {
+        setPriceImpact(0.1);
+        setImpactLoading(false);
+        return;
+      }
 
       const response = await fetch(
-        `/api/0x-price?sellToken=${TOKENS.USDC}&buyToken=${TOKENS.SPX6900}&sellAmount=${Math.floor(amountPerOrderInCents)}`,
+        `/api/openocean-price?sellToken=${TOKENS.USDC}&buyToken=${TOKENS.SPX6900}&sellAmount=${Math.floor(amountPerOrderInCents)}`,
       );
       const data = await response.json();
+      
+      console.log('Price impact API response:', {
+        ok: response.ok,
+        status: response.status,
+        data,
+        estimatedPriceImpact: data.estimatedPriceImpact,
+        estimatedPriceImpactType: typeof data.estimatedPriceImpact
+      });
 
       if (response.ok) {
-        setPriceImpact(Number.parseFloat(data.estimatedPriceImpact));
+        const impact = data.estimatedPriceImpact;
+        const impactNumber = impact && !isNaN(Number.parseFloat(impact)) 
+          ? Number.parseFloat(impact) 
+          : 0.1; // Default fallback
+        setPriceImpact(impactNumber);
         setRouteData(data.route);
       } else {
         throw new Error(data.error || 'Failed to fetch price data');
@@ -199,6 +232,7 @@ export default function SimpleDCAv2({
   // Fetch price on component mount
   useEffect(() => {
     fetchCurrentPrice();
+    fetchPriceImpact(); // Also fetch initial price impact
   }, []);
 
   // Fetch price impact when order parameters change
@@ -244,8 +278,38 @@ export default function SimpleDCAv2({
       
       const totalAmountInWei = BigInt(Math.floor(totalAmount * 1e6)); // USDC has 6 decimals
       const durationInDays = Number.parseInt(formData.duration);
+      
+      // Calculate order details
+      const orderCount = calculateOrders();
+      
+      if (!orderCount || orderCount === 0) {
+        toast.error('Invalid duration or frequency. Please check your settings.');
+        return;
+      }
+      
+      const amountPerOrderValue = totalAmount / orderCount;
+      
+      console.log('📊 Order calculation:', {
+        totalAmount,
+        orderCount,
+        amountPerOrder: amountPerOrderValue,
+        frequency: formData.frequency,
+        duration: durationInDays
+      });
 
-      // Step 1: Create batched setup transactions
+      // Step 1: Get combined authorization for DCA setup and funding
+      console.log('🔏 Requesting authorization for complete DCA setup...');
+      await signCompleteDCASetup(
+        smartWalletAddress as `0x${string}`,
+        totalAmount,
+        amountPerOrderValue,
+        formData.frequency,
+        orderCount,
+        PLATFORM_FEE_PERCENTAGE,
+        durationInDays
+      );
+
+      // Step 2: Create batched setup transactions
       toast('Creating transaction batch...', { duration: 2000 });
       
       const setupBatch = await createDCASetupBatch(
@@ -254,7 +318,7 @@ export default function SimpleDCAv2({
         totalAmountInWei
       );
 
-      // Step 2: Execute the batch (transfer USDC + setup approvals)
+      // Step 3: Execute the batch (transfer USDC + setup approvals)
       toast('Executing setup transactions...', { duration: 3000 });
       
       const txHashes = await sendBatchTransactions(setupBatch);
@@ -275,7 +339,7 @@ export default function SimpleDCAv2({
         return obj;
       };
 
-      // Step 3: Create session key permissions for automated execution
+      // Step 4: Create session key permissions for automated execution
       let sessionKeyData: any;
       
       if (walletType === 'zerodev_smart') {
@@ -287,8 +351,9 @@ export default function SimpleDCAv2({
         );
         
         try {
+          // Session key is already authorized in the combined DCA setup signature
           sessionKeyData = await generateSessionKey(sessionPermissions);
-          console.log('✅ ZeroDev session key created');
+          console.log('✅ ZeroDev session key created (already authorized in DCA setup)');
         } catch (error) {
           console.log('⚠️ Session key creation failed, using manual execution mode');
           sessionKeyData = {
@@ -308,7 +373,7 @@ export default function SimpleDCAv2({
         };
       }
 
-      // Step 4: Create DCA order via API
+      // Step 5: Create DCA order via API
       toast('Creating DCA order...', { duration: 2000 });
       
       const response = await fetch('/api/dca-orders', {
@@ -368,6 +433,7 @@ export default function SimpleDCAv2({
   const handleLoginSuccess = () => {
     toast.success('Login successful! You can now start investing.');
   };
+
 
   // Show wallet connection UI if not ready
   if (!isWalletReady) {
@@ -578,8 +644,8 @@ export default function SimpleDCAv2({
           {priceImpact !== null && (
             <div className="flex justify-between">
               <span className="text-gray-400">Price impact:</span>
-              <span className={`${priceImpact > 1 ? 'text-red-400' : 'text-green-400'}`}>
-                {impactLoading ? 'Loading...' : `${priceImpact.toFixed(2)}%`}
+              <span className={`${(priceImpact || 0) > 1 ? 'text-red-400' : 'text-green-400'}`}>
+                {impactLoading ? 'Loading...' : `${(priceImpact || 0).toFixed(2)}%`}
               </span>
             </div>
           )}
@@ -589,7 +655,7 @@ export default function SimpleDCAv2({
           <div className="mt-4 pt-3 border-t border-gray-700">
             <h5 className="text-xs font-medium text-gray-400 mb-2">Route Details</h5>
             <div className="text-xs text-gray-500 space-y-1">
-              <div>Protocol: {routeData.protocol || '0x'}</div>
+              <div>Protocol: {routeData.protocol || 'OpenOcean'}</div>
               <div>Source: {routeData.source || 'Multiple DEXs'}</div>
               {routeData.sources && (
                 <div>Sources: {routeData.sources.map((s: any) => s.name).join(', ')}</div>
