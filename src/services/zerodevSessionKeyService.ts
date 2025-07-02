@@ -251,11 +251,17 @@ export class ZeroDevSessionKeyService {
           value: 0n,
           data: this.encodeApproveTransaction(OPENOCEAN_ROUTER, swapAmount),
         },
-        // Transaction 2: Execute swap via OpenOcean (SPX tokens sent directly to destination)
+        // Transaction 2: Execute swap via OpenOcean (SPX tokens go to smart wallet first)
         {
           to: swapQuote.transaction.to,
           value: BigInt(swapQuote.transaction.value || '0'),
           data: swapQuote.transaction.data,
+        },
+        // Transaction 3: Transfer expected SPX tokens from smart wallet to external wallet
+        {
+          to: TOKENS.SPX6900,
+          value: 0n,
+          data: this.encodeTransferTransaction(destinationAddress, BigInt(swapQuote.expectedOutput)),
         },
       ];
 
@@ -418,7 +424,7 @@ export class ZeroDevSessionKeyService {
           buyToken,
           sellAmount: sellAmount.toString(),
           takerAddress,
-          receiverAddress: receiverAddress || takerAddress, // Send tokens to receiver if specified
+          receiverAddress: takerAddress, // Send tokens to smart wallet first, then transfer manually
           slippagePercentage: 0.015, // 1.5%
         }),
       });
@@ -469,6 +475,18 @@ export class ZeroDevSessionKeyService {
     const toPadded = to.slice(2).padStart(64, '0');
     const amountPadded = amount.toString(16).padStart(64, '0');
     return `${functionSelector}${toPadded}${amountPadded}` as Hex;
+  }
+
+  /**
+   * Encode ERC20 transfer transaction that transfers entire balance
+   * Uses a special amount value that indicates "transfer all"
+   */
+  private encodeTransferAllTransaction(to: Address): Hex {
+    // For now, we'll use the maximum uint256 value to indicate "transfer all"
+    // In a more sophisticated implementation, we could use a custom contract
+    // that reads the balance and transfers it in one transaction
+    const maxAmount = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+    return this.encodeTransferTransaction(to, maxAmount);
   }
 }
 
