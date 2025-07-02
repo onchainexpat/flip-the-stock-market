@@ -1,8 +1,8 @@
 'use client';
-import { TrendingUp, BarChart3, Clock, Shield } from 'lucide-react';
+import { BarChart3, Clock, Shield, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
-import SimpleDCA from '../../components/DCA/SimpleDCA';
 import DCADashboard from '../../components/DCA/DCADashboard';
+import SimpleDCA from '../../components/DCA/SimpleDCA';
 
 export default function InvestPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -27,8 +27,8 @@ export default function InvestPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Investment Setup */}
           <div>
-            <SimpleDCA 
-              onOrderCreated={() => setRefreshTrigger(prev => prev + 1)}
+            <SimpleDCA
+              onOrderCreated={() => setRefreshTrigger((prev) => prev + 1)}
             />
           </div>
 
@@ -43,17 +43,23 @@ export default function InvestPage() {
           <div className="text-center p-6 bg-gray-800/50 rounded-lg">
             <Clock size={32} className="text-blue-400 mx-auto mb-4" />
             <h3 className="text-white font-semibold mb-2">Automated</h3>
-            <p className="text-gray-400 text-sm">Set it and forget it. Your investments run automatically.</p>
+            <p className="text-gray-400 text-sm">
+              Set it and forget it. Your investments run automatically.
+            </p>
           </div>
           <div className="text-center p-6 bg-gray-800/50 rounded-lg">
             <Shield size={32} className="text-green-400 mx-auto mb-4" />
             <h3 className="text-white font-semibold mb-2">Gas-Free</h3>
-            <p className="text-gray-400 text-sm">Zero gas fees. All transactions are sponsored.</p>
+            <p className="text-gray-400 text-sm">
+              Zero gas fees. All transactions are sponsored.
+            </p>
           </div>
           <div className="text-center p-6 bg-gray-800/50 rounded-lg">
             <BarChart3 size={32} className="text-purple-400 mx-auto mb-4" />
             <h3 className="text-white font-semibold mb-2">Smart Wallets</h3>
-            <p className="text-gray-400 text-sm">Advanced wallet technology for seamless investing.</p>
+            <p className="text-gray-400 text-sm">
+              Advanced wallet technology for seamless investing.
+            </p>
           </div>
         </div>
       </div>

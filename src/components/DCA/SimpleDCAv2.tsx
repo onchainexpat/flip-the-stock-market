@@ -9,20 +9,25 @@ import {
   Clock,
   DollarSign,
   Repeat,
-  TrendingUp,
   Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
-import { PLATFORM_FEE_PERCENTAGE, TOKENS, openOceanApi } from '../../utils/openOceanApi';
+import { useClearSigning } from '../../hooks/useClearSigning';
+import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
+import {
+  PLATFORM_FEE_PERCENTAGE,
+  TOKENS,
+  openOceanApi,
+} from '../../utils/openOceanApi';
+import {
+  createDCASessionPermissions,
+  createDCASetupBatch,
+} from '../../utils/smartWalletBatching';
 import AddMoneyButton from '../AddMoneyButton';
 import UnifiedLogin from '../UnifiedLogin';
-import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
-import { useClearSigning } from '../../hooks/useClearSigning';
-import { coinbaseSmartWalletService } from '../../lib/coinbaseSmartWalletService';
-import { createDCASetupBatch, createDCASessionPermissions } from '../../utils/smartWalletBatching';
 
 interface SimpleDCAv2Props {
   className?: string;
@@ -49,7 +54,7 @@ export default function SimpleDCAv2({
     error: smartWalletError,
     activeWallet,
   } = useUnifiedSmartWallet();
-  
+
   const {
     signDCAOrder,
     signSessionKeyAuthorization,
@@ -62,7 +67,8 @@ export default function SimpleDCAv2({
   // The smart wallet will be managed behind the scenes
   const externalWalletAddress = activeWallet?.address || wagmiAddress;
   const balanceAddress = externalWalletAddress; // Check balance from external wallet
-  const isWalletReady = isReady && !!externalWalletAddress && !!smartWalletAddress;
+  const isWalletReady =
+    isReady && !!externalWalletAddress && !!smartWalletAddress;
 
   const [formData, setFormData] = useState({
     amount: '100',
@@ -117,7 +123,22 @@ export default function SimpleDCAv2({
     console.log('Smart wallet error:', smartWalletError);
     console.log('USDC balance:', usdBalance);
     console.log('=== END BALANCE DEBUG v3 ===');
-  }, [wagmiAddress, isConnected, externalWalletAddress, smartWalletAddress, balanceAddress, walletType, isReady, isWalletReady, hasGasSponsorship, canCreateDCAOrders, needsDeployment, smartWalletLoading, smartWalletError, usdBalance]);
+  }, [
+    wagmiAddress,
+    isConnected,
+    externalWalletAddress,
+    smartWalletAddress,
+    balanceAddress,
+    walletType,
+    isReady,
+    isWalletReady,
+    hasGasSponsorship,
+    canCreateDCAOrders,
+    needsDeployment,
+    smartWalletLoading,
+    smartWalletError,
+    usdBalance,
+  ]);
 
   // Calculate number of orders based on frequency and duration
   const calculateOrders = () => {
@@ -174,7 +195,7 @@ export default function SimpleDCAv2({
   const fetchPriceImpact = async () => {
     const amount = Number.parseFloat(formData.amount);
     const orders = calculateOrders();
-    
+
     if (!amount || !orders || orders === 0) {
       setPriceImpact(0);
       return;
@@ -183,7 +204,7 @@ export default function SimpleDCAv2({
     setImpactLoading(true);
     try {
       const amountPerOrderInCents = (amount / orders) * 1e6;
-      
+
       // Ensure we have a valid amount
       if (amountPerOrderInCents < 1) {
         setPriceImpact(0.1);
@@ -195,20 +216,21 @@ export default function SimpleDCAv2({
         `/api/openocean-price?sellToken=${TOKENS.USDC}&buyToken=${TOKENS.SPX6900}&sellAmount=${Math.floor(amountPerOrderInCents)}`,
       );
       const data = await response.json();
-      
+
       console.log('Price impact API response:', {
         ok: response.ok,
         status: response.status,
         data,
         estimatedPriceImpact: data.estimatedPriceImpact,
-        estimatedPriceImpactType: typeof data.estimatedPriceImpact
+        estimatedPriceImpactType: typeof data.estimatedPriceImpact,
       });
 
       if (response.ok) {
         const impact = data.estimatedPriceImpact;
-        const impactNumber = impact && !isNaN(Number.parseFloat(impact)) 
-          ? Number.parseFloat(impact) 
-          : 0.1; // Default fallback
+        const impactNumber =
+          impact && !isNaN(Number.parseFloat(impact))
+            ? Number.parseFloat(impact)
+            : 0.1; // Default fallback
         setPriceImpact(impactNumber);
         setRouteData(data.route);
       } else {
@@ -253,7 +275,9 @@ export default function SimpleDCAv2({
 
     if (!canCreateDCAOrders) {
       if (needsDeployment) {
-        toast.error('Please deploy your smart wallet first to enable automated DCA.');
+        toast.error(
+          'Please deploy your smart wallet first to enable automated DCA.',
+        );
         return;
       }
       toast.error('Your wallet does not support automated DCA orders.');
@@ -275,26 +299,28 @@ export default function SimpleDCAv2({
       console.log('📤 External wallet:', externalWalletAddress);
       console.log('🤖 Smart wallet:', smartWalletAddress);
       console.log('💰 Total amount:', totalAmount);
-      
+
       const totalAmountInWei = BigInt(Math.floor(totalAmount * 1e6)); // USDC has 6 decimals
       const durationInDays = Number.parseInt(formData.duration);
-      
+
       // Calculate order details
       const orderCount = calculateOrders();
-      
+
       if (!orderCount || orderCount === 0) {
-        toast.error('Invalid duration or frequency. Please check your settings.');
+        toast.error(
+          'Invalid duration or frequency. Please check your settings.',
+        );
         return;
       }
-      
+
       const amountPerOrderValue = totalAmount / orderCount;
-      
+
       console.log('📊 Order calculation:', {
         totalAmount,
         orderCount,
         amountPerOrder: amountPerOrderValue,
         frequency: formData.frequency,
-        duration: durationInDays
+        duration: durationInDays,
       });
 
       // Step 1: Get combined authorization for DCA setup and funding
@@ -306,24 +332,24 @@ export default function SimpleDCAv2({
         formData.frequency,
         orderCount,
         PLATFORM_FEE_PERCENTAGE,
-        durationInDays
+        durationInDays,
       );
 
       // Step 2: Create batched setup transactions
       toast('Creating transaction batch...', { duration: 2000 });
-      
+
       const setupBatch = await createDCASetupBatch(
         externalWalletAddress as `0x${string}`,
         smartWalletAddress as `0x${string}`,
-        totalAmountInWei
+        totalAmountInWei,
       );
 
       // Step 3: Execute the batch (transfer USDC + setup approvals)
       toast('Executing setup transactions...', { duration: 3000 });
-      
+
       const txHashes = await sendBatchTransactions(setupBatch);
       console.log('✅ Setup batch completed:', txHashes);
-      
+
       // Helper to convert BigInt to string for JSON serialization
       const serializeBigInt = (obj: any): any => {
         if (obj === null || obj === undefined) return obj;
@@ -341,25 +367,30 @@ export default function SimpleDCAv2({
 
       // Step 4: Create session key permissions for automated execution
       let sessionKeyData: any;
-      
+
       if (walletType === 'zerodev_smart') {
         // Create session permissions for ZeroDev
         const sessionPermissions = createDCASessionPermissions(
           smartWalletAddress as `0x${string}`,
           totalAmountInWei,
-          durationInDays
+          durationInDays,
         );
-        
+
         try {
           // Session key is already authorized in the combined DCA setup signature
           sessionKeyData = await generateSessionKey(sessionPermissions);
-          console.log('✅ ZeroDev session key created (already authorized in DCA setup)');
+          console.log(
+            '✅ ZeroDev session key created (already authorized in DCA setup)',
+          );
         } catch (error) {
-          console.log('⚠️ Session key creation failed, using manual execution mode');
+          console.log(
+            '⚠️ Session key creation failed, using manual execution mode',
+          );
           sessionKeyData = {
             sessionAddress: smartWalletAddress,
             permissions: sessionPermissions,
-            validUntil: Math.floor(Date.now() / 1000) + (durationInDays * 24 * 60 * 60),
+            validUntil:
+              Math.floor(Date.now() / 1000) + durationInDays * 24 * 60 * 60,
             validAfter: Math.floor(Date.now() / 1000),
           };
         }
@@ -368,14 +399,15 @@ export default function SimpleDCAv2({
         sessionKeyData = {
           sessionAddress: smartWalletAddress,
           permissions: [],
-          validUntil: Math.floor(Date.now() / 1000) + (durationInDays * 24 * 60 * 60),
+          validUntil:
+            Math.floor(Date.now() / 1000) + durationInDays * 24 * 60 * 60,
           validAfter: Math.floor(Date.now() / 1000),
         };
       }
 
       // Step 5: Create DCA order via API
       toast('Creating DCA order...', { duration: 2000 });
-      
+
       const response = await fetch('/api/dca-orders', {
         method: 'POST',
         headers: {
@@ -403,10 +435,12 @@ export default function SimpleDCAv2({
 
       const { order } = await response.json();
 
-      const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(2);
+      const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(
+        2,
+      );
       toast.success(
         `🎉 DCA order created! ${numberOfOrders} orders of $${amountPerOrder} each. SPX6900 tokens will be sent to your external wallet after each swap.`,
-        { duration: 6000 }
+        { duration: 6000 },
       );
 
       // Reset form
@@ -434,7 +468,6 @@ export default function SimpleDCAv2({
     toast.success('Login successful! You can now start investing.');
   };
 
-
   // Show wallet connection UI if not ready
   if (!isWalletReady) {
     return (
@@ -444,13 +477,14 @@ export default function SimpleDCAv2({
             <p className="text-red-300 text-sm">⚠️ {smartWalletError}</p>
           </div>
         )}
-        
+
         <UnifiedLogin onSuccess={handleLoginSuccess} />
-        
+
         {/* Additional info for external wallets */}
         <div className="mt-4 p-3 bg-blue-900/20 border border-blue-700 rounded-lg">
           <p className="text-blue-300 text-sm text-center">
-            💡 Smart wallet manages DCA automatically, SPX6900 tokens delivered to your external wallet
+            💡 Smart wallet manages DCA automatically, SPX6900 tokens delivered
+            to your external wallet
           </p>
         </div>
       </div>
@@ -518,7 +552,7 @@ export default function SimpleDCAv2({
               <div className="text-sm text-gray-400">
                 Balance: ${usdBalance.toFixed(2)}
               </div>
-              <AddMoneyButton 
+              <AddMoneyButton
                 className="text-xs py-1 px-2 text-xs"
                 walletAddress={externalWalletAddress}
                 walletType="external_wallet"
@@ -550,7 +584,8 @@ export default function SimpleDCAv2({
           </div>
           {hasInsufficientBalance && (
             <p className="text-red-400 text-sm mt-1">
-              Insufficient balance. You need ${totalAmount.toFixed(2)} but only have ${usdBalance.toFixed(2)}.
+              Insufficient balance. You need ${totalAmount.toFixed(2)} but only
+              have ${usdBalance.toFixed(2)}.
             </p>
           )}
         </div>
@@ -616,10 +651,15 @@ export default function SimpleDCAv2({
             onClick={() => setShowRouteDetails(!showRouteDetails)}
             className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
           >
-            Details {showRouteDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            Details{' '}
+            {showRouteDetails ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
           </button>
         </div>
-        
+
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-400">Number of orders:</span>
@@ -631,7 +671,9 @@ export default function SimpleDCAv2({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Platform fee per order:</span>
-            <span className="text-white">${platformFeePerOrder.toFixed(2)}</span>
+            <span className="text-white">
+              ${platformFeePerOrder.toFixed(2)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Net amount per order:</span>
@@ -644,8 +686,12 @@ export default function SimpleDCAv2({
           {priceImpact !== null && (
             <div className="flex justify-between">
               <span className="text-gray-400">Price impact:</span>
-              <span className={`${(priceImpact || 0) > 1 ? 'text-red-400' : 'text-green-400'}`}>
-                {impactLoading ? 'Loading...' : `${(priceImpact || 0).toFixed(2)}%`}
+              <span
+                className={`${(priceImpact || 0) > 1 ? 'text-red-400' : 'text-green-400'}`}
+              >
+                {impactLoading
+                  ? 'Loading...'
+                  : `${(priceImpact || 0).toFixed(2)}%`}
               </span>
             </div>
           )}
@@ -653,12 +699,17 @@ export default function SimpleDCAv2({
 
         {showRouteDetails && routeData && (
           <div className="mt-4 pt-3 border-t border-gray-700">
-            <h5 className="text-xs font-medium text-gray-400 mb-2">Route Details</h5>
+            <h5 className="text-xs font-medium text-gray-400 mb-2">
+              Route Details
+            </h5>
             <div className="text-xs text-gray-500 space-y-1">
               <div>Protocol: {routeData.protocol || 'OpenOcean'}</div>
               <div>Source: {routeData.source || 'Multiple DEXs'}</div>
               {routeData.sources && (
-                <div>Sources: {routeData.sources.map((s: any) => s.name).join(', ')}</div>
+                <div>
+                  Sources:{' '}
+                  {routeData.sources.map((s: any) => s.name).join(', ')}
+                </div>
               )}
             </div>
           </div>
@@ -667,20 +718,29 @@ export default function SimpleDCAv2({
 
       {/* Smart Wallet Automation Info */}
       <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4 mb-4">
-        <h4 className="text-blue-300 font-medium mb-2">🤖 Smart Wallet Automation</h4>
+        <h4 className="text-blue-300 font-medium mb-2">
+          🤖 Smart Wallet Automation
+        </h4>
         <div className="text-blue-200 text-sm space-y-1">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-            <span>USDC transfers from your wallet to smart wallet for DCA execution</span>
+            <span>
+              USDC transfers from your wallet to smart wallet for DCA execution
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-            <span>SPX6900 tokens automatically sent back to your wallet after each swap</span>
+            <span>
+              SPX6900 tokens automatically sent back to your wallet after each
+              swap
+            </span>
           </div>
           {hasGasSponsorship && (
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-yellow-400" />
-              <span className="text-yellow-400">All swap transactions are gas-free</span>
+              <span className="text-yellow-400">
+                All swap transactions are gas-free
+              </span>
             </div>
           )}
         </div>
@@ -690,15 +750,18 @@ export default function SimpleDCAv2({
       <button
         onClick={createDCAOrder}
         disabled={
-          isCreating || 
-          smartWalletLoading || 
-          hasInsufficientBalance || 
+          isCreating ||
+          smartWalletLoading ||
+          hasInsufficientBalance ||
           !canCreateDCAOrders ||
           !Number.parseFloat(formData.amount) ||
           !Number.parseInt(formData.duration)
         }
         className={`w-full py-4 px-6 rounded-lg font-medium text-white transition-all duration-200 ${
-          isCreating || smartWalletLoading || hasInsufficientBalance || !canCreateDCAOrders
+          isCreating ||
+          smartWalletLoading ||
+          hasInsufficientBalance ||
+          !canCreateDCAOrders
             ? 'bg-gray-700 cursor-not-allowed'
             : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02]'
         } flex items-center justify-center gap-2`}

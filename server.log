@@ -1,0 +1,2263 @@
+$ NODE_OPTIONS='--inspect' next dev
+Debugger listening on ws://127.0.0.1:9229/cc6b8afe-d6d8-46f5-aadd-e53f543c6209
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:9230/fd1267cb-8799-4c6f-b0cf-9c9e06d41f39
+For help, see: https://nodejs.org/en/docs/inspector
+   the --inspect option was detected, the Next.js router server should be inspected at port 9230.
+  ▲ Next.js 14.2.30
+  - Local:        http://localhost:3000
+  - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 2.1s
+ ○ Compiling /dca-v2 ...
+ ✓ Compiled /dca-v2 in 28.4s (17620 modules)
+ GET /dca-v2 200 in 29008ms
+ GET /dca-v2 200 in 14849ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /api/coingecko in 14.4s (17597 modules)
+ ✓ Compiled (17631 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 15640ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 8457ms
+ GET /dca-v2 200 in 254ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 23ms
+ HEAD /dca-v2 200 in 34ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 1908ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 613ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 1909ms
+ ✓ Compiled in 3.5s (17594 modules)
+ ✓ Compiled in 1851ms (17594 modules)
+ ✓ Compiled in 1793ms (17594 modules)
+ ✓ Compiled in 1631ms (17594 modules)
+ ✓ Compiled in 1746ms (17594 modules)
+ ✓ Compiled in 1810ms (17594 modules)
+ GET /dca-v2 200 in 260ms
+ ✓ Compiled in 2.2s (17594 modules)
+ ✓ Compiled in 2.1s (17594 modules)
+ ✓ Compiled in 1768ms (17594 modules)
+ GET /dca-v2 200 in 233ms
+ ✓ Compiled in 2.1s (17594 modules)
+ ○ Compiling /api/coingecko ...
+ ✓ Compiled /api/coingecko in 2.6s (9018 modules)
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 4025ms
+ ✓ Compiled in 1838ms (17628 modules)
+ ✓ Compiled in 1768ms (17628 modules)
+ ✓ Compiled in 1803ms (17628 modules)
+ ✓ Compiled in 2.2s (17594 modules)
+ GET /dca-v2 200 in 252ms
+ GET /dca-v2 200 in 63ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 7.2s (17583 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 7335ms
+ ○ Compiling /api/coingecko ...
+ ✓ Compiled /api/coingecko in 1194ms (9019 modules)
+ HEAD /dca-v2 200 in 1455ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 4542ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 602ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 2595ms
+ GET /dca-v2 200 in 62ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 51ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ HEAD /dca-v2 200 in 20ms
+ GET /api/coingecko 200 in 1831ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 589ms
+Cleared existing cache
+Fetching fresh CoinGecko data
+ GET /api/coingecko 200 in 2403ms
+ ✓ Compiled in 4.1s (17614 modules)
+ ✓ Compiled in 3.3s (17594 modules)
+ ✓ Compiled in 1703ms (17594 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1699ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 3218ms
+ GET /dca-v2 200 in 312ms
+ GET /dca-v2 200 in 27ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 5.1s (17583 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5187ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1310ms (9014 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 357ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111 200 in 1577ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2904ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 892ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1469ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 1561ms
+ ✓ Compiled in 3.2s (17623 modules)
+ GET /dca-v2 200 in 319ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.3s (17583 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2379ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1175ms (9014 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 1285ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3785ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111 200 in 2653ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 755ms
+ ✓ Compiled in 8.4s (17594 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1188ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333&taker=0x1111111111111111111111111111111111111111 200 in 2862ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333333&taker=0x1111111111111111111111111111111111111111 200 in 1981ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333333&taker=0x1111111111111111111111111111111111111111 200 in 717ms
+ ✓ Compiled in 3.7s (17623 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received: {
+  "blockNumber": "31837538",
+  "buyAmount": "91877221",
+  "buyToken": "0x50da645f148798f68ef2d7db7c1cb22a6819bb2c",
+  "fees": {
+    "integratorFee": null,
+    "zeroExFee": {
+      "amount": "1500",
+      "token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "type": "volume"
+    },
+    "gasFee": null
+  },
+  "gas": "433859",
+  "gasPrice": "3189881",
+  "issues": {
+    "allowance": {
+      "actual": "0",
+      "spender": "0x000000000022d473030f116ddee9f6b43ac78ba3"
+    },
+    "balance": null,
+    "simulationIncomplete": false,
+    "invalidSourcesPassed": []
+  },
+  "liquidityAvailable": true,
+  "minBuyAmount": "90960487",
+  "route": {
+    "fills": [
+      {
+        "from": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "to": "0x4200000000000000000000000000000000000006",
+        "source": "Uniswap_V3",
+        "proportionBps": "10000"
+      },
+      {
+        "from": "0x4200000000000000000000000000000000000006",
+        "to": "0x50da645f148798f68ef2d7db7c1cb22a6819bb2c",
+        "source": "Uniswap_V3",
+        "proportionBps": "10000"
+      }
+    ],
+    "tokens": [
+      {
+        "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "symbol": "USDC"
+      },
+      {
+        "address": "0x4200000000000000000000000000000000000006",
+        "symbol": "WETH"
+      },
+      {
+        "address": "0x50da645f148798f68ef2d7db7c1cb22a6819bb2c",
+        "symbol": "SPX"
+      }
+    ]
+  },
+  "sellAmount": "1000000",
+  "sellToken": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  "tokenMetadata": {
+    "buyToken": {
+      "buyTaxBps": "0",
+      "sellTaxBps": "0"
+    },
+    "sellToken": {
+      "buyTaxBps": "0",
+      "sellTaxBps": "0"
+    }
+  },
+  "totalNetworkFee": "1388330583410",
+  "zid": "0x5327457a48b7579bb7c180ae"
+}
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1465ms
+ ✓ Compiled in 1697ms (17623 modules)
+ ✓ Compiled in 1522ms (17623 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1420ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=100000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=100000000 200 in 1919ms
+ GET /dca-v2 200 in 370ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.8s (17612 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4838ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1614ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 218ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111 200 in 1486ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 172ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333333&taker=0x1111111111111111111111111111111111111111 200 in 1479ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111 200 in 1455ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333 200 in 1426ms
+ ✓ Compiled in 3.4s (17623 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333 200 in 1449ms
+ ✓ Compiled in 2.1s (17623 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Large trade debug: {
+  sellAmount: '33333333333',
+  buyAmount: '3046719210296',
+  minBuyAmount: '3016252017900',
+  priceImpact: undefined,
+  estimatedPriceImpact: undefined
+}
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333 200 in 1407ms
+ ✓ Compiled in 2.1s (17623 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Large trade debug: {
+  sellAmount: '33333333333',
+  buyAmount: '3048775804501',
+  minBuyAmount: '3018288042000',
+  priceImpact: undefined,
+  estimatedPriceImpact: undefined
+}
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333 200 in 1090ms
+ ✓ Compiled in 2.1s (17623 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Large trade debug: {
+  sellAmount: '33333333333',
+  buyAmount: '3047136524379',
+  minBuyAmount: '3016665154800',
+  priceImpact: undefined,
+  estimatedPriceImpact: undefined
+}
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333333 200 in 2139ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=100000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=100000000 200 in 2321ms
+ ✓ Compiled in 1807ms (17623 modules)
+ ✓ Compiled in 5.4s (17594 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1053ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3405ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111 200 in 2195ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1962ms
+ ✓ Compiled in 1763ms (17623 modules)
+ ✓ Compiled in 1818ms (17623 modules)
+ ✓ Compiled in 2.2s (17623 modules)
+ ✓ Compiled in 4.5s (17627 modules)
+ GET /dca-v2 200 in 359ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.1s (17587 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3204ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1145ms (9016 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 267ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2290ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3444ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1656ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2268ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333 200 in 2135ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2191ms
+ ✓ Compiled in 3.4s (17627 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333333 200 in 2142ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2188ms
+ ✓ Compiled in 3.4s (17598 modules)
+ ✓ Compiled in 5.5s (17600 modules)
+ ✓ Compiled in 1848ms (17600 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1787ms (9016 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4181ms
+ ✓ Compiled in 8.5s (17600 modules)
+ ✓ Compiled in 2.3s (17600 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 115ms (9016 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2119ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2385ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1375ms
+ ✓ Compiled in 2.3s (17629 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333 200 in 2103ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 7490ms
+ ✓ Compiled in 4.2s (17586 modules)
+ ✓ Compiled in 719ms (8613 modules)
+ ✓ Compiled in 332ms (8613 modules)
+ ○ Compiling /api/cron/execute-dca ...
+ ✓ Compiled /api/cron/execute-dca in 730ms (147 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 500 in 816ms
+ ✓ Compiled in 1639ms (8613 modules)
+ ✓ Compiled in 902ms (8756 modules)
+ ✓ Compiled in 786ms (8613 modules)
+ ✓ Compiled /api/cron/execute-dca in 50ms (144 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 121ms
+ ✓ Compiled in 3.4s (17730 modules)
+ ✓ Compiled /api/test-dca-order in 235ms (149 modules)
+Creating test DCA order
+ POST /api/test-dca-order 200 in 329ms
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 50ms
+ ✓ Compiled in 959ms (8762 modules)
+ ✓ Compiled in 863ms (8768 modules)
+ ✓ Compiled in 900ms (8763 modules)
+ ✓ Compiled in 737ms (8613 modules)
+ ✓ Compiled in 819ms (8613 modules)
+ ✓ Compiled /api/test-dca-order in 60ms (152 modules)
+Creating test DCA order
+ POST /api/test-dca-order 200 in 3240ms
+ ✓ Compiled /api/cron/execute-dca in 41ms (155 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 2170ms
+ ✓ Compiled in 2.3s (17755 modules)
+ ✓ Compiled in 2.7s (17600 modules)
+ ✓ Compiled in 1755ms (17600 modules)
+ ✓ Compiled in 1855ms (17596 modules)
+ ✓ Compiled in 2.1s (17596 modules)
+ ✓ Compiled in 2.3s (17596 modules)
+ ○ Compiling /api/dca-orders ...
+ ✓ Compiled /api/dca-orders in 537ms (152 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2866ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 661ms
+ ✓ Compiled in 1735ms (17596 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2093ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 650ms
+ ✓ Compiled in 2.3s (17596 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2093ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 649ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1054ms (9014 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333 200 in 3258ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 1489ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333333 200 in 2135ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2224ms
+ GET /dca-v2 200 in 422ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.4s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4484ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1128ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 280ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3284ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2240ms
+0x API Response received
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2215ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1498ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 676ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333 200 in 132ms
+ POST /api/dca-orders 200 in 2896ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 1296ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2122ms
+ ✓ Compiled in 3.6s (17596 modules)
+ ✓ Compiled in 820ms (17596 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1298ms (9014 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888 200 in 3565ms
+ ✓ Compiled in 3.5s (17596 modules)
+ ✓ Compiled in 758ms (8611 modules)
+ ✓ Compiled in 1851ms (17596 modules)
+ ✓ Compiled /api/test-dca-order in 175ms (152 modules)
+Creating test DCA order
+ POST /api/test-dca-order 200 in 3305ms
+ ✓ Compiled in 895ms (8763 modules)
+ GET /dca-v2 200 in 400ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.2s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4315ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1239ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 289ms
+0x API Response received
+0x API Response received
+ ✓ Compiled /api/dca-orders in 220ms (152 modules)
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2324ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3585ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1421ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2391ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 694ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888 200 in 913ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=13888&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=13888 200 in 2326ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1388888&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888 200 in 2202ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1388888 200 in 2596ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=41666666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=41666666 200 in 897ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=4166666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=4166666 200 in 2170ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666 200 in 1563ms
+ POST /api/dca-orders 200 in 3072ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 1310ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2167ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 3042ms
+ ○ Compiling /api/cron/execute-dca ...
+ ✓ Compiled /api/cron/execute-dca in 563ms (150 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 3752ms
+ ✓ Compiled in 8s (17596 modules)
+ ✓ Compiled /api/dca-orders in 42ms (155 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2883ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 1289ms
+ ✓ Compiled in 782ms (8611 modules)
+ ✓ Compiled in 1422ms (8763 modules)
+ ✓ Compiled in 1195ms (8611 modules)
+ ✓ Compiled in 692ms (8611 modules)
+ ✓ Compiled in 756ms (8611 modules)
+ ✓ Compiled in 1326ms (8611 modules)
+ ✓ Compiled in 710ms (8611 modules)
+ ✓ Compiled /api/cron/execute-dca in 207ms (151 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 3311ms
+ GET /api/cron/execute-dca 401 in 7ms
+ ✓ Compiled in 863ms (8762 modules)
+Manual DCA execution trigger
+Found 2 orders ready for execution
+Processing DCA order order_1750466707649_es2gxqzsa for user 0x1234567890123456789012345678901234567890
+Executing DCA order order_1750466707649_es2gxqzsa for user 0x1234567890123456789012345678901234567890
+- Amount per order: 3333333 wei (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+- Target token: 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C
+Getting swap quote from 0x API...
+Server 0x API Request: https://api.0x.org/swap/permit2/quote?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1234567890123456789012345678901234567890&slippagePercentage=0.015
+Server 0x API Response received
+Quote received: 3333333 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 -> 307956111 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C
+Estimated price impact: 0%
+Simulated transaction execution - Hash: 0x1978ffc571a8381cc15
+✅ Order order_1750466707649_es2gxqzsa executed successfully
+- TX Hash: 0x1978ffc571a8381cc15
+- Amount in: 3333333
+- Amount out: 307956111
+- Next execution: Next cycle
+✅ Successfully executed order order_1750466707649_es2gxqzsa
+Processing DCA order order_1750466990215_loy4q287d for user 0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7
+Executing DCA order order_1750466990215_loy4q287d for user 0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7
+- Amount per order: 416666 wei (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+- Target token: 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C
+Getting swap quote from 0x API...
+Server 0x API Request: https://api.0x.org/swap/permit2/quote?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666&taker=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7&slippagePercentage=0.015
+Server 0x API Response received
+Quote received: 416666 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 -> 38522766 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C
+Estimated price impact: 0%
+Simulated transaction execution - Hash: 0x1978ffc60ed63edf21d
+✅ Order order_1750466990215_loy4q287d executed successfully
+- TX Hash: 0x1978ffc60ed63edf21d
+- Amount in: 416666
+- Amount out: 38522766
+- Next execution: Next cycle
+✅ Successfully executed order order_1750466990215_loy4q287d
+Manual DCA execution completed: 2 success, 0 failures
+ POST /api/cron/execute-dca 200 in 9141ms
+ GET /dca-v2 200 in 426ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.9s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4042ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1171ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 268ms
+0x API Response received
+0x API Response received
+ ✓ Compiled /api/dca-orders in 198ms (152 modules)
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2245ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3454ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1441ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 3133ms
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 1293ms
+ ✓ Compiled in 4.5s (17582 modules)
+ ✓ Compiled in 2.6s (17596 modules)
+ ✓ Compiled /api/dca-orders in 130ms (152 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 3082ms
+ ✓ Compiled in 1021ms (8763 modules)
+ ✓ Compiled /api/test-dca-order in 314ms (155 modules)
+Creating test DCA order
+ POST /api/test-dca-order 200 in 3472ms
+ ✓ Compiled /api/dca-orders/[orderId] in 80ms (158 modules)
+Order order_1750467573394_bubeaa1wa status updated from active to paused by user 0x1234567890123456789012345678901234567890
+ PATCH /api/dca-orders/order_1750467573394_bubeaa1wa 200 in 2597ms
+ ✓ Compiled /api/cron/execute-dca in 442ms (162 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 4014ms
+Order order_1750467573394_bubeaa1wa status updated from paused to active by user 0x1234567890123456789012345678901234567890
+ PATCH /api/dca-orders/order_1750467573394_bubeaa1wa 200 in 2356ms
+Order order_1750467573394_bubeaa1wa status updated from active to cancelled by user 0x1234567890123456789012345678901234567890
+ PATCH /api/dca-orders/order_1750467573394_bubeaa1wa 200 in 2490ms
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 3147ms
+ PATCH /api/dca-orders/order_1750467573394_bubeaa1wa 403 in 1112ms
+ ✓ Compiled in 1799ms (8611 modules)
+ ✓ Compiled in 2.7s (17596 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2959ms
+ ✓ Compiled /api/dca-orders/[orderId]/executions in 233ms (155 modules)
+Retrieved 1 executions for order order_1750466990215_loy4q287d
+ GET /api/dca-orders/order_1750466990215_loy4q287d/executions?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2744ms
+Retrieved 1 executions for order order_1750466990215_loy4q287d
+ GET /api/dca-orders/order_1750466990215_loy4q287d/executions?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 993ms
+ ✓ Compiled in 948ms (8766 modules)
+Retrieved 1 executions for order order_1750466990215_loy4q287d
+ GET /api/dca-orders/order_1750466990215_loy4q287d/executions?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2422ms
+ ✓ Compiled /api/dca-orders/[orderId] in 446ms (150 modules)
+Order order_1750466990215_loy4q287d status updated from active to cancelled by user 0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7
+ PATCH /api/dca-orders/order_1750466990215_loy4q287d 200 in 3313ms
+ ✓ Compiled /api/dca-orders in 61ms (155 modules)
+ GET /api/dca-orders?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 1644ms
+ ✓ Compiled /api/dca-orders/[orderId]/executions in 73ms (158 modules)
+Retrieved 1 executions for order order_1750466990215_loy4q287d
+ GET /api/dca-orders/order_1750466990215_loy4q287d/executions?userAddress=0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7 200 in 2355ms
+ ✓ Compiled in 816ms (8611 modules)
+ ✓ Compiled in 3.6s (17582 modules)
+ ✓ Compiled in 5.4s (17596 modules)
+ ✓ Compiled in 2.2s (17596 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 517ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.6s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3721ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 2s (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 3213ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6175ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 4276ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1494ms
+ ✓ Compiled in 2.7s (17628 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2164ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 327ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 991ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1610ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1491ms
+ ✓ Compiled in 2.3s (17628 modules)
+ ✓ Compiled in 942ms (8613 modules)
+ ✓ Compiled in 852ms (8611 modules)
+ ✓ Compiled in 2.9s (17596 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1201ms (9014 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3380ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2294ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1417ms
+ ✓ Compiled in 2.2s (17625 modules)
+ ✓ Compiled in 3.6s (17625 modules)
+ ✓ Compiled in 1690ms (8611 modules)
+ ○ Compiling /api/test-dca-order ...
+ ✓ Compiled /api/test-dca-order in 580ms (152 modules)
+Creating test DCA order
+ POST /api/test-dca-order 200 in 3794ms
+ ○ Compiling /api/cron/execute-dca ...
+ ✓ Compiled /api/cron/execute-dca in 2.1s (890 modules)
+Manual DCA execution trigger
+ POST /api/cron/execute-dca 200 in 5843ms
+Creating test DCA order
+ POST /api/test-dca-order 200 in 2982ms
+ ✓ Compiled in 4.1s (9501 modules)
+Creating test DCA order
+ POST /api/test-dca-order 200 in 3059ms
+Manual DCA execution trigger
+Found 2 orders ready for execution
+Processing DCA order order_1750468969913_50oyf97vr for user 0x1234567890123456789012345678901234567890
+Executing DCA order order_1750468969913_50oyf97vr for user 0x1234567890123456789012345678901234567890
+- Amount per order: 3333333 wei (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+- Target token: 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C
+Detecting wallet type and capabilities...
+- Wallet type: EOA
+- Session key support: false
+- Capabilities: EOA, DIRECT_SIGNING
+❌ EOA wallet detected - automated execution not supported
+❌ Failed to execute order order_1750468969913_50oyf97vr: EOA wallets require manual approval for each transaction. Please upgrade to a smart contract wallet for automated DCA execution.
+Processing DCA order order_1750468910843_enf23pely for user 0x1234567890123456789012345678901234567890
+Executing DCA order order_1750468910843_enf23pely for user 0x1234567890123456789012345678901234567890
+- Amount per order: 3333333 wei (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+- Target token: 0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C
+Detecting wallet type and capabilities...
+- Wallet type: EOA
+- Session key support: false
+- Capabilities: EOA, DIRECT_SIGNING
+❌ EOA wallet detected - automated execution not supported
+❌ Failed to execute order order_1750468910843_enf23pely: EOA wallets require manual approval for each transaction. Please upgrade to a smart contract wallet for automated DCA execution.
+Manual DCA execution completed: 0 success, 2 failures
+ POST /api/cron/execute-dca 200 in 4647ms
+ ✓ Compiled in 8.4s (17596 modules)
+ ✓ Compiled in 2.6s (17596 modules)
+ ✓ Compiled in 1492ms (17596 modules)
+ GET /dca-v2 200 in 521ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 5.1s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5198ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 2.2s (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 1943ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6309ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5798ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 338ms
+ ✓ Compiled in 3.8s (17596 modules)
+ GET /dca-v2 200 in 440ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.5s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2649ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1345ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 1932ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 4001ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 5464ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 252ms
+ ✓ Compiled in 3.6s (17596 modules)
+ ✓ Compiled in 1882ms (17596 modules)
+ GET /dca-v2 200 in 252ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.7s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2766ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1314ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 232ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2467ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3970ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1459ms
+ GET /dca-v2 200 in 142ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 84ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 58ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2465ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2402ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1572ms
+ ✓ Compiled in 3.6s (17596 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 438ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.1s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2236ms
+ GET /dca-v2 200 in 194ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 53ms
+ ✓ Compiled in 2.5s (17599 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 171ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 43ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1258ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 226ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2285ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3710ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1791ms
+ ✓ Compiled in 6.2s (17596 modules)
+ ✓ Compiled in 2.4s (17592 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1442ms (9012 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3693ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2280ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1439ms
+ GET /dca-v2 200 in 536ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1665ms (17610 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1771ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 325ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2323ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2240ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1651ms
+ ✓ Compiled in 13.6s (17592 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1331ms (9012 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2450ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 1069ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1542ms
+ ✓ Compiled in 2.1s (17621 modules)
+ GET /dca-v2 200 in 521ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 5.1s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5229ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1400ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 319ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3857ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2563ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1996ms
+ ✓ Compiled in 4.7s (17592 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1972ms (17592 modules)
+ ✓ Compiled in 0ms (9012 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5970ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 7176ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2252ms
+ ✓ Compiled in 2.1s (17621 modules)
+ ✓ Compiled in 2.3s (17621 modules)
+ ✓ Compiled in 2.5s (17621 modules)
+ ✓ Compiled in 2.4s (17592 modules)
+ ✓ Compiled in 2s (17592 modules)
+ GET /dca-v2 200 in 508ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.9s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5069ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1294ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 340ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2671ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3981ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1556ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2318ms
+ ✓ Compiled in 8.7s (17592 modules)
+ ✓ Compiled in 2.6s (17592 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 555ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.3s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2438ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1404ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 433ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3765ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2518ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1572ms
+ ✓ Compiled in 1412ms (17624 modules)
+ ✓ Compiled in 2.5s (17624 modules)
+ ✓ Compiled in 2.2s (17624 modules)
+ ✓ Compiled in 2.2s (17624 modules)
+ ✓ Compiled in 2.4s (17624 modules)
+ ✓ Compiled in 2.5s (17592 modules)
+ ○ Compiling /api/dca-orders ...
+ ✓ Compiled /api/dca-orders in 679ms (152 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3145ms
+ ✓ Compiled in 2.1s (17592 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2089ms
+ ✓ Compiled in 2.4s (17592 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2085ms
+ ✓ Compiled in 2.2s (17592 modules)
+ GET /dca-v2 200 in 555ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.8s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3858ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 2.4s (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 3098ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 4213ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 669ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6292ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5659ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1588ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=138888 200 in 1740ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=4166666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=4166666 200 in 2275ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666 200 in 2024ms
+ ✓ Compiled in 7.7s (17621 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 1031ms
+ ✓ Compiled in 2.3s (17621 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2178ms
+ ✓ Compiled in 2.2s (17621 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 547ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.3s (17610 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2402ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 338ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2321ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2632ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 672ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2474ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1617ms
+ ✓ Compiled in 2.8s (17624 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2186ms
+ ✓ Compiled in 2.3s (17624 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 1940ms
+ GET /dca-v2 200 in 562ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 95ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 61ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2227ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2237ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2282ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 667ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1545ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1388&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2311ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=41666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1388 200 in 2328ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=41666 200 in 1591ms
+ ✓ Compiled in 3.8s (17621 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2244ms
+ GET /dca-v2 200 in 462ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.9s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4013ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1596ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 445ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3672ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 3543ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4301ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 682ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1724ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1388&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2353ms
+0x API Response received
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=41666&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1388 200 in 2524ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=41666 200 in 1616ms
+ ✓ Compiled in 3.7s (17621 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2306ms
+ GET /dca-v2 200 in 559ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.1s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3263ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1712ms (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 2985ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3996ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 686ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6168ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5636ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1654ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 1796ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1744ms
+ ✓ Compiled in 4.6s (17592 modules)
+ ✓ Compiled in 3.7s (17592 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2283ms
+ ✓ Compiled in 2.3s (17592 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2230ms
+ ✓ Compiled in 2.3s (17592 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2069ms
+ ✓ Compiled in 2.6s (17592 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 620ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.6s (17581 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2712ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 2.2s (9013 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 4102ms
+ HEAD /dca-v2 200 in 3373ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 1360ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6501ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5909ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 478ms
+ ✓ Compiled in 3s (17624 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2040ms
+ GET /dca-v2 200 in 503ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 75ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 81ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2265ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2207ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 1844ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 134ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 375ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2274ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1561ms
+ ✓ Compiled in 2.7s (17592 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2286ms
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:179:1]
+ [2m179[0m |         }],
+ [2m180[0m |         validUntil: Math.floor(Date.now() / 1000) + (60 * 24 * 60 * 60), // 60 days
+ [2m181[0m |         validAfter: Math.floor(Date.now() / 1000),
+ [2m182[0m |       });
+     : [31;1m       ^[0m
+ [2m183[0m | 
+ [2m184[0m |       // Create DCA order via API
+ [2m185[0m |       const response = await fetch('/api/dca-orders', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ✓ Compiled in 5.9s (17592 modules)
+ ✓ Compiled in 5.3s (17592 modules)
+ ✓ Compiled in 2.3s (17592 modules)
+ ✓ Compiled in 4.4s (17596 modules)
+ GET /dca-v2 200 in 519ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 5.4s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5515ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 2.1s (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 1869ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 4205ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4926ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1462ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2481ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2385ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 700ms
+ GET /dca-v2 200 in 143ms
+ ⚠ Cross origin request detected from 172.27.132.98 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET /dca-v2 200 in 165ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 116ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 81ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1037ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 978ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1596ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2230ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1456ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 798ms
+ GET /dca-v2 200 in 151ms
+ ✓ Compiled in 4.4s (17596 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 474ms
+ ✓ Compiled in 2.9s (17596 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 415ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.7s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2854ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1910ms (9015 modules)
+ ✓ Compiled in 4.9s (17628 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 5588ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 4202ms
+ ✓ Compiled in 0ms (9015 modules)
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 5387ms
+ ✓ Compiled in 2.2s (17628 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 13547ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 16180ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 15691ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 732ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 907ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 687ms
+ ✓ Compiled in 2.4s (17628 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 346ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 77ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 90ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2949ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 3389ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3227ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2373ms
+ ✓ Compiled in 4s (17628 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4199ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3566ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2082ms
+ ✓ Compiled in 3s (17628 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1959ms
+ ✓ Compiled in 2.4s (17628 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2101ms
+ GET /dca-v2 200 in 220ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 77ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 133ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2329ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2405ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 1950ms
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 683ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1462ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2426ms
+ ✓ Compiled in 3.7s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2241ms
+ GET /dca-v2 200 in 270ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.4s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2549ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1615ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 2979ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2955ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1471ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 679ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 5615ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5158ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 252ms
+ GET /dca-v2 200 in 183ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 101ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 81ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2607ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2167ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1557ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2391ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 180ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in -442ms
+ GET /dca-v2 200 in 106ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 121ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 79ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2794ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2339ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2265ms
+0x API Response received
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1447ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 702ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1745ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 1829ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1546ms
+ ✓ Compiled in 4.3s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2263ms
+ ✓ Compiled in 2.9s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2239ms
+ ✓ Compiled in 5s (17596 modules)
+ GET /dca-v2 200 in 501ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.3s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4431ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 2.4s (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 2934ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 935ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2603ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 713ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5309ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6323ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1592ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2280ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1604ms
+ ✓ Compiled in 4.3s (17596 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 504ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1307ms (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 1455ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1989ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 3348ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2408ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3126ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 717ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 5924ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 3997ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1616ms
+ ✓ Compiled in 2.8s (17628 modules)
+ GET /dca-v2 200 in 518ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 78ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 90ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2347ms
+0x API Response received
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2624ms
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2312ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1570ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1435ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 706ms
+ ✓ Compiled in 4.4s (17626 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 963ms
+ GET /dca-v2 200 in 443ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.7s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4851ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1829ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 2552ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3990ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2145ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6623ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 6094ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 715ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1507ms
+ ✓ Compiled in 3.3s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2496ms
+ ✓ Compiled in 2.4s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2277ms
+ ✓ Compiled in 3.4s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2366ms
+ ✓ Compiled in 3s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2054ms
+ ✓ Compiled in 2.5s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2327ms
+ GET /dca-v2 200 in 510ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 5.2s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5319ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1578ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 411ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2596ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 3623ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 277ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 1764ms
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 700ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1524ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 1879ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 1579ms
+ ✓ Compiled in 3.9s (17628 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1076ms
+ ✓ Compiled in 3s (17625 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2234ms
+ GET /dca-v2 200 in 444ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.1s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4299ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1585ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 548ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3019ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4745ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 3446ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1520ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 708ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 881ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2213ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 2193ms
+ ✓ Compiled in 3.9s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2293ms
+ ✓ Compiled in 2.4s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2216ms
+ GET /dca-v2 200 in 500ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.3s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 4439ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1535ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 352ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 3586ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4194ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2653ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1409ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 683ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2046ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2293ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 894ms
+ ✓ Compiled in 3.9s (17628 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2187ms
+ ✓ Compiled in 3.5s (17596 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2271ms
+ GET /dca-v2 200 in 491ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.1s (17585 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2286ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1726ms (9015 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 3308ms
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3647ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2283ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5839ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6467ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 1063ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1679ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=33333 200 in 2286ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000 200 in 257ms
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m the name `amountPerOrder` is defined multiple times
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:166:1]
+ [2m166[0m |     try {
+ [2m167[0m |       // Generate session key for DCA automation with Privy embedded wallet
+ [2m168[0m |       // Calculate the maximum amount per individual order (with some buffer for price changes)
+ [2m169[0m |       const amountPerOrder = Number.parseFloat(formData.amount) / numberOfOrders;
+     : [31;1m            ^^^^^^^|^^^^^^[0m
+     :                    [31;1m`-- [31;1mprevious definition of `amountPerOrder` here[0m[0m
+ [2m170[0m |       const maxAmountPerOrder = amountPerOrder * 1.5; // 50% buffer for price fluctuations
+ [2m171[0m |       
+ [2m172[0m |       const sessionKey = await generateSessionKey(TOKENS.USDC, {
+ [2m173[0m |         valueLimit: BigInt(Math.ceil(maxAmountPerOrder * 1e6)), // USDC has 6 decimals, per order limit
+ [2m174[0m |         functionSelectors: ['0xa9059cbb'], // ERC20 transfer function
+ [2m175[0m |         validDuration: 60 * 24 * 60 * 60, // 60 days
+ [2m176[0m |       });
+ [2m177[0m | 
+ [2m178[0m |       // Create DCA order via API
+ [2m179[0m |       const response = await fetch('/api/dca-orders', {
+ [2m180[0m |         method: 'POST',
+ [2m181[0m |         headers: {
+ [2m182[0m |           'Content-Type': 'application/json',
+ [2m183[0m |         },
+ [2m184[0m |         body: JSON.stringify({
+ [2m185[0m |           userAddress: address,
+ [2m186[0m |           sessionKeyAddress: sessionKey.keyAddress,
+ [2m187[0m |           totalAmount: formData.amount,
+ [2m188[0m |           frequency: formData.frequency,
+ [2m189[0m |           duration: formData.duration,
+ [2m190[0m |           platformFeePercentage: PLATFORM_FEE_PERCENTAGE,
+ [2m191[0m |           estimatedPriceImpact: priceImpact || undefined,
+ [2m192[0m |         }),
+ [2m193[0m |       });
+ [2m194[0m | 
+ [2m195[0m |       if (!response.ok) {
+ [2m196[0m |         const errorData = await response.json();
+ [2m197[0m |         throw new Error(errorData.error || 'Failed to create DCA order');
+ [2m198[0m |       }
+ [2m199[0m | 
+ [2m200[0m |       const { order } = await response.json();
+ [2m201[0m | 
+ [2m202[0m |       const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(
+     : [33;1m            ^^^^^^^|^^^^^^[0m
+     :                    [33;1m`-- [33;1m`amountPerOrder` redefined here[0m[0m
+ [2m203[0m |         2,
+ [2m204[0m |       );
+ [2m205[0m |       toast.success(
+     `----
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m the name `amountPerOrder` is defined multiple times
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:166:1]
+ [2m166[0m |     try {
+ [2m167[0m |       // Generate session key for DCA automation with Privy embedded wallet
+ [2m168[0m |       // Calculate the maximum amount per individual order (with some buffer for price changes)
+ [2m169[0m |       const amountPerOrder = Number.parseFloat(formData.amount) / numberOfOrders;
+     : [31;1m            ^^^^^^^|^^^^^^[0m
+     :                    [31;1m`-- [31;1mprevious definition of `amountPerOrder` here[0m[0m
+ [2m170[0m |       const maxAmountPerOrder = amountPerOrder * 1.5; // 50% buffer for price fluctuations
+ [2m171[0m |       
+ [2m172[0m |       console.log('Session key value limit calculation:', {
+ [2m173[0m |         totalAmount: formData.amount,
+ [2m174[0m |         numberOfOrders,
+ [2m175[0m |         amountPerOrder: amountPerOrder.toFixed(6),
+ [2m176[0m |         maxAmountPerOrder: maxAmountPerOrder.toFixed(6),
+ [2m177[0m |         valueLimitUSDC: Math.ceil(maxAmountPerOrder * 1e6)
+ [2m178[0m |       });
+ [2m179[0m |       
+ [2m180[0m |       const sessionKey = await generateSessionKey(TOKENS.USDC, {
+ [2m181[0m |         valueLimit: BigInt(Math.ceil(maxAmountPerOrder * 1e6)), // USDC has 6 decimals, per order limit
+ [2m182[0m |         functionSelectors: ['0xa9059cbb'], // ERC20 transfer function
+ [2m183[0m |         validDuration: 60 * 24 * 60 * 60, // 60 days
+ [2m184[0m |       });
+ [2m185[0m | 
+ [2m186[0m |       // Create DCA order via API
+ [2m187[0m |       const response = await fetch('/api/dca-orders', {
+ [2m188[0m |         method: 'POST',
+ [2m189[0m |         headers: {
+ [2m190[0m |           'Content-Type': 'application/json',
+ [2m191[0m |         },
+ [2m192[0m |         body: JSON.stringify({
+ [2m193[0m |           userAddress: address,
+ [2m194[0m |           sessionKeyAddress: sessionKey.keyAddress,
+ [2m195[0m |           totalAmount: formData.amount,
+ [2m196[0m |           frequency: formData.frequency,
+ [2m197[0m |           duration: formData.duration,
+ [2m198[0m |           platformFeePercentage: PLATFORM_FEE_PERCENTAGE,
+ [2m199[0m |           estimatedPriceImpact: priceImpact || undefined,
+ [2m200[0m |         }),
+ [2m201[0m |       });
+ [2m202[0m | 
+ [2m203[0m |       if (!response.ok) {
+ [2m204[0m |         const errorData = await response.json();
+ [2m205[0m |         throw new Error(errorData.error || 'Failed to create DCA order');
+ [2m206[0m |       }
+ [2m207[0m | 
+ [2m208[0m |       const { order } = await response.json();
+ [2m209[0m | 
+ [2m210[0m |       const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(
+     : [33;1m            ^^^^^^^|^^^^^^[0m
+     :                    [33;1m`-- [33;1m`amountPerOrder` redefined here[0m[0m
+ [2m211[0m |         2,
+ [2m212[0m |       );
+ [2m213[0m |       toast.success(
+     `----
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ○ Compiling /_error ...
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m the name `amountPerOrder` is defined multiple times
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:166:1]
+ [2m166[0m |     try {
+ [2m167[0m |       // Generate session key for DCA automation with Privy embedded wallet
+ [2m168[0m |       // Calculate the maximum amount per individual order (with some buffer for price changes)
+ [2m169[0m |       const amountPerOrder = Number.parseFloat(formData.amount) / numberOfOrders;
+     : [31;1m            ^^^^^^^|^^^^^^[0m
+     :                    [31;1m`-- [31;1mprevious definition of `amountPerOrder` here[0m[0m
+ [2m170[0m |       const maxAmountPerOrder = amountPerOrder * 1.5; // 50% buffer for price fluctuations
+ [2m171[0m |       
+ [2m172[0m |       console.log('Session key value limit calculation:', {
+ [2m173[0m |         totalAmount: formData.amount,
+ [2m174[0m |         numberOfOrders,
+ [2m175[0m |         amountPerOrder: amountPerOrder.toFixed(6),
+ [2m176[0m |         maxAmountPerOrder: maxAmountPerOrder.toFixed(6),
+ [2m177[0m |         valueLimitUSDC: Math.ceil(maxAmountPerOrder * 1e6)
+ [2m178[0m |       });
+ [2m179[0m |       
+ [2m180[0m |       const sessionKey = await generateSessionKey(TOKENS.USDC, {
+ [2m181[0m |         valueLimit: BigInt(Math.ceil(maxAmountPerOrder * 1e6)), // USDC has 6 decimals, per order limit
+ [2m182[0m |         functionSelectors: ['0xa9059cbb'], // ERC20 transfer function
+ [2m183[0m |         validDuration: 60 * 24 * 60 * 60, // 60 days
+ [2m184[0m |       });
+ [2m185[0m | 
+ [2m186[0m |       // Create DCA order via API
+ [2m187[0m |       const response = await fetch('/api/dca-orders', {
+ [2m188[0m |         method: 'POST',
+ [2m189[0m |         headers: {
+ [2m190[0m |           'Content-Type': 'application/json',
+ [2m191[0m |         },
+ [2m192[0m |         body: JSON.stringify({
+ [2m193[0m |           userAddress: address,
+ [2m194[0m |           sessionKeyAddress: sessionKey.keyAddress,
+ [2m195[0m |           totalAmount: formData.amount,
+ [2m196[0m |           frequency: formData.frequency,
+ [2m197[0m |           duration: formData.duration,
+ [2m198[0m |           platformFeePercentage: PLATFORM_FEE_PERCENTAGE,
+ [2m199[0m |           estimatedPriceImpact: priceImpact || undefined,
+ [2m200[0m |         }),
+ [2m201[0m |       });
+ [2m202[0m | 
+ [2m203[0m |       if (!response.ok) {
+ [2m204[0m |         const errorData = await response.json();
+ [2m205[0m |         throw new Error(errorData.error || 'Failed to create DCA order');
+ [2m206[0m |       }
+ [2m207[0m | 
+ [2m208[0m |       const { order } = await response.json();
+ [2m209[0m | 
+ [2m210[0m |       const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(
+     : [33;1m            ^^^^^^^|^^^^^^[0m
+     :                    [33;1m`-- [33;1m`amountPerOrder` redefined here[0m[0m
+ [2m211[0m |         2,
+ [2m212[0m |       );
+ [2m213[0m |       toast.success(
+     `----
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ GET /dca-v2 500 in 9553ms
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m the name `amountPerOrder` is defined multiple times
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:166:1]
+ [2m166[0m |     try {
+ [2m167[0m |       // Generate session key for DCA automation with Privy embedded wallet
+ [2m168[0m |       // Calculate the maximum amount per individual order (with some buffer for price changes)
+ [2m169[0m |       const amountPerOrder = Number.parseFloat(formData.amount) / numberOfOrders;
+     : [31;1m            ^^^^^^^|^^^^^^[0m
+     :                    [31;1m`-- [31;1mprevious definition of `amountPerOrder` here[0m[0m
+ [2m170[0m |       const maxAmountPerOrder = amountPerOrder * 1.5; // 50% buffer for price fluctuations
+ [2m171[0m |       
+ [2m172[0m |       console.log('Session key value limit calculation:', {
+ [2m173[0m |         totalAmount: formData.amount,
+ [2m174[0m |         numberOfOrders,
+ [2m175[0m |         amountPerOrder: amountPerOrder.toFixed(6),
+ [2m176[0m |         maxAmountPerOrder: maxAmountPerOrder.toFixed(6),
+ [2m177[0m |         valueLimitUSDC: Math.ceil(maxAmountPerOrder * 1e6)
+ [2m178[0m |       });
+ [2m179[0m |       
+ [2m180[0m |       const sessionKey = await generateSessionKey(TOKENS.USDC, {
+ [2m181[0m |         valueLimit: BigInt(Math.ceil(maxAmountPerOrder * 1e6)), // USDC has 6 decimals, per order limit
+ [2m182[0m |         functionSelectors: ['0xa9059cbb'], // ERC20 transfer function
+ [2m183[0m |         validDuration: 60 * 24 * 60 * 60, // 60 days
+ [2m184[0m |       });
+ [2m185[0m | 
+ [2m186[0m |       // Create DCA order via API
+ [2m187[0m |       const response = await fetch('/api/dca-orders', {
+ [2m188[0m |         method: 'POST',
+ [2m189[0m |         headers: {
+ [2m190[0m |           'Content-Type': 'application/json',
+ [2m191[0m |         },
+ [2m192[0m |         body: JSON.stringify({
+ [2m193[0m |           userAddress: address,
+ [2m194[0m |           sessionKeyAddress: sessionKey.keyAddress,
+ [2m195[0m |           totalAmount: formData.amount,
+ [2m196[0m |           frequency: formData.frequency,
+ [2m197[0m |           duration: formData.duration,
+ [2m198[0m |           platformFeePercentage: PLATFORM_FEE_PERCENTAGE,
+ [2m199[0m |           estimatedPriceImpact: priceImpact || undefined,
+ [2m200[0m |         }),
+ [2m201[0m |       });
+ [2m202[0m | 
+ [2m203[0m |       if (!response.ok) {
+ [2m204[0m |         const errorData = await response.json();
+ [2m205[0m |         throw new Error(errorData.error || 'Failed to create DCA order');
+ [2m206[0m |       }
+ [2m207[0m | 
+ [2m208[0m |       const { order } = await response.json();
+ [2m209[0m | 
+ [2m210[0m |       const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(
+     : [33;1m            ^^^^^^^|^^^^^^[0m
+     :                    [33;1m`-- [33;1m`amountPerOrder` redefined here[0m[0m
+ [2m211[0m |         2,
+ [2m212[0m |       );
+ [2m213[0m |       toast.success(
+     `----
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 18956ms
+ ⨯ ./src/components/DCA/SimpleDCA.tsx
+Error: 
+  [31mx[0m the name `amountPerOrder` is defined multiple times
+     ,-[[36;1;4m/home/onchainexpat/projects/flip-the-stock-market/src/components/DCA/SimpleDCA.tsx[0m:166:1]
+ [2m166[0m |     try {
+ [2m167[0m |       // Generate session key for DCA automation with Privy embedded wallet
+ [2m168[0m |       // Calculate the maximum amount per individual order (with some buffer for price changes)
+ [2m169[0m |       const amountPerOrder = Number.parseFloat(formData.amount) / numberOfOrders;
+     : [31;1m            ^^^^^^^|^^^^^^[0m
+     :                    [31;1m`-- [31;1mprevious definition of `amountPerOrder` here[0m[0m
+ [2m170[0m |       const maxAmountPerOrder = amountPerOrder * 1.5; // 50% buffer for price fluctuations
+ [2m171[0m |       
+ [2m172[0m |       console.log('Session key value limit calculation:', {
+ [2m173[0m |         totalAmount: formData.amount,
+ [2m174[0m |         numberOfOrders,
+ [2m175[0m |         amountPerOrder: amountPerOrder.toFixed(6),
+ [2m176[0m |         maxAmountPerOrder: maxAmountPerOrder.toFixed(6),
+ [2m177[0m |         valueLimitUSDC: Math.ceil(maxAmountPerOrder * 1e6)
+ [2m178[0m |       });
+ [2m179[0m |       
+ [2m180[0m |       const sessionKey = await generateSessionKey(TOKENS.USDC, {
+ [2m181[0m |         valueLimit: BigInt(Math.ceil(maxAmountPerOrder * 1e6)), // USDC has 6 decimals, per order limit
+ [2m182[0m |         functionSelectors: ['0xa9059cbb'], // ERC20 transfer function
+ [2m183[0m |         validDuration: 60 * 24 * 60 * 60, // 60 days
+ [2m184[0m |       });
+ [2m185[0m | 
+ [2m186[0m |       // Create DCA order via API
+ [2m187[0m |       const response = await fetch('/api/dca-orders', {
+ [2m188[0m |         method: 'POST',
+ [2m189[0m |         headers: {
+ [2m190[0m |           'Content-Type': 'application/json',
+ [2m191[0m |         },
+ [2m192[0m |         body: JSON.stringify({
+ [2m193[0m |           userAddress: address,
+ [2m194[0m |           sessionKeyAddress: sessionKey.keyAddress,
+ [2m195[0m |           totalAmount: formData.amount,
+ [2m196[0m |           frequency: formData.frequency,
+ [2m197[0m |           duration: formData.duration,
+ [2m198[0m |           platformFeePercentage: PLATFORM_FEE_PERCENTAGE,
+ [2m199[0m |           estimatedPriceImpact: priceImpact || undefined,
+ [2m200[0m |         }),
+ [2m201[0m |       });
+ [2m202[0m | 
+ [2m203[0m |       if (!response.ok) {
+ [2m204[0m |         const errorData = await response.json();
+ [2m205[0m |         throw new Error(errorData.error || 'Failed to create DCA order');
+ [2m206[0m |       }
+ [2m207[0m | 
+ [2m208[0m |       const { order } = await response.json();
+ [2m209[0m | 
+ [2m210[0m |       const amountPerOrder = (Number(formData.amount) / numberOfOrders).toFixed(
+     : [33;1m            ^^^^^^^|^^^^^^[0m
+     :                    [33;1m`-- [33;1m`amountPerOrder` redefined here[0m[0m
+ [2m211[0m |         2,
+ [2m212[0m |       );
+ [2m213[0m |       toast.success(
+     `----
+
+Import trace for requested module:
+./src/components/DCA/SimpleDCA.tsx
+./src/app/dca-v2/page.tsx
+ ✓ Compiled /_not-found in 4s (17822 modules)
+ ○ Compiling /_not-found ...
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dca-v2 200 in 685ms
+ ✓ Compiled /_not-found in 4s (17811 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3578ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1822ms (9055 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 2175ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1625ms
+0x API Response received
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 3711ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 5397ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 5968ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 713ms
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1554ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=333333 200 in 2411ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=13888&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=13888 200 in 1620ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=416666 200 in 1648ms
+ POST /api/dca-orders 200 in 2939ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1975ms
+ ○ Compiling /api/dca-orders/[orderId]/executions ...
+ ✓ Compiled /api/dca-orders/[orderId]/executions in 560ms (155 modules)
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 2536ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2717ms
+ ✓ Compiled in 4.3s (17822 modules)
+ ✓ Compiled in 2.9s (17822 modules)
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1491ms (9054 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 4926ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 6371ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 2585ms
+ ✓ Compiled in 3s (17851 modules)
+ ○ Compiling /api/dca-orders/[orderId] ...
+ ✓ Compiled /api/dca-orders/[orderId] in 569ms (150 modules)
+Order order_1750481624977_n0w2un6us status updated from active to cancelled by user 0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779
+ PATCH /api/dca-orders/order_1750481624977_n0w2un6us 200 in 3268ms
+ ✓ Compiled /api/dca-orders in 88ms (155 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 3742ms
+ ○ Compiling /api/dca-orders/[orderId]/executions ...
+ ✓ Compiled /api/dca-orders/[orderId]/executions in 3.4s (18009 modules)
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2059ms
+ ✓ Compiled in 3s (17851 modules)
+ ✓ Compiled in 2.5s (17822 modules)
+ ✓ Compiled in 1914ms (8797 modules)
+ ✓ Compiled in 1058ms (8797 modules)
+ ✓ Compiled in 1295ms (8797 modules)
+ ✓ Compiled in 1216ms (8797 modules)
+ ✓ Compiled in 1187ms (8797 modules)
+ ✓ Compiled in 3.2s (17808 modules)
+ ✓ Compiled in 2.1s (8797 modules)
+ ✓ Compiled in 1113ms (8797 modules)
+ ✓ Compiled in 1146ms (8797 modules)
+ ✓ Compiled in 2.9s (17822 modules)
+ ○ Compiling /api/dca-orders ...
+ ✓ Compiled /api/dca-orders in 582ms (152 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 3573ms
+ ✓ Compiled /api/dca-orders/[orderId]/executions in 96ms (155 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1386ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2223ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 698ms
+ ✓ Compiled in 2.3s (17822 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1466ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1386ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2081ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 688ms
+ ✓ Compiled in 2.8s (17822 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2794ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1400ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2197ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 747ms
+ ✓ Compiled in 2.4s (17822 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2808ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1493ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2100ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 706ms
+ ✓ Compiled in 2.7s (17822 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2798ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1425ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2115ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 744ms
+ ✓ Compiled in 2.4s (17822 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2653ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1424ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1996ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 695ms
+ ✓ Compiled in 4.7s (17963 modules)
+ ✓ Compiled in 8.5s (17977 modules)
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2172ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 1422ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2039ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 708ms
+ GET /dca-v2 200 in 546ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 5.3s (17811 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 5499ms
+ ○ Compiling /api/0x-price ...
+ ✓ Compiled /api/0x-price in 1680ms (9055 modules)
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333&taker=0x1111111111111111111111111111111111111111
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ HEAD /dca-v2 200 in 533ms
+0x API Response received
+0x API Response received
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 4307ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=3333333 200 in 3802ms
+Proxying 0x API request: https://api.0x.org/swap/permit2/price?chainId=8453&sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 2406ms
+0x API Response received
+ GET /api/dca-orders?userAddress=0x30E12dbe69280f4981a5A9048fB1426c31AB9FA7 200 in 696ms
+ GET /api/0x-price?sellToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&buyToken=0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C&sellAmount=1000000&taker=0x1111111111111111111111111111111111111111 200 in 1041ms
+ GET /api/dca-orders?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 742ms
+Retrieved 0 executions for order order_1750481624977_n0w2un6us
+ GET /api/dca-orders/order_1750481624977_n0w2un6us/executions?userAddress=0x22F7D3e8E085b6d8B7d3fE11E06B9391eE858779 200 in 2224ms
+ ✓ Compiled in 4.2s (17822 modules)
+ ✓ Compiled in 2.5s (17822 modules)
+ ✓ Compiled in 2.4s (17822 modules)
+ ✓ Compiled in 4.5s (17824 modules)
+ ✓ Compiled in 4s (17824 modules)
+ ✓ Compiled in 4.2s (17824 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.3s (17813 modules)
+ GET /_next/static/css/app/layout.css?v=1750483135676 404 in 3499ms
+ GET /dca-v2 200 in 459ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 157ms
+ GET /_next/static/css/app/layout.css?v=1750483143606 404 in 195ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 207ms
+ GET /_next/static/chunks/main-app.js?v=1750483143606 404 in 223ms
+ GET /dca-v2 200 in 197ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 155ms
+ GET /_next/static/css/app/layout.css?v=1750483231541 404 in 177ms
+ GET /_next/static/chunks/main-app.js?v=1750483231541 404 in 197ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 187ms
+ GET /dca-v2 200 in 198ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 140ms
+ GET /_next/static/css/app/layout.css?v=1750483277786 404 in 148ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 196ms
+ GET /_next/static/chunks/main-app.js?v=1750483277786 404 in 210ms
+ GET /dca-v2 200 in 162ms
+ GET /_next/static/css/app/layout.css?v=1750483294771 404 in 87ms
+ GET /_next/static/chunks/main-app.js?v=1750483294771 404 in 162ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 152ms
+ GET /_next/static/css/app/layout.css?v=1750483294771 404 in 199ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 121ms
+ GET /dca-v2 200 in 206ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 145ms
+ GET /_next/static/css/app/layout.css?v=1750483423669 404 in 144ms
+ GET /_next/static/chunks/main-app.js?v=1750483423669 404 in 205ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 195ms
+ GET /dca-v2 200 in 182ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 124ms
+ GET /_next/static/css/app/layout.css?v=1750483453278 404 in 153ms
+ GET /_next/static/chunks/main-app.js?v=1750483453278 404 in 179ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 170ms
+[?25h

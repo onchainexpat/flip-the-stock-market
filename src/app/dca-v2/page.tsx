@@ -12,16 +12,16 @@ import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
 export default function DCAv2Page() {
   const { ready, authenticated } = usePrivy();
   const { address, isConnected } = useAccount();
-  const { 
-    isReady, 
-    hasGasSponsorship, 
-    walletType, 
-    needsDeployment, 
+  const {
+    isReady,
+    hasGasSponsorship,
+    walletType,
+    needsDeployment,
     isLoading,
     deploySmartWallet,
     canCreateDCAOrders,
     isExternalWallet,
-    error 
+    error,
   } = useUnifiedSmartWallet();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -60,7 +60,7 @@ export default function DCAv2Page() {
     {
       icon: <TrendingUp className="w-6 h-6 text-purple-400" />,
       title: 'Optimal Pricing',
-      description: '0x API integration for best swap prices and low slippage',
+      description: 'OpenOcean aggregator for best swap prices and low slippage',
     },
   ];
 
@@ -96,38 +96,50 @@ export default function DCAv2Page() {
         {ready && authenticated && (
           <div className="max-w-4xl mx-auto mb-8">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
-              <h2 className="text-xl font-semibold text-white mb-4">Smart Wallet Status</h2>
-              
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Smart Wallet Status
+              </h2>
+
               {error && (
                 <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg">
                   <p className="text-red-300 text-sm">⚠️ {error}</p>
                 </div>
               )}
-              
+
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <span className="text-gray-400 text-sm">Wallet Type:</span>
                   <p className="text-white font-mono">
-                    {walletType === 'zerodev_smart' && '🔗 ZeroDev Smart Wallet'}
+                    {walletType === 'zerodev_smart' &&
+                      '🔗 ZeroDev Smart Wallet'}
                     {walletType === 'external_wallet' && '🔗 External Wallet'}
-                    {walletType === 'coinbase_smart' && '📧 Coinbase Smart Wallet'}
-                    {walletType === 'embedded_privy' && '📧 Privy Embedded Wallet'}
+                    {walletType === 'coinbase_smart' &&
+                      '📧 Coinbase Smart Wallet'}
+                    {walletType === 'embedded_privy' &&
+                      '📧 Privy Embedded Wallet'}
                     {!walletType && 'Not Connected'}
                   </p>
                 </div>
                 <div>
-                  <span className="text-gray-400 text-sm">Gas Sponsorship:</span>
-                  <p className={`font-semibold ${hasGasSponsorship ? 'text-green-400' : 'text-red-400'}`}>
+                  <span className="text-gray-400 text-sm">
+                    Gas Sponsorship:
+                  </span>
+                  <p
+                    className={`font-semibold ${hasGasSponsorship ? 'text-green-400' : 'text-red-400'}`}
+                  >
                     {hasGasSponsorship ? '✅ Enabled' : '❌ Disabled'}
                   </p>
                 </div>
               </div>
-              
+
               {isExternalWallet && needsDeployment && (
                 <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-4">
-                  <h3 className="text-blue-300 font-semibold mb-2">🚀 Deploy Smart Wallet</h3>
+                  <h3 className="text-blue-300 font-semibold mb-2">
+                    🚀 Deploy Smart Wallet
+                  </h3>
                   <p className="text-blue-200 text-sm mb-3">
-                    Deploy your ZeroDev smart wallet to enable gas-free DCA transactions.
+                    Deploy your ZeroDev smart wallet to enable gas-free DCA
+                    transactions.
                   </p>
                   <button
                     onClick={handleDeploySmartWallet}
@@ -138,17 +150,21 @@ export default function DCAv2Page() {
                   </button>
                 </div>
               )}
-              
+
               {walletType === 'embedded_privy' && (
                 <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4">
-                  <h3 className="text-yellow-300 font-semibold mb-2">⚠️ Limited Functionality</h3>
+                  <h3 className="text-yellow-300 font-semibold mb-2">
+                    ⚠️ Limited Functionality
+                  </h3>
                   <p className="text-yellow-200 text-sm">
-                    Privy embedded wallets currently have chain switching issues. For the best experience, 
-                    connect an external wallet (MetaMask, Coinbase Wallet, etc.) to use ZeroDev smart wallets.
+                    Privy embedded wallets currently have chain switching
+                    issues. For the best experience, connect an external wallet
+                    (MetaMask, Coinbase Wallet, etc.) to use ZeroDev smart
+                    wallets.
                   </p>
                 </div>
               )}
-              
+
               {canCreateDCAOrders && (
                 <div className="bg-green-900/30 border border-green-700 rounded-lg p-3">
                   <p className="text-green-300 text-sm">

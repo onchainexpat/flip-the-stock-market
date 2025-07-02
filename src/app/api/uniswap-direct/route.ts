@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
     if (!sellToken || !buyToken || !sellAmount || !takerAddress) {
       return NextResponse.json(
         {
-          error: 'Missing required fields: sellToken, buyToken, sellAmount, takerAddress',
+          error:
+            'Missing required fields: sellToken, buyToken, sellAmount, takerAddress',
         },
         { status: 400 },
       );
@@ -30,45 +31,49 @@ export async function POST(request: NextRequest) {
 
     // For SPX6900/USDC, we know the pool exists with 1% fee tier
     const FEE_TIER = 10000; // 1%
-    
+
     // Calculate minimum amount out with slippage
     // This is simplified - in production you'd use the quoter contract
     const minAmountOut = BigInt(Math.floor(Number(sellAmount) * 0.98)); // Rough estimate
 
     // Build the swap transaction directly
     const swapData = encodeFunctionData({
-      abi: [{
-        inputs: [
-          {
-            components: [
-              { name: 'tokenIn', type: 'address' },
-              { name: 'tokenOut', type: 'address' },
-              { name: 'fee', type: 'uint24' },
-              { name: 'recipient', type: 'address' },
-              { name: 'deadline', type: 'uint256' },
-              { name: 'amountIn', type: 'uint256' },
-              { name: 'amountOutMinimum', type: 'uint256' },
-              { name: 'sqrtPriceLimitX96', type: 'uint160' },
-            ],
-            name: 'params',
-            type: 'tuple',
-          },
-        ],
-        name: 'exactInputSingle',
-        outputs: [{ name: 'amountOut', type: 'uint256' }],
-        type: 'function',
-      }],
+      abi: [
+        {
+          inputs: [
+            {
+              components: [
+                { name: 'tokenIn', type: 'address' },
+                { name: 'tokenOut', type: 'address' },
+                { name: 'fee', type: 'uint24' },
+                { name: 'recipient', type: 'address' },
+                { name: 'deadline', type: 'uint256' },
+                { name: 'amountIn', type: 'uint256' },
+                { name: 'amountOutMinimum', type: 'uint256' },
+                { name: 'sqrtPriceLimitX96', type: 'uint160' },
+              ],
+              name: 'params',
+              type: 'tuple',
+            },
+          ],
+          name: 'exactInputSingle',
+          outputs: [{ name: 'amountOut', type: 'uint256' }],
+          type: 'function',
+        },
+      ],
       functionName: 'exactInputSingle',
-      args: [{
-        tokenIn: sellToken as `0x${string}`,
-        tokenOut: buyToken as `0x${string}`,
-        fee: FEE_TIER,
-        recipient: takerAddress as `0x${string}`,
-        deadline: BigInt(Math.floor(Date.now() / 1000) + 600), // 10 minutes
-        amountIn: BigInt(sellAmount),
-        amountOutMinimum: minAmountOut,
-        sqrtPriceLimitX96: 0n, // No price limit
-      }],
+      args: [
+        {
+          tokenIn: sellToken as `0x${string}`,
+          tokenOut: buyToken as `0x${string}`,
+          fee: FEE_TIER,
+          recipient: takerAddress as `0x${string}`,
+          deadline: BigInt(Math.floor(Date.now() / 1000) + 600), // 10 minutes
+          amountIn: BigInt(sellAmount),
+          amountOutMinimum: minAmountOut,
+          sqrtPriceLimitX96: 0n, // No price limit
+        },
+      ],
     });
 
     console.log('🦄 Direct Uniswap V3 swap built');
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
         provider: 'Uniswap V3 Direct',
         router: UNISWAP_V3_ROUTER,
         noExternalAPI: true,
-      }
+      },
     });
   } catch (error) {
     console.error('Failed to build Uniswap swap:', error);

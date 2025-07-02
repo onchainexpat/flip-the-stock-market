@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
@@ -51,36 +51,38 @@ export async function GET(
     console.log(`Raw execution data for ${executionKey}:`, executionData);
 
     // Parse execution data - handle both string and object formats
-    const executions = executionData.map((item) => {
-      let execution;
-      try {
-        // If item is already an object, use it directly
-        if (typeof item === 'object' && item !== null) {
-          execution = item;
-        } else {
-          // If item is a string, parse it
-          execution = JSON.parse(item as string);
+    const executions = executionData
+      .map((item) => {
+        let execution;
+        try {
+          // If item is already an object, use it directly
+          if (typeof item === 'object' && item !== null) {
+            execution = item;
+          } else {
+            // If item is a string, parse it
+            execution = JSON.parse(item as string);
+          }
+        } catch (error) {
+          console.error('Failed to parse execution item:', item, error);
+          return null;
         }
-      } catch (error) {
-        console.error('Failed to parse execution item:', item, error);
-        return null;
-      }
 
-      return {
-        id: execution.id,
-        orderId: execution.orderId,
-        transactionHash: execution.transactionHash,
-        amountIn: execution.amountIn,
-        amountOut: execution.amountOut,
-        executedAt: execution.executedAt,
-        status: execution.status,
-        swapProvider: execution.swapProvider,
-        exchangeRate: execution.exchangeRate,
-        gasUsed: execution.gasUsed || '0',
-        gasPrice: execution.gasPrice || '0',
-        priceImpact: execution.priceImpact,
-      };
-    }).filter(Boolean); // Remove any null entries from failed parsing
+        return {
+          id: execution.id,
+          orderId: execution.orderId,
+          transactionHash: execution.transactionHash,
+          amountIn: execution.amountIn,
+          amountOut: execution.amountOut,
+          executedAt: execution.executedAt,
+          status: execution.status,
+          swapProvider: execution.swapProvider,
+          exchangeRate: execution.exchangeRate,
+          gasUsed: execution.gasUsed || '0',
+          gasPrice: execution.gasPrice || '0',
+          priceImpact: execution.priceImpact,
+        };
+      })
+      .filter(Boolean); // Remove any null entries from failed parsing
 
     console.log(
       `Retrieved ${executions.length} executions for order ${orderId}`,

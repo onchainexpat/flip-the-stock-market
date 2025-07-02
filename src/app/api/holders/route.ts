@@ -24,19 +24,21 @@ async function fetchFreshHoldersData() {
   }
   const client = new DuneClient(duneApiKey);
   const query_result = await client.getLatestResult({ queryId: DUNE_QUERY_ID });
-  
+
   if (!query_result.result?.rows) {
     console.warn('No results found in Dune query response');
     return [];
   }
 
   const rows = query_result.result.rows as any[];
-  const formattedData = rows.map(row => ({
-    date: row.day.split(' ')[0],
-    holders: row.total_holders,
-    percentChange: parseFloat(row.daily_change_percent)
-  })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
+  const formattedData = rows
+    .map((row) => ({
+      date: row.day.split(' ')[0],
+      holders: row.total_holders,
+      percentChange: Number.parseFloat(row.daily_change_percent),
+    }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   console.log(`Fetched ${formattedData.length} rows from Dune`);
   return formattedData;
 }
@@ -75,9 +77,13 @@ export async function GET() {
     console.log('Dune holders cache updated (stored as string)');
 
     return NextResponse.json(freshData);
-
   } catch (error) {
     console.error('Error in Dune Holders API route:', error);
-    return NextResponse.json({ error: `Failed to fetch Dune holders data: ${error instanceof Error ? error.message : 'Unknown error'}` }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: `Failed to fetch Dune holders data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      },
+      { status: 500 },
+    );
   }
-} 
+}

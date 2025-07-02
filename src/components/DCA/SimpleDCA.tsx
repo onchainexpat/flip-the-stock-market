@@ -3,24 +3,27 @@
 import {
   ArrowRight,
   Calendar,
-  CheckCircle,
   ChevronDown,
   ChevronUp,
   Clock,
   DollarSign,
   Repeat,
   TrendingUp,
-  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
-import { PLATFORM_FEE_PERCENTAGE, TOKENS, openOceanApi } from '../../utils/openOceanApi';
 import { coinbaseSmartWalletService } from '../../lib/coinbaseSmartWalletService';
+import {
+  PLATFORM_FEE_PERCENTAGE,
+  TOKENS,
+  openOceanApi,
+} from '../../utils/openOceanApi';
 import AddMoneyButton from '../AddMoneyButton';
 import EmailLogin from '../EmailLogin';
 import WalletWrapper from '../WalletWrapper';
+import DCACreationModal from './DCACreationModal';
 
 interface SimpleDCAProps {
   className?: string;
@@ -32,8 +35,10 @@ export default function SimpleDCA({
   onOrderCreated,
 }: SimpleDCAProps) {
   const { address, isConnected } = useAccount();
-  const [emailWalletAddress, setEmailWalletAddress] = useState<string | null>(null);
-  
+  const [emailWalletAddress, setEmailWalletAddress] = useState<string | null>(
+    null,
+  );
+
   // Use email wallet address if available, otherwise use connected wallet
   const balanceAddress = emailWalletAddress || address;
   const isWalletReady = isConnected || !!emailWalletAddress;
@@ -51,6 +56,10 @@ export default function SimpleDCA({
   const [impactLoading, setImpactLoading] = useState(false);
   const [routeData, setRouteData] = useState<any>(null);
   const [showRouteDetails, setShowRouteDetails] = useState(false);
+
+  // Modal state for DCA creation
+  const [showDCAModal, setShowDCAModal] = useState(false);
+  const [isCreatingDCA, setIsCreatingDCA] = useState(false);
 
   // Fetch USD balance from the smart wallet address
   const { data: balanceData } = useReadContracts({
@@ -80,7 +89,10 @@ export default function SimpleDCA({
       console.log('Connected wallet address:', address);
       console.log('Email wallet address:', emailWalletAddress);
       console.log('Balance address being checked:', balanceAddress);
-      console.log('Wallet type:', emailWalletAddress ? 'Email Smart Wallet' : 'Connected Wallet');
+      console.log(
+        'Wallet type:',
+        emailWalletAddress ? 'Email Smart Wallet' : 'Connected Wallet',
+      );
       console.log('Is wallet ready:', isWalletReady);
       console.log('USDC token address:', TOKENS.USDC);
       console.log('Balance data:', balanceData);
@@ -89,7 +101,14 @@ export default function SimpleDCA({
       console.log('Query enabled:', !!balanceAddress && isWalletReady);
       console.log('=== END BALANCE DEBUG ===');
     }
-  }, [address, emailWalletAddress, balanceAddress, balanceData, usdBalance, isWalletReady]);
+  }, [
+    address,
+    emailWalletAddress,
+    balanceAddress,
+    balanceData,
+    usdBalance,
+    isWalletReady,
+  ]);
 
   // Calculate number of orders based on frequency and duration
   const calculateOrders = () => {
@@ -194,9 +213,8 @@ export default function SimpleDCA({
     return () => clearTimeout(debounceTimer);
   }, [formData.amount, formData.frequency, formData.duration]);
 
-  // Create DCA order
-  const createDCAOrder = async () => {
-
+  // Show DCA creation modal
+  const showDCACreationModal = () => {
     if (!isWalletReady || !balanceAddress) {
       // Silent validation - no user notification about technical details
       return;
@@ -210,42 +228,52 @@ export default function SimpleDCA({
       return;
     }
 
+    setShowDCAModal(true);
+  };
+
+  // Create DCA order after modal confirmation
+  const createDCAOrder = async () => {
     const numberOfOrders = calculateOrders();
-    setIsCreating(true);
+    setIsCreatingDCA(true);
 
     try {
       console.log('Creating DCA order with Coinbase Smart Wallet...');
-      
+
       const totalAmount = Number.parseFloat(formData.amount);
-      
+
       // Check if wallet supports session keys
-      const supportsSessionKeys = await coinbaseSmartWalletService.supportsSessionKeys(
-        balanceAddress as `0x${string}`
-      );
-      
+      const supportsSessionKeys =
+        await coinbaseSmartWalletService.supportsSessionKeys(
+          balanceAddress as `0x${string}`,
+        );
+
       if (!supportsSessionKeys) {
-        toast.error('Your wallet does not support automated trading. Please use a Coinbase Smart Wallet.');
+        toast.error(
+          'Your wallet does not support automated trading. Please use a Coinbase Smart Wallet.',
+        );
         return;
       }
-      
+
       // Generate session key for automated DCA execution
       console.log('Generating session key for automated DCA...');
-      const sessionKeyData = await coinbaseSmartWalletService.generateSessionKey(
-        balanceAddress as `0x${string}`,
-        [
-          {
-            target: TOKENS.USDC, // Allow spending USDC
-            valueLimit: BigInt(totalAmount * 1e6), // Total DCA amount limit
-            functionSelectors: ['0xa9059cbb', '0x095ea7b3'], // transfer, approve
-          },
-          {
-            target: '0x0000000000000000000000000000000000000000' as `0x${string}`, // Allow any contract calls for swaps
-            valueLimit: BigInt(totalAmount * 1e6),
-            functionSelectors: ['0x'], // Any function selector for 0x swaps
-          }
-        ]
-      );
-      
+      const sessionKeyData =
+        await coinbaseSmartWalletService.generateSessionKey(
+          balanceAddress as `0x${string}`,
+          [
+            {
+              target: TOKENS.USDC, // Allow spending USDC
+              valueLimit: BigInt(totalAmount * 1e6), // Total DCA amount limit
+              functionSelectors: ['0xa9059cbb', '0x095ea7b3'], // transfer, approve
+            },
+            {
+              target:
+                '0x0000000000000000000000000000000000000000' as `0x${string}`, // Allow any contract calls for swaps
+              valueLimit: BigInt(totalAmount * 1e6),
+              functionSelectors: ['0x'], // Any function selector for 0x swaps
+            },
+          ],
+        );
+
       console.log(`✅ Session key generated: ${sessionKeyData.sessionAddress}`);
       toast.success('Smart wallet session created for automated investing!', {
         duration: 4000,
@@ -291,7 +319,8 @@ export default function SimpleDCA({
         duration: '30',
       });
 
-      // Notify parent component to refresh
+      // Close modal and notify parent component
+      setShowDCAModal(false);
       if (onOrderCreated) {
         onOrderCreated();
       }
@@ -300,7 +329,7 @@ export default function SimpleDCA({
         error instanceof Error ? error.message : 'Failed to create order',
       );
     } finally {
-      setIsCreating(false);
+      setIsCreatingDCA(false);
     }
   };
 
@@ -321,22 +350,24 @@ export default function SimpleDCA({
           <p className="text-gray-400 mb-6">
             Automatically invest in SPX6900 with scheduled purchases
           </p>
-          
+
           {/* Email Login Option */}
           <div className="mb-6">
             <EmailLogin onSuccess={handleEmailSuccess} />
           </div>
-          
+
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 border-t border-gray-700"></div>
             <span className="text-gray-400 text-sm">or</span>
             <div className="flex-1 border-t border-gray-700"></div>
           </div>
-          
+
           {/* External Wallet Connection */}
           <div>
-            <h4 className="text-white font-medium mb-3">Connect External Wallet</h4>
+            <h4 className="text-white font-medium mb-3">
+              Connect External Wallet
+            </h4>
             <WalletWrapper className="w-full" />
           </div>
         </div>
@@ -346,7 +377,6 @@ export default function SimpleDCA({
 
   return (
     <div className={`bg-gray-900 rounded-lg p-6 ${className}`}>
-
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
           <Repeat size={20} className="text-white" />
@@ -421,10 +451,11 @@ export default function SimpleDCA({
           {hasInsufficientBalance && (
             <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
               <p className="text-red-400 text-sm mb-2">
-                Insufficient balance. You need ${(totalAmount - usdBalance).toFixed(2)} more.
+                Insufficient balance. You need $
+                {(totalAmount - usdBalance).toFixed(2)} more.
               </p>
-              <AddMoneyButton 
-                className="text-sm py-2 px-4" 
+              <AddMoneyButton
+                className="text-sm py-2 px-4"
                 onFundingComplete={() => {
                   // Refresh balance after funding
                   window.location.reload();
@@ -485,9 +516,7 @@ export default function SimpleDCA({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Amount per Order:</span>
-            <span className="text-white">
-              ${amountPerOrder.toFixed(2)}
-            </span>
+            <span className="text-white">${amountPerOrder.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-400">Platform Fee (0.1%):</span>
@@ -674,16 +703,8 @@ export default function SimpleDCA({
 
       {/* Create Order Button */}
       <button
-        onClick={() => {
-          // Always allow DCA creation if user has sufficient USDC
-          // Smart wallet deployment will happen automatically if needed
-          createDCAOrder();
-        }}
-        disabled={
-          isCreating ||
-          !isWalletReady ||
-          hasInsufficientBalance
-        }
+        onClick={showDCACreationModal}
+        disabled={isCreatingDCA || !isWalletReady || hasInsufficientBalance}
         className="
           w-full bg-gradient-to-r from-blue-600 to-purple-600 
           hover:from-blue-700 hover:to-purple-700 
@@ -694,23 +715,36 @@ export default function SimpleDCA({
           disabled:cursor-not-allowed
         "
         title={
-          hasInsufficientBalance ? 'Insufficient USDC balance' : 
-          !isWalletReady ? 'Connect wallet or login with email to continue' : ''
+          hasInsufficientBalance
+            ? 'Insufficient USDC balance'
+            : isWalletReady
+              ? ''
+              : 'Connect wallet or login with email to continue'
         }
       >
-        {isCreating ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-            Creating Order...
-          </>
-        ) : (
-          <>
-            <Repeat size={16} />
-            Start Auto-Investing
-            <ArrowRight size={16} />
-          </>
-        )}
+        <Repeat size={16} />
+        Start Auto-Investing
+        <ArrowRight size={16} />
       </button>
+
+      {/* DCA Creation Modal */}
+      <DCACreationModal
+        isOpen={showDCAModal}
+        onClose={() => setShowDCAModal(false)}
+        onConfirm={createDCAOrder}
+        orderDetails={{
+          totalAmount: formData.amount,
+          frequency: formData.frequency,
+          duration: formData.duration,
+          amountPerOrder: amountPerOrder.toFixed(2),
+          numberOfOrders,
+          platformFee: totalPlatformFees.toFixed(2),
+          netAmount: (
+            Number.parseFloat(formData.amount) - totalPlatformFees
+          ).toFixed(2),
+        }}
+        isLoading={isCreatingDCA}
+      />
 
       {/* Technical details completely hidden from users - no UI shown */}
 

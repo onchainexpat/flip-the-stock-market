@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
+import { NextResponse } from 'next/server';
 // import { ParseHubClient } from '../../../../utils/ParseHubClient'; // Removed if no longer needed
 // import { DuneClient } from '../../../../utils/DuneClient'; // Already removed
 
@@ -38,18 +38,21 @@ export async function GET(request: Request) {
     // Consider if this is still needed or should be removed too
     // If only used for cron status, keep it.
     // If used to check overall data freshness, its meaning has changed.
-    await redis.set('last_data_update', Date.now()); 
+    await redis.set('last_data_update', Date.now());
 
     return NextResponse.json({
       success: true,
       timestamp: Date.now(),
-      message: 'Cron job completed (no data fetched directly)' // Updated message
+      message: 'Cron job completed (no data fetched directly)', // Updated message
     });
   } catch (error) {
     console.error('Error in cron job:', error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
-} 
+}

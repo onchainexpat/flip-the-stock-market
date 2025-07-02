@@ -18,51 +18,73 @@ export async function GET(
     const userAddress = request.nextUrl.searchParams.get('userAddress');
 
     if (!userAddress) {
-      return NextResponse.json({ error: 'Missing userAddress' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing userAddress' },
+        { status: 400 },
+      );
     }
 
     // Get the execution from Redis
     const executionKey = `dca:executions:${userAddress}:${orderId}`;
-    const executionData = await redis.zrange(
-      executionKey,
-      0,
-      -1,
-      { withScores: true },    );
+    const executionData = await redis.zrange(executionKey, 0, -1, {
+      withScores: true,
+    });
 
-    const execution = executionData.find(e => {
-        let parsed;
-        try {
-          // Handle both string and object formats
-          if (typeof e.member === 'object' && e.member !== null) {
-            parsed = e.member;
-          } else {
-            parsed = JSON.parse(e.member as string);
-          }
-          return parsed.id === executionId;
-        } catch (error) {
-          console.error('Failed to parse execution member:', e.member, error);
-          return false;
+    const execution = executionData.find((e: any) => {
+      let parsed;
+      try {
+        // Handle both string and object formats
+        if (typeof e.member === 'object' && e.member !== null) {
+          parsed = e.member;
+        } else {
+          parsed = JSON.parse(e.member as string);
         }
+        return parsed.id === executionId;
+      } catch (error) {
+        console.error('Failed to parse execution member:', e.member, error);
+        return false;
+      }
     });
 
     if (!execution) {
-      return NextResponse.json({ error: 'Execution not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Execution not found' },
+        { status: 404 },
+      );
     }
 
     let parsedExecution;
     try {
-      if (typeof execution.member === 'object' && execution.member !== null) {
-        parsedExecution = execution.member;
+      if (
+        typeof (execution as any).member === 'object' &&
+        (execution as any).member !== null
+      ) {
+        parsedExecution = (execution as any).member;
       } else {
-        parsedExecution = JSON.parse(execution.member as string);
+        parsedExecution = JSON.parse((execution as any).member as string);
       }
     } catch (error) {
-      console.error('Failed to parse execution member:', execution.member, error);
-      return NextResponse.json({ error: 'Invalid execution data' }, { status: 500 });
+      console.error(
+        'Failed to parse execution member:',
+        (execution as any).member,
+        error,
+      );
+      return NextResponse.json(
+        { error: 'Invalid execution data' },
+        { status: 500 },
+      );
     }
 
-    // Fetch trade details from 0x API
-    const tradeDetails = await fetchTradeDetails(parsedExecution.transactionHash);
+    // Try to fetch trade details from OpenOcean API
+    let tradeDetails = null;
+    try {
+      if (parsedExecution.transactionHash) {
+        tradeDetails = await fetchTradeDetails(parsedExecution.transactionHash);
+      }
+    } catch (error) {
+      console.warn('Could not fetch trade details:', error);
+      // Continue without trade details - basic execution info is still valuable
+    }
 
     return NextResponse.json({ ...parsedExecution, tradeDetails });
   } catch (error) {

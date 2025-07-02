@@ -3,7 +3,7 @@ export class RateLimiter {
   private maxRequests: number;
   private timeWindowMs: number;
 
-  constructor(maxRequests: number = 5, timeWindowMs: number = 60000) {
+  constructor(maxRequests = 5, timeWindowMs = 60000) {
     this.requests = new Map();
     this.maxRequests = maxRequests;
     this.timeWindowMs = timeWindowMs;
@@ -15,7 +15,7 @@ export class RateLimiter {
 
     // Remove timestamps outside the window
     const validTimestamps = timestamps.filter(
-      timestamp => now - timestamp < this.timeWindowMs
+      (timestamp) => now - timestamp < this.timeWindowMs,
     );
 
     // Check if rate limit is exceeded
@@ -28,7 +28,8 @@ export class RateLimiter {
     this.requests.set(ip, validTimestamps);
 
     // Cleanup old entries periodically
-    if (Math.random() < 0.1) { // 10% chance to cleanup on each request
+    if (Math.random() < 0.1) {
+      // 10% chance to cleanup on each request
       this.cleanup();
     }
 
@@ -39,7 +40,7 @@ export class RateLimiter {
     const now = Date.now();
     for (const [ip, timestamps] of this.requests.entries()) {
       const validTimestamps = timestamps.filter(
-        timestamp => now - timestamp < this.timeWindowMs
+        (timestamp) => now - timestamp < this.timeWindowMs,
       );
       if (validTimestamps.length === 0) {
         this.requests.delete(ip);
@@ -48,4 +49,4 @@ export class RateLimiter {
       }
     }
   }
-} 
+}

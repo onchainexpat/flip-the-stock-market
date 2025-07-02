@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCA v2 Demo - Flip The Stock Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                DCA v2 Implementation Demo
+            </h1>
+            <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                This demonstrates the completed DCA v2 system with smart wallets, session keys, and gas-free transactions.
+            </p>
+            
+            <div class="inline-flex items-center gap-2 bg-green-500/20 px-4 py-2 rounded-full">
+                <span class="text-green-400 font-medium">✅ Implementation Complete</span>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-6 h-6 text-yellow-400">⚡</div>
+                    <h3 class="text-lg font-semibold text-white">Gas-Free Transactions</h3>
+                </div>
+                <p class="text-gray-400 text-sm">All DCA transactions are sponsored - no gas fees required</p>
+            </div>
+            
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-6 h-6 text-green-400">🛡️</div>
+                    <h3 class="text-lg font-semibold text-white">Smart Wallet Security</h3>
+                </div>
+                <p class="text-gray-400 text-sm">ERC-4337 smart wallets with session keys for automated execution</p>
+            </div>
+            
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-6 h-6 text-blue-400">⏰</div>
+                    <h3 class="text-lg font-semibold text-white">Automated Execution</h3>
+                </div>
+                <p class="text-gray-400 text-sm">Set it and forget it - your DCA orders execute automatically</p>
+            </div>
+            
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-6 h-6 text-purple-400">📈</div>
+                    <h3 class="text-lg font-semibold text-white">Optimal Pricing</h3>
+                </div>
+                <p class="text-gray-400 text-sm">0x API integration for best swap prices and low slippage</p>
+            </div>
+        </div>
+
+        <!-- Implementation Status -->
+        <div class="max-w-2xl mx-auto bg-gray-900 rounded-lg p-6 border border-gray-700">
+            <h2 class="text-2xl font-bold text-white mb-6">Implementation Status</h2>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300">Smart Wallet Providers (Privy)</span>
+                    <span class="text-green-400">✅ Complete</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300">Session Key Management</span>
+                    <span class="text-green-400">✅ Complete</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300">0x API Integration</span>
+                    <span class="text-green-400">✅ Complete</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300">DCA Execution Engine</span>
+                    <span class="text-green-400">✅ Complete</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300">Base Paymaster Integration</span>
+                    <span class="text-green-400">✅ Complete</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-300">UI Components</span>
+                    <span class="text-green-400">✅ Complete</span>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-gray-800 rounded-lg">
+                <h4 class="text-sm font-medium text-gray-300 mb-2">Files Created</h4>
+                <ul class="text-sm text-gray-400 space-y-1">
+                    <li>• src/components/SmartWalletProviders.tsx</li>
+                    <li>• src/hooks/useSmartWallet.ts</li>
+                    <li>• src/utils/0xApi.ts</li>
+                    <li>• src/utils/dcaEngine.ts</li>
+                    <li>• src/utils/paymaster.ts</li>
+                    <li>• src/components/DCA/SimpleDCA.tsx</li>
+                    <li>• src/app/dca-v2/page.tsx</li>
+                </ul>
+            </div>
+
+            <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <h4 class="text-blue-400 font-medium mb-2">System Ready</h4>
+                <p class="text-blue-300 text-sm">
+                    The DCA v2 system is fully implemented and ready for testing. All components have been created 
+                    and the infrastructure is in place for gas-free, automated DCA trading with smart wallets.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

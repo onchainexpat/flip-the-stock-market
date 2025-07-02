@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sweep USDC from Old Smart Wallet</title>
+    <script src="https://unpkg.com/viem@latest/dist/index.iife.js"></script>
+</head>
+<body>
+    <h2>Sweep 2.00 USDC from Old Smart Wallet</h2>
+    <div>
+        <p><strong>Old Smart Wallet:</strong> 0x320b2943e26ccbDacE18575e7974EDC200BA4dCE</p>
+        <p><strong>Your External Wallet:</strong> 0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7</p>
+        <p><strong>Amount:</strong> 2.00 USDC</p>
+    </div>
+    
+    <button id="connectWallet">Connect Wallet</button>
+    <button id="sweepUSDC" disabled>Sweep USDC</button>
+    
+    <div id="status"></div>
+
+    <script>
+        const OLD_WALLET = '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE';
+        const EXTERNAL_WALLET = '0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7';
+        const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+        
+        document.getElementById('connectWallet').onclick = async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    document.getElementById('sweepUSDC').disabled = false;
+                    document.getElementById('status').innerHTML = '✅ Wallet connected';
+                } catch (error) {
+                    document.getElementById('status').innerHTML = '❌ Failed to connect wallet';
+                }
+            } else {
+                document.getElementById('status').innerHTML = '❌ No wallet found';
+            }
+        };
+
+        document.getElementById('sweepUSDC').onclick = async () => {
+            document.getElementById('status').innerHTML = '⚠️ Manual sweep required:<br><br>';
+            document.getElementById('status').innerHTML += '1. Open your MetaMask<br>';
+            document.getElementById('status').innerHTML += '2. Go to Assets > Import Token<br>';
+            document.getElementById('status').innerHTML += `3. Add USDC: ${USDC_ADDRESS}<br>`;
+            document.getElementById('status').innerHTML += '4. Connect to app.1inch.io or debank.com<br>';
+            document.getElementById('status').innerHTML += `5. Add contract wallet: ${OLD_WALLET}<br>`;
+            document.getElementById('status').innerHTML += `6. Transfer 2.00 USDC to: ${EXTERNAL_WALLET}<br>`;
+        };
+    </script>
+</body>
+</html>

@@ -1,14 +1,14 @@
 'use client';
 
-import { useAccount, useSignTypedData } from 'wagmi';
 import { useWallets } from '@privy-io/react-auth';
 import { toast } from 'react-hot-toast';
-import { type TypedData, type Address } from 'viem';
+import type { Address } from 'viem';
+import { useAccount, useSignTypedData } from 'wagmi';
 import {
-  createDCAOrderMessage,
-  createSessionKeyMessage,
-  createFundTransferMessage,
   createCompleteDCASetupMessage,
+  createDCAOrderMessage,
+  createFundTransferMessage,
+  createSessionKeyMessage,
   createTransactionSummary,
   formatAddressForDisplay,
 } from '../utils/eip712Signing';
@@ -19,7 +19,7 @@ export function useClearSigning() {
   const { signTypedDataAsync } = useSignTypedData();
 
   // Get active wallet (Privy or Wagmi)
-  const activeWallet = wallets.find(w => w.address === address) || wallets[0];
+  const activeWallet = wallets.find((w) => w.address === address) || wallets[0];
 
   /**
    * Sign a DCA order with clear, human-readable message
@@ -31,7 +31,7 @@ export function useClearSigning() {
     frequency: string,
     numberOfOrders: number,
     platformFeePercentage: number,
-    validUntilDays: number
+    validUntilDays: number,
   ): Promise<string> => {
     if (!address) {
       throw new Error('Wallet not connected');
@@ -45,7 +45,7 @@ export function useClearSigning() {
       frequency,
       numberOfOrders,
       platformFeePercentage,
-      validUntilDays
+      validUntilDays,
     );
 
     const summary = createTransactionSummary('dca-setup', {
@@ -69,14 +69,19 @@ export function useClearSigning() {
     console.log(`   🔢 Number of Orders: ${numberOfOrders}`);
     console.log(`   💳 Platform Fee: ${platformFeePercentage}%`);
     console.log(`   👤 Your Wallet: ${formatAddressForDisplay(address)}`);
-    console.log(`   🤖 Smart Wallet: ${formatAddressForDisplay(smartWalletAddress)}`);
+    console.log(
+      `   🤖 Smart Wallet: ${formatAddressForDisplay(smartWalletAddress)}`,
+    );
     console.log(`   📍 SPX Delivery: Your external wallet`);
     console.log(`   ⏰ Valid Until: ${validUntilDays} days`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     try {
       const signature = await signTypedDataAsync(typedData);
-      console.log('✅ DCA Order signature obtained:', signature.slice(0, 20) + '...');
+      console.log(
+        '✅ DCA Order signature obtained:',
+        signature.slice(0, 20) + '...',
+      );
       toast.success('DCA order authorization signed!');
       return signature;
     } catch (error) {
@@ -92,7 +97,7 @@ export function useClearSigning() {
   const signSessionKeyAuthorization = async (
     smartWalletAddress: Address,
     sessionKeyAddress: Address,
-    validUntilDays: number
+    validUntilDays: number,
   ): Promise<string> => {
     if (!address) {
       throw new Error('Wallet not connected');
@@ -102,7 +107,7 @@ export function useClearSigning() {
       address,
       smartWalletAddress,
       sessionKeyAddress,
-      validUntilDays
+      validUntilDays,
     );
 
     const summary = createTransactionSummary('session-key', {
@@ -118,8 +123,12 @@ export function useClearSigning() {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🔐 What you are authorizing:');
     console.log(`   👤 Your Wallet: ${formatAddressForDisplay(address)}`);
-    console.log(`   🤖 Smart Wallet: ${formatAddressForDisplay(smartWalletAddress)}`);
-    console.log(`   🔑 Session Key: ${formatAddressForDisplay(sessionKeyAddress)}`);
+    console.log(
+      `   🤖 Smart Wallet: ${formatAddressForDisplay(smartWalletAddress)}`,
+    );
+    console.log(
+      `   🔑 Session Key: ${formatAddressForDisplay(sessionKeyAddress)}`,
+    );
     console.log(`   ⏰ Valid For: ${validUntilDays} days`);
     console.log('   🎯 Purpose: Automate DCA swaps with gas sponsorship');
     console.log('   🔒 Permissions:');
@@ -147,7 +156,7 @@ export function useClearSigning() {
    */
   const signFundTransfer = async (
     smartWalletAddress: Address,
-    amount: number
+    amount: number,
   ): Promise<string> => {
     if (!address) {
       throw new Error('Wallet not connected');
@@ -156,7 +165,7 @@ export function useClearSigning() {
     const typedData = createFundTransferMessage(
       address,
       smartWalletAddress,
-      amount
+      amount,
     );
 
     const summary = createTransactionSummary('fund-transfer', {
@@ -172,8 +181,12 @@ export function useClearSigning() {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('💰 What you are transferring:');
     console.log(`   💵 Amount: $${amount.toFixed(2)} USD (USDC)`);
-    console.log(`   📤 From: ${formatAddressForDisplay(address)} (Your wallet)`);
-    console.log(`   📥 To: ${formatAddressForDisplay(smartWalletAddress)} (Smart wallet)`);
+    console.log(
+      `   📤 From: ${formatAddressForDisplay(address)} (Your wallet)`,
+    );
+    console.log(
+      `   📥 To: ${formatAddressForDisplay(smartWalletAddress)} (Smart wallet)`,
+    );
     console.log('   🎯 Purpose: Fund DCA automation');
     console.log('   ✅ Benefits: Gas-free automated swaps');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -196,19 +209,25 @@ export function useClearSigning() {
   const signWithClearMessage = async (
     title: string,
     description: string,
-    details: Record<string, string>
+    details: Record<string, string>,
   ): Promise<string> => {
     if (!address) {
       throw new Error('Wallet not connected');
     }
 
     // Add slippage info to manual execution messages
-    const enhancedDetails = title.includes('Manual Execute') || title.includes('Execute DCA') 
-      ? { ...details, '📊 Slippage Tolerance': '3% (improved for better execution)' }
-      : details;
+    const enhancedDetails =
+      title.includes('Manual Execute') || title.includes('Execute DCA')
+        ? {
+            ...details,
+            '📊 Slippage Tolerance': '3% (improved for better execution)',
+          }
+        : details;
 
     // Create a simple message for signing
-    const message = `${title}\n\n${description}\n\n${Object.entries(enhancedDetails)
+    const message = `${title}\n\n${description}\n\n${Object.entries(
+      enhancedDetails,
+    )
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n')}`;
 
@@ -252,7 +271,7 @@ export function useClearSigning() {
     frequency: string,
     numberOfOrders: number,
     platformFeePercentage: number,
-    validUntilDays: number
+    validUntilDays: number,
   ): Promise<string> => {
     if (!address) {
       throw new Error('Wallet not connected');
@@ -260,7 +279,7 @@ export function useClearSigning() {
 
     // Create a comprehensive message that includes both order and funding
     const platformFee = totalAmount * (platformFeePercentage / 100);
-    
+
     const details = {
       '💰 Total Investment': `$${totalAmount.toFixed(2)} USD`,
       '📤 From Wallet': formatAddressForDisplay(address),
@@ -285,7 +304,9 @@ ONE signature for everything:
 ✅ Enable gas-free swap execution
 ✅ Direct SPX delivery to your wallet
 
-${Object.entries(details).map(([key, value]) => `${key}: ${value}`).join('\n')}
+${Object.entries(details)
+  .map(([key, value]) => `${key}: ${value}`)
+  .join('\n')}
 
 No additional signatures required!
 `;
@@ -312,9 +333,9 @@ No additional signatures required!
         frequency,
         numberOfOrders,
         platformFeePercentage,
-        validUntilDays
+        validUntilDays,
       );
-      
+
       const signature = await signTypedDataAsync(typedData);
       console.log('✅ Complete DCA setup signature obtained');
       toast.success('Complete DCA setup authorized!');

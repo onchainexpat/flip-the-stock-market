@@ -1,4 +1,4 @@
-import { type Address, type TypedData, type TypedDataDomain } from 'viem';
+import type { Address, TypedData, TypedDataDomain } from 'viem';
 
 // EIP-712 Domain for Clear Signing
 export const DCA_DOMAIN: TypedDataDomain = {
@@ -54,9 +54,10 @@ export function createCompleteDCASetupMessage(
   frequency: string,
   numberOfOrders: number,
   platformFeePercentage: number,
-  validUntilDays: number
+  validUntilDays: number,
 ): TypedData {
-  const validUntil = Math.floor(Date.now() / 1000) + (validUntilDays * 24 * 60 * 60);
+  const validUntil =
+    Math.floor(Date.now() / 1000) + validUntilDays * 24 * 60 * 60;
   const nonce = Math.floor(Date.now() / 1000); // Simple nonce using timestamp
   const platformFee = totalAmount * (platformFeePercentage / 100);
 
@@ -66,7 +67,7 @@ export function createCompleteDCASetupMessage(
     '✅ Execute swaps via OpenOcean DEX',
     '✅ Send SPX6900 directly to your external wallet',
     '✅ Return remaining funds when cancelled',
-    '✅ All transactions are gas-free (sponsored)'
+    '✅ All transactions are gas-free (sponsored)',
   ].join('\n');
 
   return {
@@ -101,9 +102,10 @@ export function createDCAOrderMessage(
   frequency: string,
   numberOfOrders: number,
   platformFeePercentage: number,
-  validUntilDays: number
+  validUntilDays: number,
 ): TypedData {
-  const validUntil = Math.floor(Date.now() / 1000) + (validUntilDays * 24 * 60 * 60);
+  const validUntil =
+    Math.floor(Date.now() / 1000) + validUntilDays * 24 * 60 * 60;
   const nonce = Math.floor(Date.now() / 1000); // Simple nonce using timestamp
   const platformFee = totalAmount * (platformFeePercentage / 100);
 
@@ -133,10 +135,10 @@ export function createSessionKeyMessage(
   userAddress: Address,
   smartWalletAddress: Address,
   sessionKeyAddress: Address,
-  validUntilDays: number
+  validUntilDays: number,
 ): TypedData {
   const validFrom = Math.floor(Date.now() / 1000);
-  const validUntil = validFrom + (validUntilDays * 24 * 60 * 60);
+  const validUntil = validFrom + validUntilDays * 24 * 60 * 60;
   const nonce = Math.floor(Date.now() / 1000);
 
   const permissions = [
@@ -144,7 +146,7 @@ export function createSessionKeyMessage(
     '• Approve USDC spending for swaps',
     '• Execute swaps via OpenOcean DEX',
     '• Transfer SPX6900 tokens to your wallet',
-    '• Return remaining funds when cancelled'
+    '• Return remaining funds when cancelled',
   ].join('\n');
 
   return {
@@ -180,7 +182,7 @@ export const FUND_TRANSFER_TYPES = {
 export function createFundTransferMessage(
   fromAddress: Address,
   toAddress: Address,
-  amount: number
+  amount: number,
 ): TypedData {
   return {
     domain: DCA_DOMAIN,
@@ -206,7 +208,7 @@ export function formatAddressForDisplay(address: Address): string {
 // Create human-readable summary for complex transactions
 export function createTransactionSummary(
   type: 'dca-setup' | 'session-key' | 'fund-transfer',
-  details: Record<string, any>
+  details: Record<string, any>,
 ): string {
   switch (type) {
     case 'dca-setup':

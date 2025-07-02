@@ -271,8 +271,9 @@ async function executeOrder(
           sellToken: TOKENS.USDC,
           buyToken: TOKENS.SPX6900,
           sellAmount: netAmount.toString(),
-          userAddress: order.userAddress, // External wallet (for UI display)
+          userAddress: order.userAddress, // External wallet (for UI display and SPX delivery)
           smartWalletAddress: order.sessionKeyAddress, // Smart wallet (for swap execution)
+          receiverAddress: order.userAddress, // Send SPX tokens to external wallet
         },
         message: 'Ready to execute DCA swap',
       };

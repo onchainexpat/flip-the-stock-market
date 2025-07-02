@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import profiles from '../profiles.json';
 import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
+import profiles from '../profiles.json';
 
 interface Profile {
   platform: string;
@@ -14,7 +14,9 @@ export default function ProfileGrid() {
   const [hoveredProfile, setHoveredProfile] = useState<Profile | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [popupPosition, setPopupPosition] = useState<'top' | 'bottom'>('top');
-  const [popupAlignment, setPopupAlignment] = useState<'left' | 'center' | 'right'>('center');
+  const [popupAlignment, setPopupAlignment] = useState<
+    'left' | 'center' | 'right'
+  >('center');
   const [columns, setColumns] = useState(8); // Default to mobile columns
   const hideTimeoutRef = useRef<NodeJS.Timeout>();
   const [imageCache, setImageCache] = useState<Record<string, string>>({});
@@ -26,14 +28,19 @@ export default function ProfileGrid() {
     const updateLayout = () => {
       const width = window.innerWidth;
       setIsMobile(width < 768);
-      
+
       // Update columns based on breakpoints
-      if (width >= 1280) setColumns(16);      // xl
-      else if (width >= 1024) setColumns(14); // lg
-      else if (width >= 768) setColumns(12);  // md
-      else if (width >= 640) setColumns(10);  // sm
-      else if (width >= 480) setColumns(9);   // xs
-      else setColumns(8);                     // default
+      if (width >= 1280)
+        setColumns(16); // xl
+      else if (width >= 1024)
+        setColumns(14); // lg
+      else if (width >= 768)
+        setColumns(12); // md
+      else if (width >= 640)
+        setColumns(10); // sm
+      else if (width >= 480)
+        setColumns(9); // xs
+      else setColumns(8); // default
     };
 
     updateLayout();
@@ -47,14 +54,14 @@ export default function ProfileGrid() {
       hasLoadedRef.current = true;
 
       const profilesToTry = profiles.slice(0, 120);
-      const usernames = profilesToTry.map(p => p.username).filter(Boolean);
+      const usernames = profilesToTry.map((p) => p.username).filter(Boolean);
 
       try {
         // Fetch all images in one request
         const response = await fetch('/api/profile-images', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usernames })
+          body: JSON.stringify({ usernames }),
         });
 
         if (!response.ok) return;
@@ -67,7 +74,8 @@ export default function ProfileGrid() {
         for (const profile of profilesToTry) {
           if (profile.username && data[profile.username]) {
             const imageData = data[profile.username];
-            cache[profile.username] = `data:${imageData.contentType};base64,${imageData.data}`;
+            cache[profile.username] =
+              `data:${imageData.contentType};base64,${imageData.data}`;
             availableProfiles.push(profile);
           }
         }
@@ -83,7 +91,11 @@ export default function ProfileGrid() {
   }, []);
 
   // Handle popup position based on scroll, viewport, and grid position
-  const handleMouseEnter = (profile: Profile, event: React.MouseEvent<HTMLDivElement>, index: number) => {
+  const handleMouseEnter = (
+    profile: Profile,
+    event: React.MouseEvent<HTMLDivElement>,
+    index: number,
+  ) => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
     }
@@ -91,13 +103,13 @@ export default function ProfileGrid() {
     const rect = element.getBoundingClientRect();
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
-    
+
     // Set vertical position based on available space
     setPopupPosition(spaceAbove > spaceBelow ? 'top' : 'bottom');
 
     // Calculate column position (0-based index)
     const columnIndex = index % columns;
-    
+
     // For mobile view, adjust horizontal alignment based on column position
     if (isMobile) {
       // If in the first third of columns, align right
@@ -116,7 +128,7 @@ export default function ProfileGrid() {
       // For desktop, keep center alignment
       setPopupAlignment('center');
     }
-    
+
     setHoveredProfile(profile);
   };
 
@@ -130,7 +142,7 @@ export default function ProfileGrid() {
   const completeRows = Math.floor(loadedProfiles.length / columns);
   const profilesToShow = Math.min(
     completeRows * columns,
-    Math.max(100, Math.floor(loadedProfiles.length / columns) * columns) // Ensure at least 100 profiles if available
+    Math.max(100, Math.floor(loadedProfiles.length / columns) * columns), // Ensure at least 100 profiles if available
   );
 
   // Use loadedProfiles directly since it's already limited
@@ -170,7 +182,7 @@ export default function ProfileGrid() {
     <div className="container mx-auto px-1">
       <div className="grid justify-center grid-cols-8 xs:grid-cols-9 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-16 gap-[2px] sm:gap-1">
         {filteredProfiles.map((profile, index) => (
-          <div 
+          <div
             key={index}
             className="relative cursor-pointer w-[32px] h-[32px] sm:w-[35px] sm:h-[35px] md:w-[38px] md:h-[38px] mx-auto"
             onMouseEnter={(e) => handleMouseEnter(profile, e, index)}
@@ -181,7 +193,7 @@ export default function ProfileGrid() {
                 <Image
                   src={imageCache[profile.username]}
                   alt={profile.username}
-                  fill
+                  fill={true}
                   sizes="(max-width: 640px) 32px, (max-width: 768px) 35px, 38px"
                   className="rounded-full object-cover hover:opacity-60 transition-opacity border border-white/10 hover:border-white/30"
                   quality={75}
@@ -191,7 +203,7 @@ export default function ProfileGrid() {
 
             {/* Hover Popup */}
             {hoveredProfile === profile && (
-              <div 
+              <div
                 className="w-72 bg-[#1B2236] bg-opacity-95 backdrop-blur-md text-white rounded-lg p-3 shadow-xl border border-white/10"
                 style={getPopupStyles()}
                 onMouseEnter={() => {
@@ -207,7 +219,7 @@ export default function ProfileGrid() {
                       <Image
                         src={imageCache[profile.username]}
                         alt={profile.username}
-                        fill
+                        fill={true}
                         sizes="48px"
                         className="rounded-full object-cover"
                         quality={75}
@@ -216,7 +228,7 @@ export default function ProfileGrid() {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <a 
+                    <a
                       href={profile.profile_url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -231,14 +243,18 @@ export default function ProfileGrid() {
                 </p>
 
                 {/* Arrow pointing to the profile picture - adjusted position */}
-                <div 
+                <div
                   className={`
                     absolute w-2 h-2 bg-[#1B2236] transform rotate-45
                     ${popupPosition === 'top' ? 'bottom-0 translate-y-1/2 border-b border-r' : 'top-0 -translate-y-1/2 border-t border-l'}
                     border-white/10
-                    ${popupAlignment === 'left' ? 'right-4' : 
-                      popupAlignment === 'right' ? 'left-4' : 
-                      'left-1/2 -translate-x-1/2'}
+                    ${
+                      popupAlignment === 'left'
+                        ? 'right-4'
+                        : popupAlignment === 'right'
+                          ? 'left-4'
+                          : 'left-1/2 -translate-x-1/2'
+                    }
                   `}
                 />
               </div>
@@ -248,4 +264,4 @@ export default function ProfileGrid() {
       </div>
     </div>
   );
-} 
+}
