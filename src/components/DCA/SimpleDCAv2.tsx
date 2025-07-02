@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { erc20Abi } from 'viem';
+import { erc20Abi, type Address } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
 import { useClearSigning } from '../../hooks/useClearSigning';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
@@ -378,9 +378,14 @@ export default function SimpleDCAv2({
 
         try {
           // Session key is already authorized in the combined DCA setup signature
-          sessionKeyData = await generateSessionKey(sessionPermissions);
+          sessionKeyData = await generateSessionKey(sessionPermissions, {
+            userWalletAddress: externalWalletAddress as Address,
+            totalAmount: totalAmountInWei,
+            orderSizeAmount: amountPerOrderValue,
+            durationDays: durationInDays,
+          });
           console.log(
-            '✅ ZeroDev session key created (already authorized in DCA setup)',
+            '✅ ZeroDev session key with private key created (already authorized in DCA setup)',
           );
         } catch (error) {
           console.log(

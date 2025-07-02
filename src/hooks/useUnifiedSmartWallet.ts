@@ -9,6 +9,7 @@ import { useAccount } from 'wagmi';
 
 // Import existing services
 import { coinbaseSmartWalletService } from '../lib/coinbaseSmartWalletService';
+import { zerodevSessionKeyService } from '../services/zerodevSessionKeyService';
 import {
   createBasePublicClient,
   createZeroDevKernelAccount,
@@ -286,6 +287,12 @@ export function useUnifiedSmartWallet() {
         valueLimit: bigint;
         functionSelectors: string[];
       }>,
+      dcaParams?: {
+        userWalletAddress: Address;
+        totalAmount: bigint;
+        orderSizeAmount: bigint;
+        durationDays: number;
+      },
     ): Promise<SessionKeyData> => {
       if (!state.sessionKeySupported || !state.address) {
         throw new Error('Session keys not supported for this wallet type');
@@ -305,17 +312,23 @@ export function useUnifiedSmartWallet() {
           setState((prev) => ({ ...prev, isLoading: false }));
           return sessionData;
         } else if (state.walletType === 'zerodev_smart') {
-          // Basic ZeroDev session key implementation
-          // In production, this would use ZeroDev's session key SDK
-          console.log('🔑 Creating basic ZeroDev session permissions...');
+          // Use proper ZeroDev session key service
+          console.log('🔑 Creating ZeroDev session key with private key...');
 
-          const sessionData: SessionKeyData = {
-            sessionAddress: state.address,
-            permissions,
-            validUntil: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
-            validAfter: Math.floor(Date.now() / 1000),
-          };
+          if (!dcaParams) {
+            throw new Error('DCA parameters required for ZeroDev session key creation');
+          }
 
+          // Use the proper ZeroDev session key service that includes private key
+          const sessionData = await zerodevSessionKeyService.createSessionKey(
+            state.address, // smartWalletAddress
+            dcaParams.userWalletAddress,
+            dcaParams.totalAmount,
+            dcaParams.orderSizeAmount,
+            dcaParams.durationDays,
+          );
+
+          console.log('✅ ZeroDev session key with private key created successfully');
           setState((prev) => ({ ...prev, isLoading: false }));
           return sessionData;
         }

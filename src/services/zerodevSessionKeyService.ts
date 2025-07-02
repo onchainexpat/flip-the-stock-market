@@ -237,6 +237,13 @@ export class ZeroDevSessionKeyService {
       }
 
       // Step 2: Create session account and validator
+      if (!sessionKeyData.sessionPrivateKey) {
+        return {
+          success: false,
+          error: 'Session key missing private key - order incompatible with current execution system. Please delete and recreate this DCA order.',
+        };
+      }
+
       const sessionAccount = privateKeyToAccount(
         sessionKeyData.sessionPrivateKey,
       );
