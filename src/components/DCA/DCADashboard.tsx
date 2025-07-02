@@ -159,6 +159,21 @@ function CountdownTimer({ targetDate }: CountdownTimerProps) {
   );
 }
 
+// Helper functions for encoding ERC-20 transactions
+const encodeApproveTransaction = (spender: string, amount: bigint): string => {
+  const functionSelector = '0x095ea7b3'; // approve(address,uint256)
+  const spenderPadded = spender.slice(2).padStart(64, '0');
+  const amountPadded = amount.toString(16).padStart(64, '0');
+  return `${functionSelector}${spenderPadded}${amountPadded}`;
+};
+
+const encodeTransferTransaction = (to: string, amount: bigint): string => {
+  const functionSelector = '0xa9059cbb'; // transfer(address,uint256)
+  const toPadded = to.slice(2).padStart(64, '0');
+  const amountPadded = amount.toString(16).padStart(64, '0');
+  return `${functionSelector}${toPadded}${amountPadded}`;
+};
+
 export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   // Helper to serialize BigInt values for localStorage
   const serializeBigInt = (obj: any): any => {
@@ -185,6 +200,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   // Smart wallet for executing transactions
   const {
     sendTransaction: sendSmartWalletTransaction,
+    sendBatchTransactions,
     isLoading: smartWalletLoading,
     address: smartWalletAddress,
     isReady: smartWalletReady,
@@ -870,7 +886,128 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
     }
   };
 
+  const executeManualDCABatched = async (orderId: string) => {
+    try {
+      toast.loading('Executing order...', { id: orderId });
+
+      const response = await fetch('/api/dca-execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId,
+          userAddress: address,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to execute order');
+      }
+
+      if (result.success && result.requiresExecution) {
+        toast.dismiss(orderId);
+        toast.loading('Getting swap quote...', { id: `${orderId}-quote` });
+
+        console.log('🔄 Getting OpenOcean swap quote for batched execution...');
+
+        const swapResponse = await fetch('/api/openocean-swap', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sellToken: result.swapParams.sellToken,
+            buyToken: result.swapParams.buyToken,
+            sellAmount: result.swapParams.sellAmount,
+            takerAddress: result.swapParams.smartWalletAddress || result.swapParams.userAddress,
+            receiverAddress: result.swapParams.smartWalletAddress || result.swapParams.userAddress, // SPX goes to smart wallet first
+            slippagePercentage: 0.015,
+          }),
+        });
+
+        if (!swapResponse.ok) {
+          const errorText = await swapResponse.text();
+          throw new Error(`Failed to get swap quote: ${swapResponse.status} ${errorText}`);
+        }
+
+        const swapQuote = await swapResponse.json();
+        console.log('✅ Swap quote received:', swapQuote);
+
+        if (!swapQuote.to || !swapQuote.data || !swapQuote.buyAmount) {
+          throw new Error('Invalid swap quote: missing transaction data');
+        }
+
+        toast.dismiss(`${orderId}-quote`);
+
+        const swapAmount = BigInt(result.swapParams.sellAmount);
+        const usdcAmount = (Number(swapAmount) / 1e6).toFixed(2);
+        const spxAmount = (Number(swapQuote.buyAmount) / 1e8).toFixed(2);
+
+        toast.loading(`Executing batched DCA: ${usdcAmount} USDC → ${spxAmount} SPX`, {
+          id: `${orderId}-batch`,
+        });
+
+        console.log('🔄 Preparing 3-step batched execution...');
+        console.log('  Step 1: Approve OpenOcean router to spend USDC');
+        console.log('  Step 2: Execute swap (SPX goes to smart wallet)');
+        console.log('  Step 3: Transfer SPX from smart wallet to external wallet');
+
+        const transactions = [
+          {
+            to: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`,
+            value: 0n,
+            data: encodeApproveTransaction('0x6352a56caadc4f1e25cd6c75970fa768a3304e64', swapAmount) as `0x${string}`,
+            description: 'Approve USDC spending',
+            executeFrom: 'smart_wallet' as const,
+          },
+          {
+            to: swapQuote.to as `0x${string}`,
+            value: BigInt(swapQuote.value || '0'),
+            data: swapQuote.data as `0x${string}`,
+            description: 'Execute USDC→SPX swap',
+            executeFrom: 'smart_wallet' as const,
+          },
+          {
+            to: '0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C' as `0x${string}`,
+            value: 0n,
+            data: encodeTransferTransaction(address!, BigInt(swapQuote.buyAmount)) as `0x${string}`,
+            description: 'Transfer SPX to external wallet',
+            executeFrom: 'smart_wallet' as const,
+          },
+        ];
+
+        console.log('🚀 Executing batched transactions...');
+        const txHashes = await sendBatchTransactions(transactions);
+
+        toast.success(`Batched DCA executed! Transactions: ${txHashes.length}`, {
+          id: `${orderId}-batch`,
+        });
+
+        console.log('✅ Batched DCA execution completed:', txHashes);
+        await loadUserData();
+      } else if (result.success) {
+        toast.success('Order executed successfully!', { id: orderId });
+        await loadUserData();
+      } else {
+        throw new Error(result.error || 'Execution failed');
+      }
+    } catch (error) {
+      console.error('❌ Batched DCA execution failed:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to execute order',
+        { id: orderId },
+      );
+    }
+  };
+
   const handleManualExecute = async (orderId: string) => {
+    await executeManualDCABatched(orderId);
+  };
+
+  const handleManualExecuteOld = async (orderId: string) => {
     try {
       toast.loading('Executing order...', { id: orderId });
 

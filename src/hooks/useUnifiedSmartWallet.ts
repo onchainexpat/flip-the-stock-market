@@ -466,9 +466,26 @@ export function useUnifiedSmartWallet() {
             console.log('   This is the smart wallet authorization signature.');
             console.log('   It allows your smart wallet to execute the swap.');
 
-            const txHash = await smartWalletClient.sendTransaction(txParams);
-            console.log('✅ TRANSACTION SENT:', txHash);
-            return txHash;
+            console.log('🚀 Sending UserOperation...');
+            const userOpHash = await smartWalletClient.sendUserOperation({
+              account: smartWalletAccount,
+              calls: [{
+                to: txParams.to,
+                value: txParams.value || 0n,
+                data: txParams.data || '0x',
+              }],
+            });
+
+            console.log('📝 UserOperation sent:', userOpHash);
+            console.log('⏳ Waiting for UserOperation to be included in block...');
+
+            const receipt = await smartWalletClient.waitForUserOperationReceipt({
+              hash: userOpHash,
+            });
+
+            const actualTxHash = receipt.receipt.transactionHash;
+            console.log('✅ TRANSACTION SENT:', actualTxHash);
+            return actualTxHash;
           } catch (error: any) {
             console.error('❌ TRANSACTION FAILED:', error);
             console.error('❌ Error details:', {
@@ -498,10 +515,6 @@ export function useUnifiedSmartWallet() {
 
             throw error;
           }
-
-          console.log('✅ TRANSACTION SENT:', txHash);
-          setState((prev) => ({ ...prev, isLoading: false }));
-          return txHash;
         } else if (state.walletType === 'coinbase_smart') {
           // Use Coinbase smart wallet service
           throw new Error(
@@ -615,13 +628,25 @@ export function useUnifiedSmartWallet() {
 
             try {
               // Execute batch transaction - ZeroDev will create a single UserOperation
-              const batchTxHash = await smartWalletClient.sendUserOperation({
+              console.log('🚀 Sending UserOperation batch...');
+              const userOpHash = await smartWalletClient.sendUserOperation({
                 account: smartWalletAccount,
                 calls,
               });
 
-              txHashes.push(batchTxHash);
-              console.log('✅ Batch transaction sent:', batchTxHash);
+              console.log('📝 UserOperation sent:', userOpHash);
+              console.log('⏳ Waiting for UserOperation to be included in block...');
+
+              // Wait for the UserOperation to be included in a block and get the actual transaction hash
+              const receipt = await smartWalletClient.waitForUserOperationReceipt({
+                hash: userOpHash,
+              });
+
+              const actualTxHash = receipt.receipt.transactionHash;
+              txHashes.push(actualTxHash);
+              
+              console.log('✅ UserOperation included in block!');
+              console.log('📍 Actual transaction hash:', actualTxHash);
               console.log('📝 Included operations:');
               smartWalletTxs.forEach((tx) =>
                 console.log('  -', tx.description || 'Transaction'),
@@ -636,15 +661,25 @@ export function useUnifiedSmartWallet() {
               for (const tx of smartWalletTxs) {
                 console.log('🔄', tx.description || 'Smart wallet transaction');
 
-                const txHash = await smartWalletClient.sendTransaction({
+                const userOpHash = await smartWalletClient.sendUserOperation({
                   account: smartWalletAccount,
-                  to: tx.to,
-                  value: tx.value || 0n,
-                  data: tx.data || '0x',
+                  calls: [{
+                    to: tx.to,
+                    value: tx.value || 0n,
+                    data: tx.data || '0x',
+                  }],
                 });
 
-                txHashes.push(txHash);
-                console.log('✅ Smart wallet tx:', txHash);
+                console.log('📝 Individual UserOperation sent:', userOpHash);
+                console.log('⏳ Waiting for UserOperation to be included...');
+
+                const receipt = await smartWalletClient.waitForUserOperationReceipt({
+                  hash: userOpHash,
+                });
+
+                const actualTxHash = receipt.receipt.transactionHash;
+                txHashes.push(actualTxHash);
+                console.log('✅ Individual tx hash:', actualTxHash);
               }
             }
           } else {
@@ -652,15 +687,25 @@ export function useUnifiedSmartWallet() {
             const tx = smartWalletTxs[0];
             console.log('🔄', tx.description || 'Smart wallet transaction');
 
-            const txHash = await smartWalletClient.sendTransaction({
+            const userOpHash = await smartWalletClient.sendUserOperation({
               account: smartWalletAccount,
-              to: tx.to,
-              value: tx.value || 0n,
-              data: tx.data || '0x',
+              calls: [{
+                to: tx.to,
+                value: tx.value || 0n,
+                data: tx.data || '0x',
+              }],
             });
 
-            txHashes.push(txHash);
-            console.log('✅ Smart wallet tx:', txHash);
+            console.log('📝 Single UserOperation sent:', userOpHash);
+            console.log('⏳ Waiting for UserOperation to be included...');
+
+            const receipt = await smartWalletClient.waitForUserOperationReceipt({
+              hash: userOpHash,
+            });
+
+            const actualTxHash = receipt.receipt.transactionHash;
+            txHashes.push(actualTxHash);
+            console.log('✅ Single tx hash:', actualTxHash);
           }
         }
 
