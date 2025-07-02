@@ -1095,10 +1095,12 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
             }),
           });
 
+          let needsApproval = false;
           if (allowanceResponse.ok) {
             const allowanceResult = await allowanceResponse.json();
+            needsApproval = !allowanceResult.hasAllowance;
 
-            if (!allowanceResult.hasAllowance) {
+            if (needsApproval) {
               toast.loading('Approving USDC spending...', {
                 id: `${orderId}-approve`,
               });
@@ -1196,60 +1198,47 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
             }
           } else {
             console.warn('Failed to check allowance, proceeding with swap...');
+            needsApproval = true; // Assume approval needed if check failed
           }
 
-          // Proceed with swap (either allowance exists or check failed)
-          try {
-            console.log('About to submit transaction with params:', {
-              to: swapData.to,
-              data: swapData.data?.slice(0, 20) + '...', // Truncate for logging
-              value: swapData.value,
-              gas: swapData.gas,
+          // Show confirmation modal with accurate signature count
+          const order = orders.find((o) => o.id === orderId);
+          if (order) {
+            const usdcAmount = (Number(swapData.sellAmount) / 1e6).toFixed(4);
+            const spxAmount = (
+              Number(swapData.buyAmount) /
+              10 ** spxDecimals
+            ).toFixed(6);
+
+            // Set up modal with swap details including whether approval is needed
+            setPendingSwapDetails({
+              orderId: orderId.slice(0, 12) + '...',
+              fromToken: `${usdcAmount} USDC`,
+              toToken: `~${spxAmount} SPX6900`,
+              exchangeRate: `1 USDC = ${(Number(spxAmount) / Number(usdcAmount)).toFixed(4)} SPX`,
+              router: swapData.to?.slice(0, 8) + '...',
+              slippage: '5% max',
+              needsApproval: needsApproval,
+              swapData,
+              fullOrderId: orderId,
             });
 
-            // Show confirmation modal instead of signing
-            const order = orders.find((o) => o.id === orderId);
-            if (order) {
-              const usdcAmount = (Number(swapData.sellAmount) / 1e6).toFixed(4);
-              const spxAmount = (
-                Number(swapData.buyAmount) /
-                10 ** spxDecimals
-              ).toFixed(6);
-
-              // Set up modal with swap details
-              setPendingSwapDetails({
-                orderId: orderId.slice(0, 12) + '...',
-                fromToken: `${usdcAmount} USDC`,
-                toToken: `~${spxAmount} SPX6900`,
-                exchangeRate: `1 USDC = ${(Number(spxAmount) / Number(usdcAmount)).toFixed(4)} SPX`,
-                router: swapData.to?.slice(0, 8) + '...',
-                slippage: '5% max',
-                swapData,
-                fullOrderId: orderId,
-              });
-
-              setShowSwapModal(true);
-              return; // Exit here, execution will happen on modal confirm
-            }
-          } catch (txError) {
-            console.error('Transaction submission failed:', txError);
-            // Dismiss the "Swapping..." toast before showing error
-            toast.dismiss(`${orderId}-sign`);
-            toast.dismiss(`${orderId}-submit`);
-            toast.error(
-              `Transaction failed: ${txError instanceof Error ? txError.message : 'Unknown error'}`,
-              { id: orderId },
-            );
-            throw new Error(
-              `Transaction submission failed: ${txError instanceof Error ? txError.message : 'Unknown error'}`,
-            );
+            setShowSwapModal(true);
+            return; // Exit here, execution will happen on modal confirm
           }
-          // Transaction data is now stored directly in localStorage during submission
-        } catch (error) {
+        } catch (txError) {
+          console.error('Transaction submission failed:', txError);
+          // Dismiss the "Swapping..." toast before showing error
+          toast.dismiss(`${orderId}-sign`);
+          toast.dismiss(`${orderId}-submit`);
+          toast.error(
+            `Transaction failed: ${txError instanceof Error ? txError.message : 'Unknown error'}`,
+            { id: orderId },
+          );
           toast.dismiss(`${orderId}-quote`);
           toast.dismiss(`${orderId}-sign`);
           toast.dismiss(`${orderId}-confirm`);
-          throw error;
+          return;
         }
       } else if (result.success) {
         toast.success('Order executed successfully!', { id: orderId });
