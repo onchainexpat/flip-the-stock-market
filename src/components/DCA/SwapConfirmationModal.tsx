@@ -122,29 +122,45 @@ export default function SwapConfirmationModal({
               {swapDetails.needsApproval ? (
                 <div className="space-y-2">
                   <p className="text-gray-300">
-                    You'll need to sign <span className="font-semibold text-white">2 transactions</span>:
+                    You'll need to sign{' '}
+                    <span className="font-semibold text-white">
+                      2 transactions
+                    </span>
+                    :
                   </p>
                   <div className="ml-4 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                      <span className="text-gray-300">USDC spending approval</span>
+                      <span className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        1
+                      </span>
+                      <span className="text-gray-300">
+                        USDC spending approval
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                      <span className="w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        2
+                      </span>
                       <span className="text-gray-300">Execute the swap</span>
                     </div>
                   </div>
                   <p className="text-gray-400 text-xs mt-2">
-                    Both signatures authorize your smart wallet to complete this specific swap.
+                    Both signatures authorize your smart wallet to complete this
+                    specific swap.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <p className="text-gray-300">
-                    You'll need to sign <span className="font-semibold text-white">1 transaction</span> to execute the swap.
+                    You'll need to sign{' '}
+                    <span className="font-semibold text-white">
+                      1 transaction
+                    </span>{' '}
+                    to execute the swap.
                   </p>
                   <p className="text-gray-400 text-xs">
-                    USDC approval already exists. The signature will authorize your smart wallet to execute this specific swap.
+                    USDC approval already exists. The signature will authorize
+                    your smart wallet to execute this specific swap.
                   </p>
                 </div>
               )}

@@ -7,6 +7,27 @@ export const runtime = 'edge';
 // Create a new DCA order
 export async function POST(request: NextRequest) {
   try {
+    // Test Redis connection first
+    try {
+      await serverDcaDatabase.getUserStats(
+        '0x0000000000000000000000000000000000000000' as `0x${string}`,
+      );
+      console.log('✅ Redis connection successful');
+    } catch (redisError) {
+      console.error('❌ Redis connection failed:', redisError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database connection failed',
+          details:
+            redisError instanceof Error
+              ? redisError.message
+              : 'Unknown Redis error',
+        },
+        { status: 500 },
+      );
+    }
+
     const body = await request.json();
     const {
       userAddress,
@@ -89,10 +110,25 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to create DCA order:', error);
+
+    // More detailed error logging for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+
     return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
+        details:
+          process.env.NODE_ENV === 'development'
+            ? {
+                name: error instanceof Error ? error.name : 'Unknown',
+                stack: error instanceof Error ? error.stack : 'No stack trace',
+              }
+            : undefined,
       },
       { status: 500 },
     );

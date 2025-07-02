@@ -261,7 +261,10 @@ export class ZeroDevSessionKeyService {
         {
           to: TOKENS.SPX6900,
           value: 0n,
-          data: this.encodeTransferTransaction(destinationAddress, BigInt(swapQuote.expectedOutput)),
+          data: this.encodeTransferTransaction(
+            destinationAddress,
+            BigInt(swapQuote.expectedOutput),
+          ),
         },
       ];
 
@@ -485,7 +488,9 @@ export class ZeroDevSessionKeyService {
     // For now, we'll use the maximum uint256 value to indicate "transfer all"
     // In a more sophisticated implementation, we could use a custom contract
     // that reads the balance and transfers it in one transaction
-    const maxAmount = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+    const maxAmount = BigInt(
+      '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    );
     return this.encodeTransferTransaction(to, maxAmount);
   }
 }
