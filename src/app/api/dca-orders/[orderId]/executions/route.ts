@@ -70,11 +70,11 @@ export async function GET(
         return {
           id: execution.id,
           orderId: execution.orderId,
-          transactionHash: execution.transactionHash,
+          transactionHash: execution.transactionHash || execution.txHash, // Backward compatibility
           amountIn: execution.amountIn,
           amountOut: execution.amountOut,
           executedAt: execution.executedAt,
-          status: execution.status,
+          status: execution.status === 'success' ? 'completed' : execution.status, // Backward compatibility for status
           swapProvider: execution.swapProvider,
           exchangeRate: execution.exchangeRate,
           gasUsed: execution.gasUsed || '0',

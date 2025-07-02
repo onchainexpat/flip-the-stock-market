@@ -24,6 +24,7 @@ import { useClearSigning } from '../../hooks/useClearSigning';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
 // Removed useSmartWallet - using direct Coinbase Smart Wallet integration
 import { formatTokenAmount } from '../../utils/openOceanApi';
+import CancelOrderModal from './CancelOrderModal';
 import SwapConfirmationModal from './SwapConfirmationModal';
 // SmartWalletWarning removed - smart wallets deployed automatically with Coinbase SDK
 
@@ -212,6 +213,10 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
     {},
   );
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState({
+    current: 0,
+    total: 0,
+  });
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [pendingTxHash, setPendingTxHash] = useState<`0x${string}` | null>(
     null,
@@ -225,6 +230,13 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [pendingSwapDetails, setPendingSwapDetails] = useState<any>(null);
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
+
+  // Modal state for cancel confirmation
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null,
+  );
+  const [isCancellingOrder, setIsCancellingOrder] = useState(false);
 
   // Wait for transaction receipt
   const { data: receipt, isLoading: isConfirming } =
@@ -301,31 +313,27 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
       // Reset previous selection and immediately show basic info
       setSelectedExecution(execution);
 
-      // Try to fetch additional trade details, but don't block showing basic info
+      // Try to fetch additional trade details silently, but don't block showing basic info
       try {
-        toast.loading('Loading additional details...', {
-          id: `exec-${execution.id}`,
-        });
-
         const response = await fetch(
           `/api/dca-orders/${execution.orderId}/executions/${execution.id}?userAddress=${address}`,
         );
 
         if (response.ok) {
           const details = await response.json();
-          setSelectedExecution(details);
-          toast.success('Details loaded', { id: `exec-${execution.id}` });
+          // Only update if we got additional trade details
+          if (details.tradeDetails) {
+            setSelectedExecution(details);
+          }
         } else {
           // Silently fail for additional details - basic info is already shown
           console.warn(
             `Could not load additional trade details for execution ${execution.id}`,
           );
-          toast.dismiss(`exec-${execution.id}`);
         }
       } catch (error) {
         // Silently fail for additional details - basic info is already shown
         console.warn('Error loading additional execution details:', error);
-        toast.dismiss(`exec-${execution.id}`);
       }
     },
     [address, selectedExecution],
@@ -363,6 +371,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
 
     try {
       setLoading(true);
+      setLoadingProgress({ current: 0, total: 0 });
 
       // Load user orders and stats from API
       const response = await fetch(`/api/dca-orders?userAddress=${address}`);
@@ -375,36 +384,62 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
       setOrders(userOrders);
       setStats(userStats);
 
-      // Load execution history for each order
+      // Set total progress
+      setLoadingProgress({ current: 0, total: userOrders.length });
+
+      // Load execution history for each order in parallel
       const executionsData: Record<string, DCAExecution[]> = {};
-      for (const order of userOrders) {
-        try {
-          const executionsResponse = await fetch(
-            `/api/dca-orders/${order.id}/executions?userAddress=${address}`,
-          );
-          if (executionsResponse.ok) {
-            const executionsResult = await executionsResponse.json();
-            executionsData[order.id] = executionsResult.executions || [];
-            console.log(
-              `Loaded ${executionsResult.executions?.length || 0} executions for order ${order.id}`,
-            );
-          } else {
-            console.warn(`Failed to load executions for order ${order.id}`);
-            executionsData[order.id] = [];
-          }
-        } catch (error) {
-          console.error(
-            `Error loading executions for order ${order.id}:`,
-            error,
-          );
-          executionsData[order.id] = [];
-        }
+
+      // Batch execution loading for better performance
+      const BATCH_SIZE = 5; // Load 5 orders at a time
+      const batches = [];
+      for (let i = 0; i < userOrders.length; i += BATCH_SIZE) {
+        batches.push(userOrders.slice(i, i + BATCH_SIZE));
       }
+
+      // Process batches sequentially for better UX
+      for (const batch of batches) {
+        const batchPromises = batch.map(async (order: DCAOrder) => {
+          try {
+            const executionsResponse = await fetch(
+              `/api/dca-orders/${order.id}/executions?userAddress=${address}`,
+            );
+
+            if (executionsResponse.ok) {
+              const executionsResult = await executionsResponse.json();
+              executionsData[order.id] = executionsResult.executions || [];
+              console.log(
+                `Loaded ${executionsResult.executions?.length || 0} executions for order ${order.id}`,
+              );
+            } else {
+              console.warn(`Failed to load executions for order ${order.id}`);
+              executionsData[order.id] = [];
+            }
+          } catch (error) {
+            console.error(
+              `Error loading executions for order ${order.id}:`,
+              error,
+            );
+            executionsData[order.id] = [];
+          } finally {
+            // Update progress
+            setLoadingProgress((prev) => ({
+              ...prev,
+              current: prev.current + 1,
+            }));
+          }
+        });
+
+        // Wait for this batch to complete before moving to next
+        await Promise.all(batchPromises);
+      }
+
       setExecutions(executionsData);
     } catch (error) {
       console.error('Failed to load user data:', error);
     } finally {
       setLoading(false);
+      setLoadingProgress({ current: 0, total: 0 });
     }
   }, [address]);
 
@@ -846,17 +881,19 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
   };
 
   const handleCancelOrder = async (orderId: string) => {
-    if (
-      !confirm(
-        'Are you sure you want to cancel this order? This action cannot be undone.',
-      )
-    )
-      return;
+    setCancellingOrderId(orderId);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!cancellingOrderId) return;
+
+    setIsCancellingOrder(true);
 
     try {
-      console.log('Cancelling order:', orderId);
+      console.log('Cancelling order:', cancellingOrderId);
 
-      const response = await fetch(`/api/dca-orders/${orderId}`, {
+      const response = await fetch(`/api/dca-orders/${cancellingOrderId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -876,6 +913,10 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
       toast.success('Order cancelled successfully');
       console.log('Order cancelled:', result);
 
+      // Close modal and refresh
+      setShowCancelModal(false);
+      setCancellingOrderId(null);
+
       // Refresh the orders list
       await loadUserData();
     } catch (error) {
@@ -883,6 +924,8 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to cancel order',
       );
+    } finally {
+      setIsCancellingOrder(false);
     }
   };
 
@@ -922,15 +965,21 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
             sellToken: result.swapParams.sellToken,
             buyToken: result.swapParams.buyToken,
             sellAmount: result.swapParams.sellAmount,
-            takerAddress: result.swapParams.smartWalletAddress || result.swapParams.userAddress,
-            receiverAddress: result.swapParams.smartWalletAddress || result.swapParams.userAddress, // SPX goes to smart wallet first
+            takerAddress:
+              result.swapParams.smartWalletAddress ||
+              result.swapParams.userAddress,
+            receiverAddress:
+              result.swapParams.smartWalletAddress ||
+              result.swapParams.userAddress, // SPX goes to smart wallet first
             slippagePercentage: 0.015,
           }),
         });
 
         if (!swapResponse.ok) {
           const errorText = await swapResponse.text();
-          throw new Error(`Failed to get swap quote: ${swapResponse.status} ${errorText}`);
+          throw new Error(
+            `Failed to get swap quote: ${swapResponse.status} ${errorText}`,
+          );
         }
 
         const swapQuote = await swapResponse.json();
@@ -946,20 +995,28 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
         const usdcAmount = (Number(swapAmount) / 1e6).toFixed(2);
         const spxAmount = (Number(swapQuote.buyAmount) / 1e8).toFixed(2);
 
-        toast.loading(`Executing batched DCA: ${usdcAmount} USDC → ${spxAmount} SPX`, {
-          id: `${orderId}-batch`,
-        });
+        toast.loading(
+          `Executing batched DCA: ${usdcAmount} USDC → ${spxAmount} SPX`,
+          {
+            id: `${orderId}-batch`,
+          },
+        );
 
         console.log('🔄 Preparing 3-step batched execution...');
         console.log('  Step 1: Approve OpenOcean router to spend USDC');
         console.log('  Step 2: Execute swap (SPX goes to smart wallet)');
-        console.log('  Step 3: Transfer SPX from smart wallet to external wallet');
+        console.log(
+          '  Step 3: Transfer SPX from smart wallet to external wallet',
+        );
 
         const transactions = [
           {
             to: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`,
             value: 0n,
-            data: encodeApproveTransaction('0x6352a56caadc4f1e25cd6c75970fa768a3304e64', swapAmount) as `0x${string}`,
+            data: encodeApproveTransaction(
+              '0x6352a56caadc4f1e25cd6c75970fa768a3304e64',
+              swapAmount,
+            ) as `0x${string}`,
             description: 'Approve USDC spending',
             executeFrom: 'smart_wallet' as const,
           },
@@ -973,7 +1030,10 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
           {
             to: '0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C' as `0x${string}`,
             value: 0n,
-            data: encodeTransferTransaction(address!, BigInt(swapQuote.buyAmount)) as `0x${string}`,
+            data: encodeTransferTransaction(
+              address!,
+              BigInt(swapQuote.buyAmount),
+            ) as `0x${string}`,
             description: 'Transfer SPX to external wallet',
             executeFrom: 'smart_wallet' as const,
           },
@@ -982,11 +1042,51 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
         console.log('🚀 Executing batched transactions...');
         const txHashes = await sendBatchTransactions(transactions);
 
-        toast.success(`Batched DCA executed! Transactions: ${txHashes.length}`, {
-          id: `${orderId}-batch`,
-        });
+        toast.success(
+          `Batched DCA executed! Transactions: ${txHashes.length}`,
+          {
+            id: `${orderId}-batch`,
+          },
+        );
 
         console.log('✅ Batched DCA execution completed:', txHashes);
+
+        // Record the successful execution on the backend
+        try {
+          console.log('📊 Recording successful DCA execution...');
+          const recordResponse = await fetch('/api/dca-execution-success', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              orderId,
+              userAddress: address,
+              txHash: txHashes[0], // Main transaction hash
+              amountIn: swapAmount.toString(),
+              amountOut: swapQuote.buyAmount,
+            }),
+          });
+
+          if (recordResponse.ok) {
+            const recordResult = await recordResponse.json();
+            console.log('✅ Execution recorded:', recordResult);
+
+            if (recordResult.execution?.status === 'completed') {
+              toast.success('🎉 DCA Order Completed!', {
+                id: `${orderId}-complete`,
+              });
+            }
+          } else {
+            console.error(
+              '❌ Failed to record execution:',
+              await recordResponse.text(),
+            );
+          }
+        } catch (recordError) {
+          console.error('❌ Error recording execution:', recordError);
+        }
+
         await loadUserData();
       } else if (result.success) {
         toast.success('Order executed successfully!', { id: orderId });
@@ -1527,7 +1627,73 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
           </div>
         </div>
 
-        {orders.length === 0 ? (
+        {loading ? (
+          <div className="p-8">
+            <div className="space-y-4">
+              {/* Loading Progress */}
+              {loadingProgress.total > 0 && (
+                <div className="text-center space-y-2">
+                  <p className="text-gray-400 text-sm">
+                    Loading DCA orders and execution history...
+                  </p>
+                  <div className="max-w-md mx-auto">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span>Progress</span>
+                      <span>
+                        {loadingProgress.current} / {loadingProgress.total}{' '}
+                        orders
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-blue-500 h-full rounded-full transition-all duration-300 ease-out"
+                        style={{
+                          width: `${(loadingProgress.current / loadingProgress.total) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Skeleton Loaders */}
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="border-t border-gray-700 pt-6 first:border-0 first:pt-0"
+                  >
+                    <div className="animate-pulse">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
+                          <div className="space-y-2">
+                            <div className="h-4 w-32 bg-gray-700 rounded"></div>
+                            <div className="h-3 w-24 bg-gray-700 rounded"></div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                          <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="h-3 w-20 bg-gray-700 rounded"></div>
+                          <div className="h-4 w-24 bg-gray-700 rounded"></div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-3 w-20 bg-gray-700 rounded"></div>
+                          <div className="h-4 w-24 bg-gray-700 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : orders.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-400">No DCA orders found</p>
             <p className="text-sm text-gray-500 mt-2">
@@ -1792,16 +1958,17 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                                           ? `${formatTokenAmount(execution.amountOut, 8)} SPX`
                                           : 'Pending...'}
                                       </div>
-                                      {execution.transactionHash !== '0x' && (
-                                        <a
-                                          href={`https://basescan.org/tx/${execution.transactionHash}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-blue-400 text-xs hover:underline"
-                                        >
-                                          View TX
-                                        </a>
-                                      )}
+                                      {execution.transactionHash &&
+                                        execution.transactionHash !== '0x' && (
+                                          <a
+                                            href={`https://basescan.org/tx/${execution.transactionHash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-400 text-xs hover:underline"
+                                          >
+                                            View TX
+                                          </a>
+                                        )}
                                     </div>
                                   </div>
                                   {selectedExecution?.id === execution.id && (
@@ -1811,25 +1978,27 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                                           Execution Details
                                         </h4>
                                         <div className="flex gap-2">
-                                          <a
-                                            href={`https://basescan.org/tx/${execution.transactionHash}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
-                                          >
-                                            <svg
-                                              className="w-3 h-3"
-                                              fill="currentColor"
-                                              viewBox="0 0 20 20"
+                                          {execution.transactionHash && (
+                                            <a
+                                              href={`https://basescan.org/tx/${execution.transactionHash}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
                                             >
-                                              <path
-                                                fillRule="evenodd"
-                                                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                                                clipRule="evenodd"
-                                              />
-                                            </svg>
-                                            BaseScan
-                                          </a>
+                                              <svg
+                                                className="w-3 h-3"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                              >
+                                                <path
+                                                  fillRule="evenodd"
+                                                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                                                  clipRule="evenodd"
+                                                />
+                                              </svg>
+                                              BaseScan
+                                            </a>
+                                          )}
                                         </div>
                                       </div>
 
@@ -1949,13 +2118,19 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
                                               Transaction:
                                             </span>
                                             <span className="text-gray-300 font-mono text-xs">
-                                              {execution.transactionHash.slice(
-                                                0,
-                                                10,
-                                              )}
-                                              ...
-                                              {execution.transactionHash.slice(
-                                                -8,
+                                              {execution.transactionHash ? (
+                                                <>
+                                                  {execution.transactionHash.slice(
+                                                    0,
+                                                    10,
+                                                  )}
+                                                  ...
+                                                  {execution.transactionHash.slice(
+                                                    -8,
+                                                  )}
+                                                </>
+                                              ) : (
+                                                'Pending'
                                               )}
                                             </span>
                                           </div>
@@ -2108,6 +2283,27 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
           }
         }
         isLoading={isExecutingSwap}
+      />
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={showCancelModal}
+        onClose={() => {
+          setShowCancelModal(false);
+          setCancellingOrderId(null);
+        }}
+        onConfirm={confirmCancelOrder}
+        orderDetails={
+          orders.find((order) => order.id === cancellingOrderId) || {
+            id: '',
+            amountPerOrder: '0',
+            frequency: 'daily',
+            executionsRemaining: 0,
+            totalAmount: '0',
+            executedAmount: '0',
+          }
+        }
+        isLoading={isCancellingOrder}
       />
     </div>
   );

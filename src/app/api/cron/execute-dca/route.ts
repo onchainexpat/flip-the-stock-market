@@ -165,6 +165,12 @@ async function executeOrder(order: any): Promise<{
     try {
       sessionKeyData = JSON.parse(order.sessionKeyData);
       console.log('- Parsed sessionKeyData:', sessionKeyData);
+      console.log('- Session key structure check:', {
+        sessionAddress: sessionKeyData.sessionAddress,
+        smartWalletAddress: sessionKeyData.smartWalletAddress,
+        validUntil: sessionKeyData.validUntil,
+        expiresAt: sessionKeyData.expiresAt,
+      });
     } catch (parseError) {
       console.log('❌ Failed to parse session key data:', parseError);
       return {
@@ -235,6 +241,12 @@ async function executeOrder(order: any): Promise<{
     // Step 3: Execute DCA swap using ZeroDev session key service
     // This handles OpenOcean swap creation and execution with gas sponsorship
     console.log('Executing DCA swap with ZeroDev session key...');
+    console.log('📋 Execution parameters:', {
+      sessionKeyAddress: sessionKeyData.sessionAddress,
+      smartWalletAddress: sessionKeyData.smartWalletAddress,
+      amountPerOrder: amountPerOrder.toString(),
+      destinationAddress: order.destinationAddress || order.userAddress,
+    });
 
     const executionResult = await zerodevSessionKeyService.executeDCASwap(
       sessionKeyData,

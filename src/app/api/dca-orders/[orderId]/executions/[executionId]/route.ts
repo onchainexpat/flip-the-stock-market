@@ -75,6 +75,15 @@ export async function GET(
       );
     }
 
+    // Ensure backward compatibility: normalize txHash to transactionHash and success to completed
+    if (parsedExecution.txHash && !parsedExecution.transactionHash) {
+      parsedExecution.transactionHash = parsedExecution.txHash;
+      delete parsedExecution.txHash;
+    }
+    if (parsedExecution.status === 'success') {
+      parsedExecution.status = 'completed';
+    }
+
     // Try to fetch trade details from OpenOcean API
     let tradeDetails = null;
     try {

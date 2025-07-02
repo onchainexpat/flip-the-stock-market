@@ -249,8 +249,21 @@ export const createZeroDevSigner = async (privyWallet: any) => {
           });
           console.log('✅ Message signed with personal_sign:', signature);
           return signature as `0x${string}`;
-        } catch (personalSignError) {
+        } catch (personalSignError: any) {
           console.log('❌ personal_sign failed:', personalSignError.message);
+
+          // Check if user rejected - if so, stop trying other methods
+          if (
+            personalSignError.message
+              ?.toLowerCase()
+              .includes('user rejected') ||
+            personalSignError.message?.toLowerCase().includes('user denied') ||
+            personalSignError.code === 4001
+          ) {
+            console.log('🚫 User cancelled signing request');
+            throw new Error('User cancelled signing request');
+          }
+
           console.log('📝 Trying eth_signTypedData_v4 for structured data...');
 
           try {
@@ -282,11 +295,22 @@ export const createZeroDevSigner = async (privyWallet: any) => {
               signature,
             );
             return signature as `0x${string}`;
-          } catch (typedDataError) {
+          } catch (typedDataError: any) {
             console.log(
               '❌ eth_signTypedData_v4 failed:',
               typedDataError.message,
             );
+
+            // Check if user rejected - if so, stop trying other methods
+            if (
+              typedDataError.message?.toLowerCase().includes('user rejected') ||
+              typedDataError.message?.toLowerCase().includes('user denied') ||
+              typedDataError.code === 4001
+            ) {
+              console.log('🚫 User cancelled signing request');
+              throw new Error('User cancelled signing request');
+            }
+
             console.log('📝 Falling back to Privy sign method...');
 
             // Final fallback - Force Privy to sign on Base network
@@ -303,11 +327,23 @@ export const createZeroDevSigner = async (privyWallet: any) => {
               const signature = await privyWallet.sign(messageStr);
               console.log('✅ Message signed with Privy sign:', signature);
               return signature as `0x${string}`;
-            } catch (privySignError) {
+            } catch (privySignError: any) {
               console.log(
                 '❌ Privy sign with Base failed:',
                 privySignError.message,
               );
+
+              // Check if user rejected - if so, stop trying other methods
+              if (
+                privySignError.message
+                  ?.toLowerCase()
+                  .includes('user rejected') ||
+                privySignError.message?.toLowerCase().includes('user denied') ||
+                privySignError.code === 4001
+              ) {
+                console.log('🚫 User cancelled signing request');
+                throw new Error('User cancelled signing request');
+              }
 
               // Last resort: try to force sign without network checks
               console.log('🔧 Attempting emergency signing bypass...');
@@ -323,11 +359,26 @@ export const createZeroDevSigner = async (privyWallet: any) => {
 
                 console.log('✅ Emergency signing successful:', signature);
                 return signature as `0x${string}`;
-              } catch (emergencyError) {
+              } catch (emergencyError: any) {
                 console.error(
                   '❌ All signing methods failed:',
                   emergencyError.message,
                 );
+
+                // Check if user rejected - if so, provide clear message
+                if (
+                  emergencyError.message
+                    ?.toLowerCase()
+                    .includes('user rejected') ||
+                  emergencyError.message
+                    ?.toLowerCase()
+                    .includes('user denied') ||
+                  emergencyError.code === 4001
+                ) {
+                  console.log('🚫 User cancelled signing request');
+                  throw new Error('User cancelled signing request');
+                }
+
                 throw new Error(
                   `Unable to sign message with Privy embedded wallet. Chain switching failed. Try using an external wallet instead.`,
                 );

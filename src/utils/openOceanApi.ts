@@ -1,4 +1,5 @@
 import type { Address } from 'viem';
+import { NEXT_PUBLIC_URL } from '../config';
 
 export interface SwapQuote {
   sellToken: Address;
@@ -156,7 +157,7 @@ export class OpenOceanApi {
   // Get swap transaction from OpenOcean
   async getSwapTransaction(params: SwapParams): Promise<SwapTransaction> {
     try {
-      const response = await fetch('/api/openocean-swap', {
+      const response = await fetch(`${NEXT_PUBLIC_URL}/api/openocean-swap`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +253,7 @@ export class OpenOceanApi {
 
       // Fallback to CoinGecko API
       try {
-        const response = await fetch('/api/coingecko');
+        const response = await fetch(`${NEXT_PUBLIC_URL}/api/coingecko`);
         if (!response.ok) {
           throw new Error(`CoinGecko API failed: ${response.status}`);
         }

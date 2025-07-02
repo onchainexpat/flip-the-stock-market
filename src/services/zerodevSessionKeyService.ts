@@ -14,6 +14,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
+import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';
 
 // ZeroDev configuration
@@ -96,7 +97,16 @@ export class ZeroDevSessionKeyService {
       console.log(`- Duration: ${durationDays} days`);
 
       // Generate cryptographically secure session private key
-      const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+      // Use Web Crypto API which is available in both browser and Edge runtime
+      const randomBytes = new Uint8Array(32);
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        crypto.getRandomValues(randomBytes);
+      } else {
+        // Fallback for environments without crypto.getRandomValues
+        for (let i = 0; i < 32; i++) {
+          randomBytes[i] = Math.floor(Math.random() * 256);
+        }
+      }
       const sessionPrivateKey = `0x${Array.from(randomBytes)
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('')}` as Hex;
@@ -176,9 +186,18 @@ export class ZeroDevSessionKeyService {
     destinationAddress: Address,
   ): Promise<ExecutionResult> {
     try {
+      // Validate input parameters
+      if (!destinationAddress || typeof destinationAddress !== 'string' || destinationAddress.length < 3) {
+        console.error('Invalid destinationAddress:', destinationAddress, typeof destinationAddress);
+        return {
+          success: false,
+          error: `Invalid destination address: ${destinationAddress} (${typeof destinationAddress})`,
+        };
+      }
+
       console.log('🚀 Executing DCA swap with session key...');
       console.log(`- Session key: ${sessionKeyData.sessionAddress}`);
-      console.log(`- Smart wallet: ${sessionKeyData.smartWalletAddress}`);
+      console.log(`- Smart wallet: ${sessionKeyData.smartWalletAddress || sessionKeyData.sessionAddress} (${sessionKeyData.smartWalletAddress ? 'direct' : 'fallback'})`);
       console.log(`- Swap amount: ${swapAmount.toString()} USDC wei`);
       console.log(`- SPX destination: ${destinationAddress} (direct delivery)`);
 
@@ -193,11 +212,20 @@ export class ZeroDevSessionKeyService {
 
       // Step 1: Get OpenOcean swap quote
       console.log('📊 Getting OpenOcean swap quote...');
+      console.log('📊 Token addresses:', {
+        USDC: TOKENS.USDC,
+        SPX6900: TOKENS.SPX6900,
+        swapAmount: swapAmount.toString(),
+        smartWallet: sessionKeyData.smartWalletAddress || sessionKeyData.sessionAddress,
+        smartWalletSource: sessionKeyData.smartWalletAddress ? 'direct' : 'fallback from sessionAddress',
+        destination: destinationAddress,
+      });
+      
       const swapQuote = await this.getOpenOceanSwapQuote(
         TOKENS.USDC,
         TOKENS.SPX6900,
         swapAmount,
-        sessionKeyData.smartWalletAddress, // Smart wallet executes the swap
+        sessionKeyData.smartWalletAddress || sessionKeyData.sessionAddress, // Smart wallet executes the swap
         destinationAddress, // But SPX tokens go directly to external wallet
       );
 
@@ -220,13 +248,16 @@ export class ZeroDevSessionKeyService {
       });
 
       // Step 3: Create kernel account representing the smart wallet
+      const smartWalletAddress = sessionKeyData.smartWalletAddress || sessionKeyData.sessionAddress;
+      console.log(`🏠 Using smart wallet address: ${smartWalletAddress} (${sessionKeyData.smartWalletAddress ? 'from smartWalletAddress' : 'fallback from sessionAddress'})`);
+      
       const kernelAccount = await createKernelAccount(this.publicClient, {
         entryPoint: getEntryPoint('0.6'),
         plugins: {
           sudo: ecdsaValidator,
         },
         kernelVersion: KERNEL_V3_1,
-        deployedAccountAddress: sessionKeyData.smartWalletAddress,
+        deployedAccountAddress: smartWalletAddress,
       });
 
       // Step 4: Create kernel client with paymaster
@@ -243,30 +274,82 @@ export class ZeroDevSessionKeyService {
 
       // Step 5: Execute batched DCA transactions
       console.log('🔄 Executing batched DCA transactions...');
+      
+      // Validate swap quote response
+      if (!swapQuote.transaction?.to || !swapQuote.transaction?.data) {
+        return {
+          success: false,
+          error: 'Invalid swap quote: missing transaction details',
+        };
+      }
+      
+      if (!swapQuote.expectedOutput) {
+        return {
+          success: false,
+          error: 'Invalid swap quote: missing expected output amount',
+        };
+      }
+      
+      console.log('📋 Transaction validation:', {
+        swapTo: swapQuote.transaction.to,
+        swapData: swapQuote.transaction.data ? 'present' : 'missing',
+        expectedOutput: swapQuote.expectedOutput,
+        destinationAddress,
+        OPENOCEAN_ROUTER,
+      });
 
-      const transactions = [
-        // Transaction 1: Approve OpenOcean router to spend USDC
-        {
-          to: TOKENS.USDC,
-          value: 0n,
-          data: this.encodeApproveTransaction(OPENOCEAN_ROUTER, swapAmount),
-        },
-        // Transaction 2: Execute swap via OpenOcean (SPX tokens go to smart wallet first)
-        {
-          to: swapQuote.transaction.to,
-          value: BigInt(swapQuote.transaction.value || '0'),
-          data: swapQuote.transaction.data,
-        },
-        // Transaction 3: Transfer expected SPX tokens from smart wallet to external wallet
-        {
-          to: TOKENS.SPX6900,
-          value: 0n,
-          data: this.encodeTransferTransaction(
-            destinationAddress,
-            BigInt(swapQuote.expectedOutput),
-          ),
-        },
-      ];
+      console.log('🔧 Building transactions...');
+      console.log('1️⃣ Approve transaction parameters:', {
+        router: OPENOCEAN_ROUTER,
+        amount: swapAmount.toString(),
+      });
+      
+      let transactions;
+      try {
+        const approveData = this.encodeApproveTransaction(OPENOCEAN_ROUTER, swapAmount);
+        console.log('✅ Approve transaction encoded successfully');
+        
+        console.log('3️⃣ Transfer transaction parameters:', {
+          destination: destinationAddress,
+          destinationType: typeof destinationAddress,
+          expectedOutput: swapQuote.expectedOutput,
+          expectedOutputType: typeof swapQuote.expectedOutput,
+        });
+        
+        const transferData = this.encodeTransferTransaction(
+          destinationAddress,
+          BigInt(swapQuote.expectedOutput),
+        );
+        console.log('✅ Transfer transaction encoded successfully');
+
+        transactions = [
+          // Transaction 1: Approve OpenOcean router to spend USDC
+          {
+            to: TOKENS.USDC,
+            value: 0n,
+            data: approveData,
+          },
+          // Transaction 2: Execute swap via OpenOcean (SPX tokens go to smart wallet first)
+          {
+            to: swapQuote.transaction.to,
+            value: BigInt(swapQuote.transaction.value || '0'),
+            data: swapQuote.transaction.data,
+          },
+          // Transaction 3: Transfer expected SPX tokens from smart wallet to external wallet
+          {
+            to: TOKENS.SPX6900,
+            value: 0n,
+            data: transferData,
+          },
+        ];
+        console.log('✅ All transactions built successfully');
+      } catch (encodingError) {
+        console.error('❌ Transaction encoding failed:', encodingError);
+        return {
+          success: false,
+          error: `Transaction encoding failed: ${encodingError.message}`,
+        };
+      }
 
       // Execute all transactions in a batch
       const txHash = await kernelClient.sendUserOperation({
@@ -417,19 +500,24 @@ export class ZeroDevSessionKeyService {
     error?: string;
   }> {
     try {
-      const response = await fetch('/api/openocean-swap', {
+      const requestBody = {
+        sellToken,
+        buyToken,
+        sellAmount: sellAmount.toString(),
+        takerAddress,
+        receiverAddress: takerAddress, // Send tokens to smart wallet first, then transfer manually
+        slippagePercentage: 0.015, // 1.5%
+      };
+      
+      console.log('🔍 Swap request body:', requestBody);
+      console.log('🔍 Request URL:', `${NEXT_PUBLIC_URL}/api/openocean-swap`);
+      
+      const response = await fetch(`${NEXT_PUBLIC_URL}/api/openocean-swap`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          sellToken,
-          buyToken,
-          sellAmount: sellAmount.toString(),
-          takerAddress,
-          receiverAddress: takerAddress, // Send tokens to smart wallet first, then transfer manually
-          slippagePercentage: 0.015, // 1.5%
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -441,6 +529,25 @@ export class ZeroDevSessionKeyService {
       }
 
       const data = await response.json();
+      
+      console.log('🔍 Raw OpenOcean API response structure:', {
+        hasTo: !!data.to,
+        hasData: !!data.data,
+        hasValue: !!data.value,
+        hasBuyAmount: !!data.buyAmount,
+        hasOutAmount: !!data.outAmount,
+        actualFields: Object.keys(data),
+        buyAmountValue: data.buyAmount,
+        outAmountValue: data.outAmount,
+      });
+
+      const expectedOutput = data.outAmount || data.buyAmount;
+      console.log('🔍 Expected output calculation:', {
+        outAmount: data.outAmount,
+        buyAmount: data.buyAmount,
+        expectedOutput,
+        expectedOutputType: typeof expectedOutput,
+      });
 
       return {
         success: true,
@@ -449,7 +556,7 @@ export class ZeroDevSessionKeyService {
           data: data.data,
           value: data.value,
         },
-        expectedOutput: data.buyAmount,
+        expectedOutput,
       };
     } catch (error) {
       return {
@@ -464,6 +571,10 @@ export class ZeroDevSessionKeyService {
    * Encode ERC20 approve transaction
    */
   private encodeApproveTransaction(spender: Address, amount: bigint): Hex {
+    if (!spender || typeof spender !== 'string' || spender.length < 3) {
+      console.error('Invalid spender address:', spender, typeof spender);
+      throw new Error(`Spender address is required for approve transaction. Received: ${spender} (${typeof spender})`);
+    }
     const functionSelector = '0x095ea7b3'; // approve(address,uint256)
     const spenderPadded = spender.slice(2).padStart(64, '0');
     const amountPadded = amount.toString(16).padStart(64, '0');
@@ -474,6 +585,10 @@ export class ZeroDevSessionKeyService {
    * Encode ERC20 transfer transaction
    */
   private encodeTransferTransaction(to: Address, amount: bigint): Hex {
+    if (!to || typeof to !== 'string' || to.length < 3) {
+      console.error('Invalid recipient address:', to, typeof to);
+      throw new Error(`Recipient address is required for transfer transaction. Received: ${to} (${typeof to})`);
+    }
     const functionSelector = '0xa9059cbb'; // transfer(address,uint256)
     const toPadded = to.slice(2).padStart(64, '0');
     const amountPadded = amount.toString(16).padStart(64, '0');

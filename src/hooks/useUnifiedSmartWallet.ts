@@ -469,19 +469,25 @@ export function useUnifiedSmartWallet() {
             console.log('🚀 Sending UserOperation...');
             const userOpHash = await smartWalletClient.sendUserOperation({
               account: smartWalletAccount,
-              calls: [{
-                to: txParams.to,
-                value: txParams.value || 0n,
-                data: txParams.data || '0x',
-              }],
+              calls: [
+                {
+                  to: txParams.to,
+                  value: txParams.value || 0n,
+                  data: txParams.data || '0x',
+                },
+              ],
             });
 
             console.log('📝 UserOperation sent:', userOpHash);
-            console.log('⏳ Waiting for UserOperation to be included in block...');
+            console.log(
+              '⏳ Waiting for UserOperation to be included in block...',
+            );
 
-            const receipt = await smartWalletClient.waitForUserOperationReceipt({
-              hash: userOpHash,
-            });
+            const receipt = await smartWalletClient.waitForUserOperationReceipt(
+              {
+                hash: userOpHash,
+              },
+            );
 
             const actualTxHash = receipt.receipt.transactionHash;
             console.log('✅ TRANSACTION SENT:', actualTxHash);
@@ -635,16 +641,19 @@ export function useUnifiedSmartWallet() {
               });
 
               console.log('📝 UserOperation sent:', userOpHash);
-              console.log('⏳ Waiting for UserOperation to be included in block...');
+              console.log(
+                '⏳ Waiting for UserOperation to be included in block...',
+              );
 
               // Wait for the UserOperation to be included in a block and get the actual transaction hash
-              const receipt = await smartWalletClient.waitForUserOperationReceipt({
-                hash: userOpHash,
-              });
+              const receipt =
+                await smartWalletClient.waitForUserOperationReceipt({
+                  hash: userOpHash,
+                });
 
               const actualTxHash = receipt.receipt.transactionHash;
               txHashes.push(actualTxHash);
-              
+
               console.log('✅ UserOperation included in block!');
               console.log('📍 Actual transaction hash:', actualTxHash);
               console.log('📝 Included operations:');
@@ -663,19 +672,22 @@ export function useUnifiedSmartWallet() {
 
                 const userOpHash = await smartWalletClient.sendUserOperation({
                   account: smartWalletAccount,
-                  calls: [{
-                    to: tx.to,
-                    value: tx.value || 0n,
-                    data: tx.data || '0x',
-                  }],
+                  calls: [
+                    {
+                      to: tx.to,
+                      value: tx.value || 0n,
+                      data: tx.data || '0x',
+                    },
+                  ],
                 });
 
                 console.log('📝 Individual UserOperation sent:', userOpHash);
                 console.log('⏳ Waiting for UserOperation to be included...');
 
-                const receipt = await smartWalletClient.waitForUserOperationReceipt({
-                  hash: userOpHash,
-                });
+                const receipt =
+                  await smartWalletClient.waitForUserOperationReceipt({
+                    hash: userOpHash,
+                  });
 
                 const actualTxHash = receipt.receipt.transactionHash;
                 txHashes.push(actualTxHash);
@@ -689,19 +701,23 @@ export function useUnifiedSmartWallet() {
 
             const userOpHash = await smartWalletClient.sendUserOperation({
               account: smartWalletAccount,
-              calls: [{
-                to: tx.to,
-                value: tx.value || 0n,
-                data: tx.data || '0x',
-              }],
+              calls: [
+                {
+                  to: tx.to,
+                  value: tx.value || 0n,
+                  data: tx.data || '0x',
+                },
+              ],
             });
 
             console.log('📝 Single UserOperation sent:', userOpHash);
             console.log('⏳ Waiting for UserOperation to be included...');
 
-            const receipt = await smartWalletClient.waitForUserOperationReceipt({
-              hash: userOpHash,
-            });
+            const receipt = await smartWalletClient.waitForUserOperationReceipt(
+              {
+                hash: userOpHash,
+              },
+            );
 
             const actualTxHash = receipt.receipt.transactionHash;
             txHashes.push(actualTxHash);

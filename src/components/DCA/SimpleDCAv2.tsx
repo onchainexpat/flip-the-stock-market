@@ -454,11 +454,20 @@ export default function SimpleDCAv2({
       if (onOrderCreated) {
         onOrderCreated();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ DCA order creation failed:', error);
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to create order',
-      );
+
+      // Check if user cancelled the signing request
+      if (
+        error.message?.toLowerCase().includes('user cancelled signing request')
+      ) {
+        console.log('🚫 User cancelled DCA order creation');
+        toast.error('Order creation cancelled');
+      } else {
+        toast.error(
+          error instanceof Error ? error.message : 'Failed to create order',
+        );
+      }
     } finally {
       setIsCreating(false);
     }
