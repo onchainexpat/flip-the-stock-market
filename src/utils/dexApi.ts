@@ -13,9 +13,9 @@ export const TOKENS = {
 } as const;
 
 // Platform configuration
-export const PLATFORM_FEE_PERCENTAGE = 0.1; // 0.1% platform fee
+export const PLATFORM_FEE_PERCENTAGE = 0; // 0% - No platform fee for now
 export const PLATFORM_FEE_RECIPIENT =
-  '0x52C8FF44260056f896e20D8a43610dd88f05701b' as Address;
+  '0x52C8FF44260056f896e20D8a43610dd88f05701b' as Address; // Platform fee collection address (unused when fee is 0)
 
 // OpenOcean API configuration
 export const OPENOCEAN_BASE_URL = 'https://open-api.openocean.finance/v3';

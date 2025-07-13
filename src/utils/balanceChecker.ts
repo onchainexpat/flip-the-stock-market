@@ -21,22 +21,23 @@ export interface BalanceCheckResult {
 export class BalanceChecker {
   /**
    * Check USDC balance for a specific user and their active DCA orders
+   * NOTE: Checks smart wallet balance, not user wallet balance, since smart wallet executes the swaps
    */
   async checkUserBalance(userAddress: Address): Promise<BalanceCheckResult> {
     try {
-      // Get current USDC balance
-      const currentBalance = await publicClient.readContract({
-        address: TOKENS.USDC,
-        abi: erc20Abi,
-        functionName: 'balanceOf',
-        args: [userAddress],
-      });
-
-      // Get user's active DCA orders
+      // Get user's active DCA orders first to find their smart wallet addresses
       const orders = await serverDcaDatabase.getUserOrders(userAddress);
       const activeOrders = orders.filter((order) => order.status === 'active');
 
       if (activeOrders.length === 0) {
+        // No active orders, check user wallet balance for reference
+        const currentBalance = await publicClient.readContract({
+          address: TOKENS.USDC,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [userAddress],
+        });
+
         return {
           userAddress,
           currentBalance,
@@ -45,6 +46,33 @@ export class BalanceChecker {
           ordersAffected: [],
         };
       }
+
+      // For DCA execution, we need to check the smart wallet balance from session key data
+      // Get the first active order to extract smart wallet address
+      const firstOrder = activeOrders[0];
+      let smartWalletAddress = userAddress; // fallback to user address
+
+      try {
+        const sessionKeyData = JSON.parse(firstOrder.sessionKeyData);
+        if (sessionKeyData.smartWalletAddress) {
+          smartWalletAddress = sessionKeyData.smartWalletAddress;
+          console.log(
+            `Using smart wallet ${smartWalletAddress} for balance check (user: ${userAddress})`,
+          );
+        }
+      } catch (parseError) {
+        console.warn(
+          `Failed to parse session key data for order ${firstOrder.id}, using user address as fallback`,
+        );
+      }
+
+      // Get current USDC balance from the smart wallet that will execute the swaps
+      const currentBalance = await publicClient.readContract({
+        address: TOKENS.USDC,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [smartWalletAddress],
+      });
 
       // Calculate required balance for next executions
       let totalRequiredBalance = BigInt(0);
@@ -225,6 +253,24 @@ export class BalanceChecker {
       }
     } catch (error) {
       console.error('Failed to check recovered balances:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get USDC balance for a specific address
+   */
+  async getUSDCBalance(address: Address): Promise<bigint> {
+    try {
+      const balance = await publicClient.readContract({
+        address: TOKENS.USDC,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [address],
+      });
+      return balance;
+    } catch (error) {
+      console.error(`Failed to get USDC balance for ${address}:`, error);
       throw error;
     }
   }

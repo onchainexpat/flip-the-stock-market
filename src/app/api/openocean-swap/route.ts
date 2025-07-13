@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // OpenOcean swap API integration - alternative to compromised 0x API
 export async function POST(request: NextRequest) {
@@ -43,9 +43,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Add receiver address if different from taker (for direct token delivery)
+    // For OpenOcean v4 API, try both 'receiver' and 'to' parameters
     if (receiverAddress && receiverAddress !== takerAddress) {
       params.append('receiver', receiverAddress);
+      params.append('to', receiverAddress); // Alternative parameter name
       console.log('🎯 Receiver address specified:', receiverAddress);
+      console.log('🎯 Added both receiver and to parameters for v4 compatibility');
     }
 
     const url = `https://open-api.openocean.finance/v4/8453/swap?${params}`;

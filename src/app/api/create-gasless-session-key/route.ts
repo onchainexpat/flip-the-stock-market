@@ -1,0 +1,323 @@
+import { NextResponse } from 'next/server';
+import { serverAgentKeyService } from '../../../services/serverAgentKeyService';
+import { serverDcaDatabase } from '../../../lib/serverDcaDatabase';
+import {
+  createPublicClient,
+  http,
+  type Address,
+  parseUnits,
+  erc20Abi,
+  encodeFunctionData
+} from 'viem';
+import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import { base } from 'viem/chains';
+import { TOKENS } from '../../../utils/openOceanApi';
+
+export const runtime = 'nodejs';
+
+// Create a new gasless session key for an existing order
+export async function POST(request: Request) {
+  try {
+    const { orderId, approach = 'comprehensive' } = await request.json();
+    
+    if (!orderId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Order ID required' 
+      }, { status: 400 });
+    }
+
+    console.log(`🔑 Creating gasless session key for order: ${orderId}`);
+    console.log(`   Approach: ${approach}`);
+
+    // Get the order
+    const order = await serverDcaDatabase.getOrder(orderId);
+    if (!order) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Order not found' 
+      }, { status: 404 });
+    }
+
+    const smartWalletAddress = order.sessionKeyAddress as Address;
+    const userAddress = order.userAddress as Address;
+
+    console.log(`   Smart wallet: ${smartWalletAddress}`);
+    console.log(`   User address: ${userAddress}`);
+
+    // Create public client
+    const publicClient = createPublicClient({
+      chain: base,
+      transport: http(process.env.NEXT_PUBLIC_ZERODEV_RPC_URL)
+    });
+
+    // Generate new session key
+    const sessionPrivateKey = generatePrivateKey();
+    const sessionAccount = privateKeyToAccount(sessionPrivateKey);
+    console.log('✅ New session key generated:', sessionAccount.address);
+
+    let sessionKeyApproval: string;
+
+    if (approach === 'comprehensive') {
+      console.log('🔐 Creating comprehensive gasless session key...');
+      
+      // Import required modules
+      const { toPermissionValidator, serializePermissionAccount } = await import('@zerodev/permissions');
+      const { toECDSASigner } = await import('@zerodev/permissions/signers');
+      const { 
+        toCallPolicy,
+        toGasPolicy,
+        toRateLimitPolicy,
+        toValueLimitPolicy
+      } = await import('@zerodev/permissions/policies');
+      const { KERNEL_V3_1, getEntryPoint } = await import('@zerodev/sdk/constants');
+      const { signerToEcdsaValidator } = await import('@zerodev/ecdsa-validator');
+      const { createKernelAccount } = await import('@zerodev/sdk');
+      
+      // Create a mock main signer (we can't access the user's wallet server-side)
+      // In a real implementation, this would be done client-side or the approval would be stored
+      const mockMainPrivateKey = generatePrivateKey();
+      const mockMainAccount = privateKeyToAccount(mockMainPrivateKey);
+      
+      // Create main validator (using mock - this is just for testing)
+      const mainValidator = await signerToEcdsaValidator(publicClient, {
+        entryPoint: getEntryPoint('0.7'),
+        signer: mockMainAccount,
+        kernelVersion: KERNEL_V3_1,
+      });
+      
+      // Create agent signer
+      const agentSigner = await toECDSASigner({ signer: sessionAccount });
+      
+      // Create comprehensive policies
+      const targetTokens = [TOKENS.USDC, TOKENS.SPX6900];
+      const allowedSpenders = ['0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address]; // OpenOcean router
+      
+      const allowedCalls: any[] = [];
+      
+      // Add ERC20 operations for target tokens
+      for (const token of targetTokens) {
+        allowedCalls.push({
+          target: token,
+          abi: erc20Abi,
+          functionName: 'transfer',
+        });
+        
+        for (const spender of allowedSpenders) {
+          allowedCalls.push({
+            target: token,
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: [spender, null],
+          });
+        }
+      }
+      
+      // Add router calls
+      for (const spender of allowedSpenders) {
+        allowedCalls.push({
+          target: spender,
+        });
+      }
+      
+      const callPolicy = toCallPolicy({
+        permissions: allowedCalls
+      });
+      
+      const gasPolicy = toGasPolicy({
+        allowed: true,
+      });
+      
+      const rateLimitPolicy = toRateLimitPolicy({
+        count: 100,
+        interval: 86400, // 24 hours
+      });
+      
+      const valueLimitPolicy = toValueLimitPolicy({
+        limit: parseUnits('0', 18), // 0 ETH
+      });
+      
+      console.log('✅ Created comprehensive policies');
+      
+      // Create permission validator
+      const agentPermissionValidator = await toPermissionValidator(publicClient, {
+        entryPoint: getEntryPoint('0.7'),
+        signer: agentSigner,
+        policies: [callPolicy, gasPolicy, rateLimitPolicy, valueLimitPolicy],
+        kernelVersion: KERNEL_V3_1,
+      });
+      
+      // Create kernel account
+      const permissionAccount = await createKernelAccount(publicClient, {
+        entryPoint: getEntryPoint('0.7'),
+        plugins: {
+          sudo: mainValidator,
+          regular: agentPermissionValidator,
+        },
+        kernelVersion: KERNEL_V3_1,
+        deployedAccountAddress: smartWalletAddress,
+      });
+      
+      // Serialize the permission account
+      sessionKeyApproval = await serializePermissionAccount(permissionAccount);
+      
+    } else {
+      console.log('🔐 Creating simple gasless session key...');
+      
+      // Import required modules
+      const { toPermissionValidator, serializePermissionAccount } = await import('@zerodev/permissions');
+      const { toECDSASigner } = await import('@zerodev/permissions/signers');
+      const { 
+        toSudoPolicy,
+        toGasPolicy
+      } = await import('@zerodev/permissions/policies');
+      const { KERNEL_V3_1, getEntryPoint } = await import('@zerodev/sdk/constants');
+      const { signerToEcdsaValidator } = await import('@zerodev/ecdsa-validator');
+      const { createKernelAccount } = await import('@zerodev/sdk');
+      
+      // Create mock main signer
+      const mockMainPrivateKey = generatePrivateKey();
+      const mockMainAccount = privateKeyToAccount(mockMainPrivateKey);
+      
+      const mainValidator = await signerToEcdsaValidator(publicClient, {
+        entryPoint: getEntryPoint('0.7'),
+        signer: mockMainAccount,
+        kernelVersion: KERNEL_V3_1,
+      });
+      
+      // Create agent signer
+      const agentSigner = await toECDSASigner({ signer: sessionAccount });
+      
+      // Use SUDO + gas policies
+      const sudoPolicy = toSudoPolicy({});
+      const gasPolicy = toGasPolicy({
+        allowed: true,
+      });
+      
+      const agentPermissionValidator = await toPermissionValidator(publicClient, {
+        entryPoint: getEntryPoint('0.7'),
+        signer: agentSigner,
+        policies: [sudoPolicy, gasPolicy],
+        kernelVersion: KERNEL_V3_1,
+      });
+      
+      const permissionAccount = await createKernelAccount(publicClient, {
+        entryPoint: getEntryPoint('0.7'),
+        plugins: {
+          sudo: mainValidator,
+          regular: agentPermissionValidator,
+        },
+        kernelVersion: KERNEL_V3_1,
+        deployedAccountAddress: smartWalletAddress,
+      });
+      
+      sessionKeyApproval = await serializePermissionAccount(permissionAccount);
+    }
+
+    // Create and store the session key
+    const agentKey = await serverAgentKeyService.storeSessionKey(
+      userAddress,
+      smartWalletAddress,
+      sessionPrivateKey,
+      sessionKeyApproval
+    );
+
+    console.log('✅ Gasless session key created and stored');
+    console.log(`   Agent key ID: ${agentKey.keyId}`);
+    console.log(`   Session address: ${sessionAccount.address}`);
+    console.log(`   Approval length: ${sessionKeyApproval.length}`);
+
+    // Test the new session key
+    console.log('🧪 Testing new session key...');
+    
+    try {
+      const { toECDSASigner } = await import('@zerodev/permissions/signers');
+      const { deserializePermissionAccount } = await import('@zerodev/permissions');
+      const { KERNEL_V3_1, getEntryPoint } = await import('@zerodev/sdk/constants');
+      const { createKernelAccountClient, createZeroDevPaymasterClient } = await import('@zerodev/sdk');
+      
+      const agentSigner = await toECDSASigner({ signer: sessionAccount });
+      
+      const testSmartWallet = await deserializePermissionAccount(
+        publicClient,
+        getEntryPoint('0.7'),
+        KERNEL_V3_1,
+        sessionKeyApproval,
+        agentSigner
+      );
+
+      // Create paymaster
+      const paymaster = createZeroDevPaymasterClient({
+        chain: base,
+        transport: http(process.env.NEXT_PUBLIC_ZERODEV_RPC_URL),
+      });
+
+      // Create kernel client
+      const kernelClient = createKernelAccountClient({
+        account: testSmartWallet,
+        chain: base,
+        bundlerTransport: http(process.env.NEXT_PUBLIC_ZERODEV_RPC_URL),
+        middleware: {
+          sponsorUserOperation: paymaster.sponsorUserOperation,
+        },
+      });
+
+      // Test building a user operation
+      const approveData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'approve',
+        args: ['0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address, parseUnits('1', 6)],
+      });
+
+      const userOp = await kernelClient.buildUserOperation({
+        calls: [{
+          to: TOKENS.USDC,
+          data: approveData,
+          value: 0n,
+        }]
+      });
+
+      console.log('✅ Session key test successful - can build user operations');
+
+      return NextResponse.json({
+        success: true,
+        message: 'Gasless session key created and tested successfully',
+        agentKeyId: agentKey.keyId,
+        sessionAddress: sessionAccount.address,
+        smartWalletAddress,
+        approach,
+        sessionKeyApprovalLength: sessionKeyApproval.length,
+        testResult: {
+          canDeserialize: true,
+          canBuildUserOp: true,
+          userOpHash: userOp.hash || 'built successfully'
+        }
+      });
+
+    } catch (testError) {
+      console.error('❌ Session key test failed:', testError);
+      
+      return NextResponse.json({
+        success: true, // Creation succeeded, but test failed
+        message: 'Gasless session key created but test failed',
+        agentKeyId: agentKey.keyId,
+        sessionAddress: sessionAccount.address,
+        smartWalletAddress,
+        approach,
+        sessionKeyApprovalLength: sessionKeyApproval.length,
+        testResult: {
+          canDeserialize: false,
+          canBuildUserOp: false,
+          error: testError instanceof Error ? testError.message : 'Unknown test error'
+        }
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Gasless session key creation failed:', error);
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+}

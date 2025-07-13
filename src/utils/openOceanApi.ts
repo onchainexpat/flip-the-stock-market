@@ -1,5 +1,6 @@
 import type { Address } from 'viem';
 import { NEXT_PUBLIC_URL } from '../config';
+import { multiAggregatorService } from '../services/multiAggregatorService';
 
 export interface SwapQuote {
   sellToken: Address;
@@ -42,9 +43,9 @@ export interface SwapParams {
 }
 
 // Platform fee configuration
-export const PLATFORM_FEE_PERCENTAGE = 0.1; // 0.1%
+export const PLATFORM_FEE_PERCENTAGE = 0; // 0% - No platform fee for now
 export const PLATFORM_FEE_RECIPIENT =
-  '0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7' as Address; // Platform fee collection address
+  '0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7' as Address; // Platform fee collection address (unused when fee is 0)
 
 // Common token addresses on Base
 export const TOKENS = {
@@ -226,57 +227,120 @@ export class OpenOceanApi {
     };
   }
 
-  // Get current SPX6900 price in USDC
-  async getSPX6900Price(): Promise<{ price: number; priceImpact: number }> {
+  // Get current SPX6900 price in USDC using multi-aggregator (best rates)
+  async getSPX6900Price(): Promise<{ price: number; priceImpact: number; bestAggregator?: string; savings?: string }> {
     try {
-      // Sell 1 USDC to get SPX6900, then calculate price per SPX6900
-      const sellAmount = '1000000'; // 1 USDC (6 decimals)
-      const result = await this.getPrice(
-        TOKENS.USDC,
-        TOKENS.SPX6900,
-        sellAmount,
-      );
+      console.log('🔍 Fetching SPX6900 price from multiple aggregators...');
 
-      // Convert the result to SPX6900 price in USD
-      // price returned is SPX6900_amount / USDC_amount, we want USDC / SPX6900
-      const spxPrice = 1 / Number.parseFloat(result.price);
+      // Use multi-aggregator service for best rates
+      const result = await multiAggregatorService.getSPX6900Price();
+      
+      const price = Number.parseFloat(result.price);
+      
+      console.log(`✅ Best SPX6900 Price: $${price} (via ${result.bestAggregator})`);
+      console.log('📊 All aggregator prices:', result.allPrices);
 
-      return {
-        price: spxPrice,
-        priceImpact: Number.parseFloat(result.estimatedPriceImpact),
+      return { 
+        price, 
+        priceImpact: 0.5, // Default low impact for price display
+        bestAggregator: result.bestAggregator,
+        savings: result.allPrices.length > 1 ? 'Multi-aggregator comparison' : undefined
       };
     } catch (error) {
-      console.error(
-        'Failed to get SPX6900 price from OpenOcean, trying CoinGecko fallback:',
-        error,
-      );
+      console.error('Multi-aggregator price fetch failed, falling back to OpenOcean only:', error);
 
-      // Fallback to CoinGecko API
+      // Fallback to OpenOcean only
       try {
-        const response = await fetch(`${NEXT_PUBLIC_URL}/api/coingecko`);
-        if (!response.ok) {
-          throw new Error(`CoinGecko API failed: ${response.status}`);
-        }
+        const sellAmount = '1000000'; // 1 USDC (6 decimals)
+        const result = await this.getPrice(
+          TOKENS.USDC,
+          TOKENS.SPX6900,
+          sellAmount,
+        );
 
-        const data = await response.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
+        // Convert the result to SPX6900 price in USD
+        const spxPrice = 1 / Number.parseFloat(result.price);
 
-        if (!data.spx6900?.usd) {
-          throw new Error('Invalid CoinGecko response format');
-        }
+        console.log(`✅ SPX6900 Price (OpenOcean only): $${spxPrice}`);
 
         return {
-          price: data.spx6900.usd,
-          priceImpact: 0, // CoinGecko doesn't provide price impact
+          price: spxPrice,
+          priceImpact: Number.parseFloat(result.estimatedPriceImpact),
         };
-      } catch (fallbackError) {
-        console.error('CoinGecko fallback also failed:', fallbackError);
-        throw new Error(
-          'Failed to fetch SPX6900 price from both OpenOcean and CoinGecko',
-        );
+      } catch (openOceanError) {
+        console.error('OpenOcean fallback failed, trying CoinGecko:', openOceanError);
+
+        // Final fallback to CoinGecko API
+        try {
+          const response = await fetch(`${NEXT_PUBLIC_URL}/api/coingecko`);
+          if (!response.ok) {
+            throw new Error(`CoinGecko API failed: ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
+          if (!data.spx6900?.usd) {
+            throw new Error('Invalid CoinGecko response format');
+          }
+
+          return {
+            price: data.spx6900.usd,
+            priceImpact: 0, // CoinGecko doesn't provide price impact
+          };
+        } catch (fallbackError) {
+          console.error('All price sources failed:', fallbackError);
+          throw new Error(
+            'Failed to fetch SPX6900 price from all sources (Multi-aggregator, OpenOcean, CoinGecko)',
+          );
+        }
       }
+    }
+  }
+
+  // Get SPX6900 price with detailed comparison (for advanced users)
+  async getSPX6900PriceDetailed(): Promise<{
+    bestPrice: number;
+    bestAggregator: string;
+    allPrices: Array<{
+      aggregator: string;
+      price: string;
+      buyAmount: string;
+      responseTime?: number;
+    }>;
+    savings: {
+      amount: string;
+      percentage: string;
+    };
+  }> {
+    try {
+      const result = await multiAggregatorService.getBestSwapQuote(
+        TOKENS.USDC,
+        TOKENS.SPX6900,
+        '1000000' // 1 USDC
+      );
+
+      const bestPrice = Number.parseFloat(result.bestQuote.price);
+      
+      return {
+        bestPrice,
+        bestAggregator: result.bestQuote.aggregator,
+        allPrices: result.allQuotes.map(quote => ({
+          aggregator: quote.aggregator,
+          price: quote.price,
+          buyAmount: quote.buyAmount,
+          responseTime: quote.responseTime
+        })),
+        savings: {
+          amount: result.savingsVsWorst.amount,
+          percentage: result.savingsVsWorst.percentage
+        }
+      };
+    } catch (error) {
+      console.error('Failed to get detailed price comparison:', error);
+      throw error;
     }
   }
 

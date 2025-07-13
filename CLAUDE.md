@@ -83,10 +83,17 @@ WagmiProvider → QueryClientProvider → OnchainKitProvider → RainbowKitProvi
 
 Required in `.env.local`:
 ```
-NEXT_PUBLIC_COINBASE_API_KEY
-NEXT_PUBLIC_COINBASE_PAYMASTER_AND_BUILDER_ENDPOINT
-NEXT_PUBLIC_CDP_PROJECT_ID
 NEXT_PUBLIC_WC_PROJECT_ID
+NEXT_PUBLIC_ZERODEV_PROJECT_ID
+NEXT_PUBLIC_ZERODEV_RPC_URL
+```
+
+Server-side required:
+```
+AGENT_KEY_ENCRYPTION_SECRET  # Master key for encrypting agent keys
+CRON_SECRET_KEY             # Authentication for cron jobs
+UPSTASH_REDIS_REST_URL      # Redis database URL
+UPSTASH_REDIS_REST_TOKEN    # Redis authentication token
 ```
 
 Additional services configured in production:

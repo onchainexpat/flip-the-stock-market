@@ -193,7 +193,7 @@ export const useSmartWalletDeployment = () => {
     // Actions
     deploySmartWallet,
     sendSponsoredTransaction,
-    canDeploy: canDeploy(),
+    canDeploy,
     reset,
 
     // Wallet info

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { erc20Abi, type Address } from 'viem';
+import { type Address, erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
 import { useClearSigning } from '../../hooks/useClearSigning';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';

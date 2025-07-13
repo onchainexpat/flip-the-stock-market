@@ -5,7 +5,11 @@ import {
   createKernelAccountClient,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
-import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
+import {
+  KERNEL_V3_1,
+  KERNEL_V3_2,
+  getEntryPoint,
+} from '@zerodev/sdk/constants';
 import {
   http,
   type Address,
@@ -15,19 +19,8 @@ import {
 } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 
-// Let's also try to import other kernel versions if available
-let KERNEL_V3_2, KERNEL_V2_4;
-try {
-  const constants = require('@zerodev/sdk/constants');
-  KERNEL_V3_2 = constants.KERNEL_V3_2;
-  KERNEL_V2_4 = constants.KERNEL_V2_4;
-  console.log(
-    '📋 Available kernel versions:',
-    Object.keys(constants).filter((k) => k.startsWith('KERNEL_')),
-  );
-} catch (e) {
-  console.log('⚠️ Could not load additional kernel versions');
-}
+// Use KERNEL_V3_2 for chain abstraction support
+console.log('📋 Using KERNEL_V3_2 for chain abstraction support');
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
   NEXT_PUBLIC_ZERODEV_PROJECT_ID,
@@ -464,9 +457,9 @@ export const getZeroDevConfig = (chain: Chain = base) => {
     console.warn('⚠️ Select Base network and add your project ID to .env.local');
   }
 
-  // Try the original v2 format - some projects still use this
-  const bundlerUrl = `https://rpc.zerodev.app/api/v2/bundler/${NEXT_PUBLIC_ZERODEV_PROJECT_ID}`;
-  const paymasterUrl = `https://rpc.zerodev.app/api/v2/paymaster/${NEXT_PUBLIC_ZERODEV_PROJECT_ID}`;
+  // Use v3 format to match the configured project
+  const bundlerUrl = `https://rpc.zerodev.app/api/v3/bundler/${NEXT_PUBLIC_ZERODEV_PROJECT_ID}`;
+  const paymasterUrl = `https://rpc.zerodev.app/api/v3/paymaster/${NEXT_PUBLIC_ZERODEV_PROJECT_ID}`;
 
   console.log('🔍 Using project ID:', NEXT_PUBLIC_ZERODEV_PROJECT_ID);
   console.log('🔍 Using bundler URL:', bundlerUrl);
@@ -532,7 +525,7 @@ export const createEcdsaValidator = async (publicClient: any, signer: any) => {
     const validator = await signerToEcdsaValidator(publicClient, {
       signer,
       entryPoint: ENTRYPOINT_ADDRESS_V07,
-      kernelVersion: KERNEL_V3_1,
+      kernelVersion: KERNEL_V3_2, // Use v3.2 for chain abstraction
     });
     console.log('✅ ECDSA validator created successfully:', validator);
     return validator;

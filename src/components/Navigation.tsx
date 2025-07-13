@@ -1,16 +1,9 @@
 'use client';
 import { usePrivy } from '@privy-io/react-auth';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export default function Navigation() {
-  const { authenticated, ready, logout } = usePrivy();
-  const pathname = usePathname();
-
-  // Don't show navigation on the login page
-  if (pathname === '/login') {
-    return null;
-  }
+  const { authenticated, ready, logout, login } = usePrivy();
 
   if (!ready) {
     return null;
@@ -35,6 +28,12 @@ export default function Navigation() {
                 >
                   DCA
                 </Link>
+                <Link
+                  href="/openocean-dca-test"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  DCA Test
+                </Link>
                 <button
                   onClick={logout}
                   className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -43,12 +42,12 @@ export default function Navigation() {
                 </button>
               </>
             ) : (
-              <Link
-                href="/login"
+              <button
+                onClick={login}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
               >
-                Login with Email
-              </Link>
+                Login
+              </button>
             )}
           </div>
         </div>

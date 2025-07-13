@@ -374,7 +374,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
       setLoadingProgress({ current: 0, total: 0 });
 
       // Load user orders and stats from API
-      const response = await fetch(`/api/dca-orders?userAddress=${address}`);
+      const response = await fetch(`/api/dca-orders-v2?userAddress=${address}`);
       if (!response.ok) {
         throw new Error('Failed to load user data');
       }

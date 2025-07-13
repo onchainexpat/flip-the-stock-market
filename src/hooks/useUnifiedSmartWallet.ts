@@ -316,7 +316,9 @@ export function useUnifiedSmartWallet() {
           console.log('🔑 Creating ZeroDev session key with private key...');
 
           if (!dcaParams) {
-            throw new Error('DCA parameters required for ZeroDev session key creation');
+            throw new Error(
+              'DCA parameters required for ZeroDev session key creation',
+            );
           }
 
           // Use the proper ZeroDev session key service that includes private key
@@ -328,7 +330,9 @@ export function useUnifiedSmartWallet() {
             dcaParams.durationDays,
           );
 
-          console.log('✅ ZeroDev session key with private key created successfully');
+          console.log(
+            '✅ ZeroDev session key with private key created successfully',
+          );
           setState((prev) => ({ ...prev, isLoading: false }));
           return sessionData;
         }

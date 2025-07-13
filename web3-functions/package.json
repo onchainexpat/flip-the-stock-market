@@ -1,0 +1,18 @@
+{
+  "name": "gelato-dca-functions",
+  "version": "1.0.0",
+  "description": "Gelato Web3 Functions for DCA automation",
+  "main": "dcaAutomationFunction.ts",
+  "scripts": {
+    "test": "npx w3f test dcaAutomationFunction.ts",
+    "deploy": "npx w3f deploy dcaAutomationFunction.ts --network base",
+    "create-task": "npx w3f create-task dcaAutomationFunction.ts --network base"
+  },
+  "dependencies": {
+    "@gelatonetwork/web3-functions-sdk": "^2.16.0",
+    "ethers": "^6.15.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

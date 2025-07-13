@@ -1,0 +1,140 @@
+import 'dotenv/config';
+import { INTENT_V0_4, createIntentClient } from '@zerodev/intent';
+import { toMultiChainECDSAValidator } from '@zerodev/multi-chain-ecdsa-validator';
+import {
+  createKernelAccount,
+  createZeroDevPaymasterClient,
+} from '@zerodev/sdk';
+import {
+  KERNEL_V3_0,
+  KERNEL_V3_2,
+  getEntryPoint,
+} from '@zerodev/sdk/constants';
+import dotenv from 'dotenv';
+import { http, Address, createPublicClient, zeroAddress } from 'viem';
+import { SmartAccount } from 'viem/account-abstraction';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { arbitrum } from 'viem/chains';
+
+dotenv.config();
+
+if (!process.env.PRIVATE_KEY || !process.env.ZERODEV_RPC) {
+  throw new Error('PRIVATE_KEY or ZERODEV_RPC is not set');
+}
+
+const timeout = 100_000;
+const chain = arbitrum;
+const zerodevRpc = process.env.ZERODEV_RPC as string;
+// For testing purposes, we generate a new private key
+const privateKey = generatePrivateKey();
+
+const publicClient = createPublicClient({
+  chain,
+  transport: http(),
+});
+
+async function getSigner() {
+  return privateKeyToAccount(privateKey);
+}
+
+async function createKernelWithV3_0() {
+  const signer = await getSigner();
+
+  const ecdsaValidator = await toMultiChainECDSAValidator(publicClient, {
+    signer,
+    kernelVersion: KERNEL_V3_0,
+    entryPoint: getEntryPoint('0.7'),
+  });
+
+  return createKernelAccount(publicClient, {
+    plugins: {
+      sudo: ecdsaValidator,
+    },
+    kernelVersion: KERNEL_V3_0,
+    entryPoint: getEntryPoint('0.7'),
+  });
+}
+
+async function createIntentClientV3_0(kernelAccount: SmartAccount) {
+  return createIntentClient({
+    account: kernelAccount,
+    chain,
+    bundlerTransport: http(zerodevRpc, { timeout }),
+    paymaster: createZeroDevPaymasterClient({
+      chain,
+      transport: http(zerodevRpc, { timeout }),
+    }),
+    client: publicClient,
+    version: INTENT_V0_4,
+  });
+}
+
+async function createKernelWithV3_2(kernelAddress: Address) {
+  const signer = await getSigner();
+
+  const v3_2Validator = await toMultiChainECDSAValidator(publicClient, {
+    signer,
+    kernelVersion: KERNEL_V3_2,
+    entryPoint: getEntryPoint('0.7'),
+  });
+
+  return createKernelAccount(publicClient, {
+    plugins: {
+      sudo: v3_2Validator,
+    },
+    kernelVersion: KERNEL_V3_2,
+    entryPoint: getEntryPoint('0.7'),
+    // Important: We pass the address of the existing kernel account because we upgrade the existing kernel account
+    address: kernelAddress,
+  });
+}
+
+async function createIntentClientV3_2(kernelAccount: any) {
+  return createIntentClient({
+    account: kernelAccount,
+    chain,
+    bundlerTransport: http(zerodevRpc, { timeout }),
+    version: INTENT_V0_4,
+  });
+}
+
+async function verifyUpgrade(upgradedClient: any) {
+  console.log('Verifying upgraded V3.2 client...');
+  const verifyTx = await upgradedClient.sendTransaction({
+    to: zeroAddress,
+    data: '0x',
+  });
+  console.log('Verification transaction hash:', verifyTx.uiHash);
+}
+
+async function main() {
+  // Create and setup V3.0 kernel
+  const kernelAccount = await createKernelWithV3_0();
+  console.log('Initial V3.0 kernel account:', kernelAccount.address);
+
+  const intentClient = await createIntentClientV3_0(kernelAccount);
+
+  // Enable intent and upgrade to V3.2
+  console.log('Enabling intent and upgrading to V3.2...');
+  const enableHash = await intentClient.enableIntent();
+  console.log('Enable intent hash:', enableHash);
+
+  const receipt = await intentClient.waitForUserOperationReceipt({
+    hash: enableHash,
+  });
+  console.log('Upgrade transaction:', receipt.receipt.transactionHash);
+
+  // Create and verify V3.2 client
+  const v3_2KernelAccount = await createKernelWithV3_2(kernelAccount.address);
+  const upgradedClient = await createIntentClientV3_2(v3_2KernelAccount);
+  await verifyUpgrade(upgradedClient);
+
+  console.log(
+    'Successfully upgraded kernel to V3.2 with intent functionality enabled'
+  );
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

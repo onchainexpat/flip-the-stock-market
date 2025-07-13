@@ -74,7 +74,8 @@ export async function GET(
           amountIn: execution.amountIn,
           amountOut: execution.amountOut,
           executedAt: execution.executedAt,
-          status: execution.status === 'success' ? 'completed' : execution.status, // Backward compatibility for status
+          status:
+            execution.status === 'success' ? 'completed' : execution.status, // Backward compatibility for status
           swapProvider: execution.swapProvider,
           exchangeRate: execution.exchangeRate,
           gasUsed: execution.gasUsed || '0',
