@@ -1,12 +1,5 @@
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
-  toPermissionValidator,
-} from '@zerodev/permissions';
-import {
-  toCallPolicy,
-} from '@zerodev/permissions/policies';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import {
   createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
@@ -19,21 +12,23 @@ import {
   createPublicClient,
   encodeFunctionData,
   erc20Abi,
+  zeroAddress,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
-import { serverAgentKeyService } from './serverAgentKeyService';
 import { TOKENS } from '../utils/openOceanApi';
 import { aggregatorExecutionService } from './aggregatorExecutionService';
+import { serverAgentKeyService } from './serverAgentKeyService';
 
-// ZeroDev configuration
+// ZeroDev configuration  
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
 const ZERODEV_RPC_URL =
   process.env.NEXT_PUBLIC_ZERODEV_RPC_URL ||
   `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`;
 
 // OpenOcean router
-const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+const OPENOCEAN_ROUTER =
+  '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
 export interface ServerDCAExecutionResult {
   success: boolean;
@@ -82,28 +77,51 @@ export class ServerZerodevDCAExecutor {
   ): Promise<ServerDCAExecutionResult> {
     try {
       console.log('🔐 Retrieving agent key and permission approval...');
-      
+
+      // Add timeout wrapper for all operations
+      const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> => {
+        return Promise.race([
+          promise,
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error(`${operation} timed out after ${timeoutMs}ms`)), timeoutMs)
+          )
+        ]);
+      };
+
       // Get agent key data including approval
-      const agentKeyData = await serverAgentKeyService.getAgentKey(agentKeyId);
+      console.log('🔐 Retrieving agent key (with 10s timeout)...');
+      const agentKeyData = await withTimeout(
+        serverAgentKeyService.getAgentKey(agentKeyId),
+        10000,
+        'Agent key retrieval'
+      );
+      
       if (!agentKeyData) {
         console.error('❌ Agent key not found for keyId:', agentKeyId);
         throw new Error('Agent key not found');
       }
-      
+
       if (!agentKeyData.sessionKeyApproval) {
-        console.error('❌ Agent key data:', JSON.stringify(agentKeyData, null, 2));
         console.error('❌ sessionKeyApproval is missing from agent key data');
         throw new Error('Permission approval not found in agent key data');
       }
-      
+
       console.log('✅ Agent key data retrieved with sessionKeyApproval');
       console.log('   Agent key ID:', agentKeyId);
       console.log('   Agent address:', agentKeyData.agentAddress);
       console.log('   Smart wallet address:', agentKeyData.smartWalletAddress);
-      console.log('   Session key approval length:', agentKeyData.sessionKeyApproval.length);
-      
+      console.log(
+        '   Session key approval length:',
+        agentKeyData.sessionKeyApproval.length,
+      );
+
       // Get decrypted private key
-      const privateKey = await serverAgentKeyService.getPrivateKey(agentKeyId);
+      console.log('🔑 Getting decrypted private key (with 5s timeout)...');
+      const privateKey = await withTimeout(
+        serverAgentKeyService.getPrivateKey(agentKeyId),
+        5000,
+        'Private key retrieval'
+      );
       if (!privateKey) {
         throw new Error('Agent private key not found or inactive');
       }
@@ -113,33 +131,69 @@ export class ServerZerodevDCAExecutor {
       console.log('🤖 Agent address:', agentAccount.address);
 
       // Import permission modules
+      console.log('📦 Importing permission modules...');
       const { toECDSASigner } = await import('@zerodev/permissions/signers');
-      const { deserializePermissionAccount } = await import('@zerodev/permissions');
-      
-      // Create agent signer
-      const agentSigner = await toECDSASigner({ signer: agentAccount });
-      
+      const { deserializePermissionAccount } = await import(
+        '@zerodev/permissions'
+      );
+
+      // We'll create the session signer after extracting the session private key
+      console.log('📋 Agent account address:', agentAccount.address);
+
       // Deserialize the permission account using the stored approval
-      console.log('🔓 Deserializing permission account...');
-      const smartWallet = await deserializePermissionAccount(
-        this.publicClient,
-        getEntryPoint('0.7'),
-        KERNEL_V3_1,
-        agentKeyData.sessionKeyApproval,
-        agentSigner
+      console.log('🔓 Deserializing permission account (with 20s timeout)...');
+      
+      // Use the working pattern from 1-click-trading.ts example:
+      // When private key is included in serialization, deserialize WITHOUT the signer parameter
+      const smartWallet = await withTimeout(
+        deserializePermissionAccount(
+          this.publicClient,
+          getEntryPoint('0.7'),
+          KERNEL_V3_1,
+          agentKeyData.sessionKeyApproval,
+          // NO session signer parameter - private key is embedded in serialized data
+        ),
+        20000,
+        'Permission account deserialization'
       );
       
-      console.log('✅ Agent validator created');
+      console.log('✅ Permission account deserialized successfully');
+      
+      // Test the deserialized account
+      console.log('🧪 Testing deserialized account...');
+      console.log('   Account type:', smartWallet.type);
+      console.log('   Has signMessage:', typeof smartWallet.signMessage);
+      console.log('   Has signTransaction:', typeof smartWallet.signTransaction);
+      console.log('   Has signUserOperation:', typeof smartWallet.signUserOperation);
+      
+      // Test if the account can actually sign
+      try {
+        if (smartWallet.signMessage) {
+          console.log('🧪 Testing account signMessage...');
+          const testSig = await smartWallet.signMessage({ message: 'test' });
+          console.log('   ✅ Account can sign messages, signature length:', testSig.length);
+        } else {
+          console.log('   ❌ Account does not have signMessage method');
+        }
+      } catch (error) {
+        console.log('   ❌ Account signMessage failed:', error.message);
+      }
+
+      console.log('✅ Session key deserialized successfully');
       console.log('   Smart wallet address:', smartWallet.address);
       console.log('   Expected address:', smartWalletAddress);
-      console.log('   Agent address:', agentAccount.address);
+      console.log('   Agent account address:', agentAccount.address);
 
       // Verify addresses match
-      if (smartWallet.address.toLowerCase() !== smartWalletAddress.toLowerCase()) {
+      if (
+        smartWallet.address.toLowerCase() !== smartWalletAddress.toLowerCase()
+      ) {
         console.error('❌ Address mismatch!');
         console.error('   Created:', smartWallet.address);
         console.error('   Expected:', smartWalletAddress);
-        throw new Error(`Smart wallet address mismatch: ${smartWallet.address} !== ${smartWalletAddress}`);
+        throw new Error(
+          `Smart wallet address mismatch: ${smartWallet.address} !== ${smartWalletAddress}`,
+        );
       }
 
       console.log('✅ Smart wallet connected:', smartWallet.address);
@@ -148,7 +202,11 @@ export class ServerZerodevDCAExecutor {
 
       // Check USDC balance
       const usdcBalance = await this.getUSDCBalance(smartWallet.address);
-      console.log('💰 USDC balance:', (Number(usdcBalance) / 1e6).toFixed(6), 'USDC');
+      console.log(
+        '💰 USDC balance:',
+        (Number(usdcBalance) / 1e6).toFixed(6),
+        'USDC',
+      );
 
       if (usdcBalance < swapAmount) {
         throw new Error(`Insufficient USDC: ${usdcBalance} < ${swapAmount}`);
@@ -168,83 +226,141 @@ export class ServerZerodevDCAExecutor {
 
       console.log('📊 Expected SPX output:', swapQuote.expectedOutput);
 
-      // Create paymaster for gas sponsorship
+      // Create paymaster for gas sponsorship (using working pattern)
       console.log('💰 Setting up gas sponsorship...');
-      const paymaster = createZeroDevPaymasterClient({
+      const paymasterClient = createZeroDevPaymasterClient({
         chain: base,
         transport: http(ZERODEV_RPC_URL),
       });
 
-      // Create kernel client with gas sponsorship and manual gas limits
+      // Create kernel client with working pattern
+      console.log('🔧 Creating kernel client with paymaster gas handling...');
       const kernelClient = createKernelAccountClient({
         account: smartWallet,
         chain: base,
         bundlerTransport: http(ZERODEV_RPC_URL),
-        middleware: {
-          sponsorUserOperation: paymaster.sponsorUserOperation,
-          gasPrice: async () => ({
-            maxFeePerGas: 1000000000n, // 1 gwei
-            maxPriorityFeePerGas: 1000000000n, // 1 gwei
-          }),
-          // Override gas estimation to avoid requiring ETH for simulation
-          userOperationSimulator: async (args) => {
-            return {
-              preVerificationGas: 100000n,
-              verificationGasLimit: 200000n,
-              callGasLimit: 500000n,
-            };
+        paymaster: {
+          getPaymasterData: async (userOperation) => {
+            console.log('🔍 UserOperation before sponsorship:', {
+              sender: userOperation.sender,
+              nonce: userOperation.nonce,
+              callDataLength: userOperation.callData.length,
+              maxFeePerGas: userOperation.maxFeePerGas,
+              maxPriorityFeePerGas: userOperation.maxPriorityFeePerGas,
+            });
+            
+            try {
+              const sponsorResult = await paymasterClient.sponsorUserOperation({ userOperation });
+              console.log('✅ Sponsorship result:', {
+                paymaster: sponsorResult.paymaster,
+                paymasterDataLength: sponsorResult.paymasterData?.length,
+              });
+              return sponsorResult;
+            } catch (error) {
+              console.error('❌ Sponsorship failed:', error);
+              throw error;
+            }
           },
         },
       });
 
       console.log('✅ Gas sponsorship enabled');
 
-      // Build transactions
+      // Build transactions - approve for the actual router being used
+      const routerAddress = swapQuote.transaction!.to; // This will be Aerodrome router
       const approveData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'approve',
-        args: [OPENOCEAN_ROUTER, swapAmount],
+        args: [routerAddress, swapAmount],
       });
 
       const transactions: any = {};
 
-      // Step 1: Approve USDC
-      console.log('📝 Step 1: Approving USDC spend...');
-      const approveTxHash = await kernelClient.sendTransaction({
-        to: TOKENS.USDC,
-        value: 0n,
-        data: approveData,
-      });
+      // Test: Try a simple operation first to check permissions
+      console.log('🧪 Testing session key with simple operation...');
       
-      transactions.approve = approveTxHash;
-      console.log('✅ Approval tx:', approveTxHash);
-      
-      // Wait for approval
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      try {
+        // Try to check balance first (this should work with minimal permissions)
+        const currentBalance = await this.getUSDCBalance(smartWallet.address);
+        console.log('✅ Current USDC balance:', currentBalance.toString());
+        
+        // Try a simple transaction to test permissions (use zeroAddress instead of self)
+        const testUserOpHash = await kernelClient.sendUserOperation({
+          callData: await smartWallet.encodeCalls([{
+            to: zeroAddress,
+            value: BigInt(0),
+            data: '0x',
+          }]),
+        });
 
-      // Step 2: Execute swap
+        console.log('✅ Test UserOp hash:', testUserOpHash);
+        
+        // Wait for test to be mined
+        const testReceipt = await kernelClient.waitForUserOperationReceipt({
+          hash: testUserOpHash,
+        });
+        
+        console.log('✅ Test tx mined:', testReceipt.receipt.transactionHash);
+        
+        // If we get here, permissions are working, now try the approval
+        console.log(`📝 Step 1: Approving USDC spend for ${routerAddress}...`);
+        
+        const approveUserOpHash = await kernelClient.sendUserOperation({
+          callData: await smartWallet.encodeCalls([{
+            to: TOKENS.USDC,
+            value: BigInt(0),
+            data: approveData,
+          }]),
+        });
+
+        console.log('✅ Approval UserOp hash:', approveUserOpHash);
+        
+        // Wait for approval to be mined
+        const approveReceipt = await kernelClient.waitForUserOperationReceipt({
+          hash: approveUserOpHash,
+        });
+        
+        transactions.approve = approveReceipt.receipt.transactionHash;
+        console.log('✅ Approval tx mined:', transactions.approve);
+        
+      } catch (error) {
+        console.error('❌ Transaction failed:', error);
+        throw new Error(`Transaction failed: ${error.message}`);
+      }
+
+      // Step 2: Execute swap (using working UserOperation pattern) 
       console.log('📝 Step 2: Executing swap...');
-      const swapTxHash = await kernelClient.sendTransaction({
-        to: swapQuote.transaction!.to,
-        value: BigInt(swapQuote.transaction!.value || '0'),
-        data: swapQuote.transaction!.data,
+      const swapUserOpHash = await kernelClient.sendUserOperation({
+        callData: await smartWallet.encodeCalls([{
+          to: swapQuote.transaction!.to,
+          value: BigInt(swapQuote.transaction!.value || '0'),
+          data: swapQuote.transaction!.data,
+        }]),
       });
 
-      transactions.swap = swapTxHash;
-      console.log('✅ Swap tx:', swapTxHash);
+      console.log('✅ Swap UserOp hash:', swapUserOpHash);
       
-      // Wait for swap to complete
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      // Wait for swap to be mined
+      const swapReceipt = await kernelClient.waitForUserOperationReceipt({
+        hash: swapUserOpHash,
+      });
+      
+      transactions.swap = swapReceipt.receipt.transactionHash;
+      console.log('✅ Swap tx mined:', transactions.swap);
 
       // Step 3: Transfer SPX to user wallet
       console.log('📝 Step 3: Transferring SPX to user wallet...');
       const spxBalance = await this.getSPXBalance(smartWallet.address);
-      
+
       if (spxBalance === 0n) {
         throw new Error('No SPX tokens received from swap');
       }
 
-      console.log('📤 Transferring', (Number(spxBalance) / 1e8).toFixed(8), 'SPX to user wallet...');
+      console.log(
+        '📤 Transferring',
+        (Number(spxBalance) / 1e8).toFixed(8),
+        'SPX to user wallet...',
+      );
 
       const transferData = encodeFunctionData({
         abi: erc20Abi,
@@ -252,27 +368,35 @@ export class ServerZerodevDCAExecutor {
         args: [userWalletAddress, spxBalance],
       });
 
-      const transferTxHash = await kernelClient.sendTransaction({
-        to: TOKENS.SPX6900,
-        value: 0n,
-        data: transferData,
+      const transferUserOpHash = await kernelClient.sendUserOperation({
+        callData: await smartWallet.encodeCalls([{
+          to: TOKENS.SPX6900,
+          value: BigInt(0),
+          data: transferData,
+        }]),
+      });
+      
+      console.log('✅ Transfer UserOp hash:', transferUserOpHash);
+      
+      // Wait for transfer to be mined
+      const transferReceipt = await kernelClient.waitForUserOperationReceipt({
+        hash: transferUserOpHash,
       });
 
-      transactions.transfer = transferTxHash;
-      console.log('✅ Transfer tx:', transferTxHash);
+      transactions.transfer = transferReceipt.receipt.transactionHash;
+      console.log('✅ Transfer tx:', transactions.transfer);
 
       // Wait for transfer
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
 
       return {
         success: true,
-        txHash: transferTxHash, // Final transaction
+        txHash: transactions.transfer, // Final transaction
         swapAmount: swapAmount.toString(),
         spxReceived: spxBalance.toString(),
         gasUsed: BigInt(0), // Gas is sponsored
         transactions,
       };
-
     } catch (error) {
       console.error('❌ DCA execution failed:', error);
       return {
@@ -330,12 +454,10 @@ export class ServerZerodevDCAExecutor {
       console.log(`   Taker: ${takerAddress}`);
       console.log(`   Receiver: ${receiverAddress}`);
 
-      // Use multi-aggregator service to get the best rate
-      const swapResult = await aggregatorExecutionService.getBestExecutableSwap(
-        TOKENS.USDC,
-        TOKENS.SPX6900,
-        sellAmount.toString(),
-        takerAddress
+      // Use direct Aerodrome swap instead of aggregators (to avoid API blocks)
+      const swapResult = await this.getAerodromeSwapData(
+        sellAmount,
+        takerAddress,
       );
 
       const bestSwap = swapResult.bestSwap;
@@ -353,7 +475,9 @@ export class ServerZerodevDCAExecutor {
       console.log(`✅ Best swap found via ${bestSwap.aggregator}:`);
       console.log(`   Expected SPX Output: ${bestSwap.buyAmount}`);
       console.log(`   Price Impact: ${bestSwap.priceImpact}%`);
-      console.log(`   Savings vs alternatives: ${swapResult.savings.amount} tokens (${swapResult.savings.percentage}%)`);
+      console.log(
+        `   Savings vs alternatives: ${swapResult.savings.amount} tokens (${swapResult.savings.percentage}%)`,
+      );
       console.log(`   Gas Estimate: ${bestSwap.gas}`);
 
       return {
@@ -367,15 +491,19 @@ export class ServerZerodevDCAExecutor {
       };
     } catch (error) {
       console.error('❌ Multi-aggregator swap quote failed:', error);
-      
+
       // Fallback to original OpenOcean method
       console.log('🔄 Falling back to OpenOcean-only quote...');
-      return this.getOpenOceanSwapQuoteFallback(sellAmount, takerAddress, receiverAddress);
+      return this.getOpenOceanSwapQuoteFallback(
+        sellAmount,
+        takerAddress,
+        receiverAddress,
+      );
     }
   }
 
   /**
-   * Fallback method using only OpenOcean (original implementation)
+   * Fallback method using Direct Aerodrome DEX (bypasses external APIs)
    */
   private async getOpenOceanSwapQuoteFallback(
     sellAmount: bigint,
@@ -383,6 +511,116 @@ export class ServerZerodevDCAExecutor {
     receiverAddress: Address,
   ): Promise<SwapQuoteResult> {
     try {
+      console.log('🔄 OpenOcean blocked, trying Direct Aerodrome DEX fallback...');
+      
+      const requestBody = {
+        sellToken: TOKENS.USDC,
+        buyToken: TOKENS.SPX6900,
+        sellAmount: sellAmount.toString(),
+        takerAddress,
+        slippagePercentage: 0.05, // 5% slippage for better execution
+      };
+
+      const response = await fetch('http://localhost:3000/api/aerodrome-swap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        console.error('❌ Direct Aerodrome failed, trying Uniswap V3...');
+        
+        // Fallback to Uniswap
+        return this.getUniswapFallback(sellAmount, takerAddress, receiverAddress);
+      }
+
+      const data = await response.json();
+      console.log('✅ Direct Aerodrome DEX fallback successful');
+
+      return {
+        success: true,
+        transaction: {
+          to: data.to,
+          data: data.data,
+          value: data.value,
+        },
+        expectedOutput: data.buyAmount,
+      };
+    } catch (error) {
+      console.error('❌ Direct Aerodrome fallback failed:', error);
+      
+      // Fallback to Uniswap
+      return this.getUniswapFallback(sellAmount, takerAddress, receiverAddress);
+    }
+  }
+
+  /**
+   * Uniswap V3 fallback (secondary fallback)
+   */
+  private async getUniswapFallback(
+    sellAmount: bigint,
+    takerAddress: Address,
+    receiverAddress: Address,
+  ): Promise<SwapQuoteResult> {
+    try {
+      console.log('🦄 Trying Uniswap V3 as secondary fallback...');
+      
+      const requestBody = {
+        sellToken: TOKENS.USDC,
+        buyToken: TOKENS.SPX6900,
+        sellAmount: sellAmount.toString(),
+        takerAddress,
+        slippagePercentage: 0.05,
+      };
+
+      const response = await fetch('http://localhost:3000/api/uniswap-direct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        console.error('❌ Uniswap V3 failed, trying original OpenOcean...');
+        
+        // Last resort: try original OpenOcean
+        return this.getOriginalOpenOceanFallback(sellAmount, takerAddress, receiverAddress);
+      }
+
+      const data = await response.json();
+      console.log('✅ Uniswap V3 fallback successful');
+
+      return {
+        success: true,
+        transaction: {
+          to: data.to,
+          data: data.data,
+          value: data.value,
+        },
+        expectedOutput: data.buyAmount,
+      };
+    } catch (error) {
+      console.error('❌ Uniswap V3 fallback failed:', error);
+      
+      // Last resort: try original OpenOcean
+      return this.getOriginalOpenOceanFallback(sellAmount, takerAddress, receiverAddress);
+    }
+  }
+
+  /**
+   * Last resort: Original OpenOcean method (will likely fail due to Cloudflare)
+   */
+  private async getOriginalOpenOceanFallback(
+    sellAmount: bigint,
+    takerAddress: Address,
+    receiverAddress: Address,
+  ): Promise<SwapQuoteResult> {
+    try {
+      console.log('🌊 Trying original OpenOcean as last resort...');
+      
       const requestBody = {
         sellToken: TOKENS.USDC,
         buyToken: TOKENS.SPX6900,
@@ -410,13 +648,13 @@ export class ServerZerodevDCAExecutor {
         const error = await response.json();
         return {
           success: false,
-          error: error.error || 'Failed to get OpenOcean fallback quote',
+          error: error.error || 'All swap aggregators failed - OpenOcean blocked by Cloudflare, Uniswap direct failed',
         };
       }
 
       const data = await response.json();
-      console.log('✅ OpenOcean fallback quote successful');
-      
+      console.log('✅ Original OpenOcean worked (unexpected)');
+
       return {
         success: true,
         transaction: {
@@ -429,7 +667,7 @@ export class ServerZerodevDCAExecutor {
     } catch (error) {
       return {
         success: false,
-        error: `Failed to get OpenOcean fallback quote: ${error}`,
+        error: `All swap methods failed: ${error}`,
       };
     }
   }
@@ -437,9 +675,7 @@ export class ServerZerodevDCAExecutor {
   /**
    * Create a new smart wallet with agent key
    */
-  async createSmartWalletWithAgentKey(
-    userAddress: Address,
-  ): Promise<{
+  async createSmartWalletWithAgentKey(userAddress: Address): Promise<{
     success: boolean;
     agentKeyId?: string;
     smartWalletAddress?: Address;
@@ -448,11 +684,14 @@ export class ServerZerodevDCAExecutor {
     try {
       console.log('🔧 Step A: Generate new agent key');
       // Generate new agent key
-      const agentKey = await serverAgentKeyService.generateAgentKey(userAddress);
-      
+      const agentKey =
+        await serverAgentKeyService.generateAgentKey(userAddress);
+
       console.log('🔧 Step B: Get the private key');
       // Get the private key
-      const privateKey = await serverAgentKeyService.getPrivateKey(agentKey.keyId);
+      const privateKey = await serverAgentKeyService.getPrivateKey(
+        agentKey.keyId,
+      );
       if (!privateKey) {
         throw new Error('Failed to retrieve generated private key');
       }
@@ -460,7 +699,7 @@ export class ServerZerodevDCAExecutor {
       console.log('🔧 Step C: Create agent account');
       // Create agent account
       const agentAccount = privateKeyToAccount(privateKey);
-      
+
       console.log('🔧 Step D: Create ECDSA validator');
       // Create ECDSA validator
       const ecdsaValidator = await signerToEcdsaValidator(this.publicClient, {
@@ -496,12 +735,150 @@ export class ServerZerodevDCAExecutor {
         agentKeyId: agentKey.keyId,
         smartWalletAddress: smartWallet.address,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create smart wallet',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to create smart wallet',
       };
+    }
+  }
+
+  /**
+   * Get Aerodrome swap data directly (bypasses blocked aggregator APIs)
+   */
+  private async getAerodromeSwapData(
+    sellAmount: bigint,
+    takerAddress: Address,
+  ): Promise<any> {
+    try {
+      console.log('🔄 Using direct Aerodrome swap (bypassing blocked APIs)');
+      
+      // Aerodrome router on Base
+      const AERODROME_ROUTER = '0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43';
+      const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
+      
+      // Define swap route: USDC → WETH → SPX
+      const routes = [
+        {
+          from: TOKENS.USDC,
+          to: WETH_ADDRESS,
+          stable: false,
+          factory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da'
+        },
+        {
+          from: WETH_ADDRESS,
+          to: TOKENS.SPX6900,
+          stable: false,
+          factory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da'
+        }
+      ];
+
+      // Get expected output from Aerodrome router
+      const aerodromeRouterAbi = [
+        {
+          name: 'getAmountsOut',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [
+            { name: 'amountIn', type: 'uint256' },
+            { name: 'routes', type: 'tuple[]', components: [
+              { name: 'from', type: 'address' },
+              { name: 'to', type: 'address' },
+              { name: 'stable', type: 'bool' },
+              { name: 'factory', type: 'address' }
+            ]}
+          ],
+          outputs: [{ name: 'amounts', type: 'uint256[]' }]
+        },
+        {
+          name: 'swapExactTokensForTokens',
+          type: 'function',
+          stateMutability: 'nonpayable',
+          inputs: [
+            { name: 'amountIn', type: 'uint256' },
+            { name: 'amountOutMin', type: 'uint256' },
+            { name: 'routes', type: 'tuple[]', components: [
+              { name: 'from', type: 'address' },
+              { name: 'to', type: 'address' },
+              { name: 'stable', type: 'bool' },
+              { name: 'factory', type: 'address' }
+            ]},
+            { name: 'to', type: 'address' },
+            { name: 'deadline', type: 'uint256' }
+          ],
+          outputs: [{ name: 'amounts', type: 'uint256[]' }]
+        }
+      ];
+
+      try {
+        const amountsOut = await this.publicClient.readContract({
+          address: AERODROME_ROUTER,
+          abi: aerodromeRouterAbi,
+          functionName: 'getAmountsOut',
+          args: [sellAmount, routes],
+        });
+        
+        const expectedOutput = amountsOut[2]; // SPX amount (final token in route)
+        const minOutput = (expectedOutput * 99n) / 100n; // 1% slippage
+        
+        console.log(`✅ Aerodrome quote: ${Number(expectedOutput) / 1e8} SPX`);
+        
+        // Create swap transaction data
+        const deadline = Math.floor(Date.now() / 1000) + 1800; // 30 minutes
+        
+        const swapData = encodeFunctionData({
+          abi: aerodromeRouterAbi,
+          functionName: 'swapExactTokensForTokens',
+          args: [
+            sellAmount,
+            minOutput,
+            routes,
+            takerAddress, // Receive in smart wallet
+            deadline
+          ],
+        });
+
+        return {
+          bestSwap: {
+            aggregator: 'Aerodrome',
+            sellToken: TOKENS.USDC,
+            buyToken: TOKENS.SPX6900,
+            sellAmount: sellAmount.toString(),
+            buyAmount: expectedOutput.toString(),
+            minimumReceived: minOutput.toString(),
+            to: AERODROME_ROUTER,
+            data: swapData,
+            value: '0',
+            gas: '300000',
+            gasPrice: '1000000000',
+            priceImpact: '1.0',
+            success: true,
+          },
+          alternativeSwaps: [],
+          savings: {
+            amount: '0',
+            percentage: '0',
+            compared_to: 'none',
+          },
+          executionMetadata: {
+            totalAggregators: 1,
+            successfulQuotes: 1,
+            recommendedGasLimit: '300000',
+            estimatedExecutionTime: 30,
+          },
+        };
+        
+      } catch (quoteError) {
+        console.error('❌ Aerodrome quote failed:', quoteError);
+        throw new Error(`Aerodrome quote failed: ${quoteError.message}`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Aerodrome swap data failed:', error);
+      throw error;
     }
   }
 }

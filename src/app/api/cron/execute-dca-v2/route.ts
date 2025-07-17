@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { serverDcaDatabase } from '../../../../lib/serverDcaDatabase';
 import { serverZerodevDCAExecutor } from '../../../../services/serverZerodevDCAExecutor';
-import { balanceChecker } from '../../../../utils/balanceChecker';
 
 export const runtime = 'nodejs';
 
@@ -53,10 +52,11 @@ export async function GET(request: NextRequest) {
         // Check if this order uses server-side agent key
         if (orderData.agentKeyId) {
           console.log('🔐 Order uses server-side agent key');
-          
+
           // Calculate amount per order
-          const amountPerOrder = order.totalAmount / BigInt(order.totalExecutions);
-          
+          const amountPerOrder =
+            order.totalAmount / BigInt(order.totalExecutions);
+
           // Execute using server-side agent key
           const result = await serverZerodevDCAExecutor.executeDCAWithAgentKey(
             orderData.agentKeyId,
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
           if (result.success) {
             successCount++;
             console.log(`✅ Successfully executed order ${order.id}`);
-            
+
             // Record execution
             await serverDcaDatabase.recordExecution({
               orderId: order.id,
@@ -91,8 +91,11 @@ export async function GET(request: NextRequest) {
             });
           } else {
             failureCount++;
-            console.error(`❌ Failed to execute order ${order.id}:`, result.error);
-            
+            console.error(
+              `❌ Failed to execute order ${order.id}:`,
+              result.error,
+            );
+
             results.push({
               orderId: order.id,
               userAddress: order.userAddress,
@@ -153,13 +156,13 @@ export async function GET(request: NextRequest) {
 // Manual trigger for testing
 export async function POST() {
   console.log('🧪 Manual DCA V2 execution trigger');
-  
+
   // Create a fake auth header for manual testing
   const fakeRequest = new Request('http://localhost', {
     headers: {
-      'Authorization': `Bearer ${process.env.CRON_SECRET_KEY}`,
+      Authorization: `Bearer ${process.env.CRON_SECRET_KEY}`,
     },
   });
-  
+
   return GET(fakeRequest as NextRequest);
 }
