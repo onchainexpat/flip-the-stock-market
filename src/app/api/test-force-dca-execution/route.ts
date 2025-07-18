@@ -72,18 +72,29 @@ export async function GET(request: NextRequest) {
     // Parse order data to check if it has agent key
     let orderData: any;
     try {
-      orderData = JSON.parse(order.sessionKeyData);
+      orderData = typeof order.sessionKeyData === 'string' 
+        ? JSON.parse(order.sessionKeyData) 
+        : order.sessionKeyData;
     } catch (e) {
+      console.error('❌ Failed to parse order sessionKeyData:', e);
+      console.error('Raw sessionKeyData:', order.sessionKeyData);
       return NextResponse.json({
         success: false,
         error: 'Invalid order data format',
       });
     }
 
+    console.log('📋 Order data:', orderData);
+
     if (!orderData.serverManaged || !orderData.agentKeyId) {
+      console.error('❌ Order validation failed:', {
+        serverManaged: orderData.serverManaged,
+        agentKeyId: orderData.agentKeyId,
+        hasAgentKeyId: !!orderData.agentKeyId,
+      });
       return NextResponse.json({
         success: false,
-        error: 'Order not server-managed or missing agent key',
+        error: `Order validation failed: serverManaged=${orderData.serverManaged}, agentKeyId=${!!orderData.agentKeyId}`,
       });
     }
 
@@ -96,6 +107,14 @@ export async function GET(request: NextRequest) {
 
     // Execute DCA trade
     console.log('💱 Executing DCA trade...');
+    console.log('🔍 Execution parameters:', {
+      agentKeyId: orderData.agentKeyId,
+      smartWalletAddress: orderData.smartWalletAddress,
+      userAddress: order.userAddress,
+      amountPerOrder: amountPerOrder.toString(),
+      amountInUSDC: Number(amountPerOrder) / 1e6,
+    });
+    
     const result = await serverZerodevDCAExecutor.executeDCAWithAgentKey(
       orderData.agentKeyId,
       orderData.smartWalletAddress,

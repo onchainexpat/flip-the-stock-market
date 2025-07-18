@@ -51,26 +51,21 @@ export async function POST(request: NextRequest) {
       10000n;
     const netAmount = totalAmountWei - platformFees;
 
-    // Calculate total executions
-    const durationDays = Number.parseInt(duration);
-    let totalExecutions = 0;
+    // Duration is sent as total executions, not days
+    const totalExecutions = Number.parseInt(duration);
     let frequencyMs = 0;
 
     switch (frequency) {
       case 'hourly':
-        totalExecutions = durationDays * 24;
         frequencyMs = 60 * 60 * 1000;
         break;
       case 'daily':
-        totalExecutions = durationDays;
         frequencyMs = 24 * 60 * 60 * 1000;
         break;
       case 'weekly':
-        totalExecutions = Math.ceil(durationDays / 7);
         frequencyMs = 7 * 24 * 60 * 60 * 1000;
         break;
       case 'monthly':
-        totalExecutions = Math.ceil(durationDays / 30);
         frequencyMs = 30 * 24 * 60 * 60 * 1000;
         break;
       default:
