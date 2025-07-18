@@ -84,9 +84,15 @@ export async function GET(request: NextRequest) {
         // Parse session key data for additional details
         let orderDetails: any = {};
         try {
-          orderDetails = JSON.parse(order.sessionKeyData);
+          // Check if sessionKeyData is already an object or needs parsing
+          if (typeof order.sessionKeyData === 'string') {
+            orderDetails = JSON.parse(order.sessionKeyData);
+          } else if (typeof order.sessionKeyData === 'object') {
+            orderDetails = order.sessionKeyData;
+          }
         } catch (e) {
-          // Handle legacy format
+          console.error(`Failed to parse sessionKeyData for order ${order.id}:`, e);
+          // Handle legacy format or corrupted data
         }
 
         return {
