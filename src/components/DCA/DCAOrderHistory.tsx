@@ -4,6 +4,8 @@ import {
   AlertCircle,
   Calendar,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Copy,
   ExternalLink,
@@ -260,7 +262,18 @@ export default function DCAOrderHistory({
   } | null>(null);
   const [isCanceling, setIsCanceling] = useState(false);
   const [executingOrder, setExecutingOrder] = useState<string | null>(null);
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const isDevelopment = process.env.NODE_ENV === 'development';
+
+  const toggleOrderDetails = (orderId: string) => {
+    const newExpanded = new Set(expandedOrders);
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId);
+    } else {
+      newExpanded.add(orderId);
+    }
+    setExpandedOrders(newExpanded);
+  };
 
   const fetchOrders = async (page = 1) => {
     if (!userAddress) return;
@@ -426,144 +439,216 @@ export default function DCAOrderHistory({
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className={`bg-gray-800 rounded-lg p-4 border-l-4 ${
-                order.status === 'active'
-                  ? 'border-green-500'
-                  : order.status === 'completed'
-                    ? 'border-blue-500'
-                    : 'border-red-500'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-white font-medium">
-                      {(Number(order.totalAmount) / 1e6).toFixed(2)} USDC → SPX
-                    </span>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(order.id);
-                        toast.success('Order ID copied to clipboard');
-                      }}
-                      className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded hover:bg-gray-700 hover:text-gray-400 flex items-center gap-1"
-                      title="Click to copy full order ID"
-                    >
-                      <Copy size={10} />
-                      ID: {order.id.slice(0, 8)}...
-                    </button>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.status === 'active'
-                          ? 'bg-green-900 text-green-300'
-                          : order.status === 'completed'
-                            ? 'bg-blue-900 text-blue-300'
-                            : 'bg-red-900 text-red-300'
-                      }`}
-                    >
-                      {order.status === 'active' ? (
-                        <>
-                          <Play size={10} className="inline mr-1" />
-                          Active
-                        </>
-                      ) : order.status === 'completed' ? (
-                        <>
-                          <CheckCircle size={10} className="inline mr-1" />
-                          Completed
-                        </>
-                      ) : (
-                        <>
-                          <Pause size={10} className="inline mr-1" />
-                          Cancelled
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Progress:</span>
-                      <div className="text-white">
-                        {order.executionsCompleted}/{order.totalExecutions}
+          {orders.map((order) => {
+            const isExpanded = expandedOrders.has(order.id);
+            
+            return (
+              <div
+                key={order.id}
+                className={`bg-gray-800 rounded-lg border-l-4 overflow-hidden ${
+                  order.status === 'active'
+                    ? 'border-green-500'
+                    : order.status === 'completed'
+                      ? 'border-blue-500'
+                      : 'border-red-500'
+                }`}
+              >
+                {/* Main Card - Clean and Minimal */}
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    {/* Left side - Main info */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-lg font-semibold text-white">
+                          {(Number(order.totalAmount) / 1e6).toFixed(2)} USDC → SPX
+                        </span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            order.status === 'active'
+                              ? 'bg-green-900 text-green-300'
+                              : order.status === 'completed'
+                                ? 'bg-blue-900 text-blue-300'
+                                : 'bg-red-900 text-red-300'
+                          }`}
+                        >
+                          {order.status === 'active' ? (
+                            <>
+                              <Play size={10} className="inline mr-1" />
+                              Active
+                            </>
+                          ) : order.status === 'completed' ? (
+                            <>
+                              <CheckCircle size={10} className="inline mr-1" />
+                              Completed
+                            </>
+                          ) : (
+                            <>
+                              <Pause size={10} className="inline mr-1" />
+                              Cancelled
+                            </>
+                          )}
+                        </span>
                       </div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Frequency:</span>
-                      <div className="text-white">
-                        {formatFrequency(order.intervalSeconds)}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">SPX Received:</span>
-                      <div className="text-white">
-                        {formatSpxAmount(order.totalSpxReceived)}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">
-                        {order.status === 'active'
-                          ? 'Next Execution:'
-                          : 'Created:'}
-                      </span>
-                      <div className="text-white">
+                      
+                      {/* Clean 2-column layout for essential info */}
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <span className="text-gray-400 text-sm">Progress:</span>
+                          <div className="text-white font-medium">
+                            {order.executionsCompleted}/{order.totalExecutions}
+                          </div>
+                        </div>
                         {order.status === 'active' && order.nextExecutionAt ? (
-                          <span className="flex items-center gap-1">
-                            <Clock size={12} />
-                            <LiveCountdown nextExecutionAt={order.nextExecutionAt} />
-                          </span>
+                          <div>
+                            <span className="text-gray-400 text-sm">Next Execution:</span>
+                            <div className="text-white font-medium flex items-center gap-1">
+                              <Clock size={14} />
+                              <LiveCountdown nextExecutionAt={order.nextExecutionAt} />
+                            </div>
+                          </div>
                         ) : (
-                          new Date(order.createdAt).toLocaleDateString()
+                          <div>
+                            <span className="text-gray-400 text-sm">Created:</span>
+                            <div className="text-white font-medium">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
-                  </div>
 
-                  {order.lastExecutionHash && (
-                    <div className="mt-2">
-                      <a
-                        href={`https://basescan.org/tx/${order.lastExecutionHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
-                      >
-                        <ExternalLink size={12} />
-                        View Last Transaction
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                {order.status === 'active' && (
-                  <div className="ml-4 flex gap-2">
-                    {isDevelopment && (
+                    {/* Right side - Actions */}
+                    <div className="flex items-center gap-2">
+                      {/* Details toggle */}
                       <button
-                        onClick={() => handleForceExecute(order.id)}
-                        disabled={executingOrder === order.id}
-                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-900/20 rounded-lg disabled:opacity-50"
-                        title="Force Execute Now (Dev Only)"
+                        onClick={() => toggleOrderDetails(order.id)}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                        title="Toggle Details"
                       >
-                        {executingOrder === order.id ? (
-                          <RefreshCw size={16} className="animate-spin" />
+                        {isExpanded ? (
+                          <ChevronUp size={16} />
                         ) : (
-                          <PlayCircle size={16} />
+                          <ChevronDown size={16} />
                         )}
                       </button>
+                      
+                      {/* Action buttons for active orders */}
+                      {order.status === 'active' && (
+                        <>
+                          {isDevelopment && (
+                            <button
+                              onClick={() => handleForceExecute(order.id)}
+                              disabled={executingOrder === order.id}
+                              className="p-2 text-green-400 hover:text-green-300 hover:bg-green-900/20 rounded-lg disabled:opacity-50 transition-colors"
+                              title="Force Execute Now (Dev Only)"
+                            >
+                              {executingOrder === order.id ? (
+                                <RefreshCw size={16} className="animate-spin" />
+                              ) : (
+                                <PlayCircle size={16} />
+                              )}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setCancelModal({ order, isOpen: true })}
+                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Cancel Order"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expandable Details Section */}
+                {isExpanded && (
+                  <div className="border-t border-gray-700 bg-gray-800/50 p-4">
+                    <h4 className="text-white font-medium mb-3 text-sm">Order Details</h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                      {/* Order ID */}
+                      <div>
+                        <span className="text-gray-400">Order ID:</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-white font-mono text-xs">
+                            {order.id}
+                          </span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(order.id);
+                              toast.success('Order ID copied to clipboard');
+                            }}
+                            className="p-1 text-gray-400 hover:text-white hover:bg-gray-600 rounded"
+                            title="Copy Order ID"
+                          >
+                            <Copy size={12} />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Frequency */}
+                      <div>
+                        <span className="text-gray-400">Frequency:</span>
+                        <div className="text-white font-medium">
+                          {formatFrequency(order.intervalSeconds)}
+                        </div>
+                      </div>
+                      
+                      {/* SPX Received */}
+                      <div>
+                        <span className="text-gray-400">SPX Received:</span>
+                        <div className="text-white font-medium">
+                          {formatSpxAmount(order.totalSpxReceived)} SPX
+                        </div>
+                      </div>
+                      
+                      {/* Smart Wallet */}
+                      <div>
+                        <span className="text-gray-400">Smart Wallet:</span>
+                        <div className="text-white font-mono text-xs">
+                          {order.smartWalletAddress?.slice(0, 10)}...{order.smartWalletAddress?.slice(-8)}
+                        </div>
+                      </div>
+                      
+                      {/* Amount Per Execution */}
+                      <div>
+                        <span className="text-gray-400">Per Execution:</span>
+                        <div className="text-white font-medium">
+                          {(Number(order.amountPerExecution) / 1e6).toFixed(2)} USDC
+                        </div>
+                      </div>
+                      
+                      {/* Created Date */}
+                      <div>
+                        <span className="text-gray-400">Created:</span>
+                        <div className="text-white">
+                          {new Date(order.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Transaction Links */}
+                    {order.lastExecutionHash && (
+                      <div className="mt-4 pt-3 border-t border-gray-600">
+                        <span className="text-gray-400 text-sm mb-2 block">Recent Transactions:</span>
+                        <a
+                          href={`https://basescan.org/tx/${order.lastExecutionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                        >
+                          <ExternalLink size={14} />
+                          View Last Transaction
+                        </a>
+                      </div>
                     )}
-                    <button
-                      onClick={() => setCancelModal({ order, isOpen: true })}
-                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg"
-                      title="Cancel Order"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
