@@ -42,7 +42,6 @@ export default function ZeroDevDCAComponent({
   // Form state
   const [formData, setFormData] = useState({
     amount: '10', // Start with 10 USDC for testing
-    password: '',
     frequency: 'daily' as 'hourly' | 'daily' | 'weekly',
     duration: '7', // 7 executions as string for better input handling
   });
@@ -101,14 +100,14 @@ export default function ZeroDevDCAComponent({
   const [steps, setSteps] = useState<DCAStep[]>([
     {
       id: 'setup',
-      title: 'Setup Smart Wallet',
-      description: 'Create and configure smart wallet with agent key',
+      title: 'Verify Smart Wallet',
+      description: 'Confirm smart wallet is ready for automation',
       status: 'pending',
     },
     {
       id: 'session',
-      title: 'Create Session Key',
-      description: 'Generate and store session key for automated execution',
+      title: 'Create Agent Key',
+      description: 'Server generates secure agent key for automated execution',
       status: 'pending',
     },
     {
@@ -154,37 +153,8 @@ export default function ZeroDevDCAComponent({
   // Note: Balance loading is now handled by direct blockchain reads above
   // The old wallet service balance loading has been replaced with useReadContracts
 
-  const createSmartWallet = async () => {
-    if (!userWalletAddress || !formData.password) {
-      toast.error('Please connect wallet and enter password');
-      return;
-    }
-
-    try {
-      setCurrentStep('setup');
-      updateStepStatus('setup', 'in_progress');
-
-      const result = await zerodevSmartWalletService.createSmartWallet(
-        userWalletAddress,
-        formData.password,
-      );
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create smart wallet');
-      }
-
-      setWalletId(result.walletConfig!.walletId);
-      setSmartWalletAddress(result.walletConfig!.smartWalletAddress);
-
-      updateStepStatus('setup', 'completed');
-      toast.success('Smart wallet created successfully!');
-
-      return result.walletConfig!.walletId;
-    } catch (error) {
-      updateStepStatus('setup', 'error');
-      throw error;
-    }
-  };
+  // Note: Smart wallet creation is now handled by the unified smart wallet system
+  // This function is kept for potential future use but is not called in the current flow
 
   const createDCAOrder = async () => {
     if (!isConnected || !userWalletAddress) {
@@ -192,8 +162,8 @@ export default function ZeroDevDCAComponent({
       return;
     }
 
-    if (!formData.password) {
-      toast.error('Please enter your password');
+    if (!unifiedSmartWalletAddress) {
+      toast.error('Smart wallet not available. Please ensure you have a smart wallet connected.');
       return;
     }
 
@@ -205,51 +175,27 @@ export default function ZeroDevDCAComponent({
     setIsExecuting(true);
 
     try {
-      // Step 1: Create smart wallet if needed
-      let currentWalletId = walletId;
-      if (currentWalletId) {
-        updateStepStatus('setup', 'completed');
-      } else {
-        setCurrentStep('setup');
-        updateStepStatus('setup', 'in_progress');
-        const newWalletId = await createSmartWallet();
-        currentWalletId = newWalletId || null;
-      }
+      // Step 1: Smart wallet setup (unified smart wallet is already available)
+      setCurrentStep('setup');
+      updateStepStatus('setup', 'completed');
 
-      if (!currentWalletId) {
-        throw new Error('Failed to setup smart wallet');
-      }
-
-      // Step 2: Create session key
+      // Step 2: Server will handle agent key creation
       setCurrentStep('session');
       updateStepStatus('session', 'in_progress');
 
-      // Get wallet config
-      const walletConfig =
-        zerodevSmartWalletService.getWalletConfig(currentWalletId);
-      if (!walletConfig) {
-        throw new Error('Failed to get wallet configuration');
-      }
-
-      // Step 3: Create DCA order
+      // Step 3: Create DCA order (server handles all agent key creation)
       setCurrentStep('order');
       updateStepStatus('order', 'in_progress');
-
-      // Use unified smart wallet address for order creation
-      const smartWalletAddressForOrder = unifiedSmartWalletAddress || walletConfig.smartWalletAddress;
 
       const createOrderResponse = await fetch('/api/dca-orders-v2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userAddress: userWalletAddress,
-          smartWalletAddress: smartWalletAddressForOrder,
+          smartWalletAddress: unifiedSmartWalletAddress,
           totalAmount: formData.amount,
           frequency: formData.frequency,
           duration: Number.parseInt(formData.duration) || 1,
-          // Use an existing session key if available, or create new one
-          useExistingSessionKey: true,
-          password: formData.password,
         }),
       });
 
@@ -300,10 +246,9 @@ export default function ZeroDevDCAComponent({
 
       setCurrentStep(null);
 
-      // Reset form but keep password
+      // Reset form
       setFormData({
         amount: '10',
-        password: formData.password,
         frequency: 'daily',
         duration: '7',
       });
@@ -497,26 +442,6 @@ export default function ZeroDevDCAComponent({
           </div>
         </div>
 
-        {/* Password Input */}
-        <div>
-          <label className="text-sm font-medium text-gray-300 mb-2 block">
-            <Shield size={16} className="inline mr-1" />
-            Agent Key Password
-          </label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, password: e.target.value }))
-            }
-            placeholder="Enter secure password for agent key"
-            className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            disabled={isExecuting}
-          />
-          <p className="text-gray-400 text-xs mt-1">
-            This password encrypts your agent's private key locally
-          </p>
-        </div>
       </div>
 
       {/* Progress Steps */}
@@ -621,7 +546,6 @@ export default function ZeroDevDCAComponent({
         disabled={
           isExecuting ||
           !formData.amount ||
-          !formData.password ||
           hasInsufficientBalance ||
           Number.parseFloat(formData.amount) <= 0 ||
           (Number.parseInt(formData.duration) || 1) < 1
@@ -629,7 +553,6 @@ export default function ZeroDevDCAComponent({
         className={`w-full py-4 px-6 rounded-lg font-medium text-white transition-all duration-200 ${
           isExecuting ||
           !formData.amount ||
-          !formData.password ||
           hasInsufficientBalance ||
           (Number.parseInt(formData.duration) || 1) < 1
             ? 'bg-gray-700 cursor-not-allowed'
