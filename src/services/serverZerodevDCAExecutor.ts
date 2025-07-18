@@ -295,6 +295,7 @@ export class ServerZerodevDCAExecutor {
         args: [routerAddress, swapAmount],
       });
 
+      // Declare transactions outside try block so it's accessible in catch
       const transactions: any = {};
 
       // Test: Try a simple operation first to check permissions
@@ -383,7 +384,7 @@ export class ServerZerodevDCAExecutor {
           hash: swapUserOpHash,
         }),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Swap timeout after 60 seconds')), 60000)
+          setTimeout(() => reject(new Error('Swap timeout after 120 seconds')), 120000)
         )
       ]);
 
@@ -431,7 +432,7 @@ export class ServerZerodevDCAExecutor {
             hash: transferUserOpHash,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transfer timeout after 30 seconds')), 30000)
+            setTimeout(() => reject(new Error('Transfer timeout after 60 seconds')), 60000)
           )
         ]);
 
