@@ -67,16 +67,22 @@ export async function GET(request: NextRequest) {
 
           if (result.success) {
             successCount++;
-            console.log(`✅ Successfully executed order ${order.id}`);
+            
+            if (result.transferSuccess === false) {
+              console.log(`✅ Partially executed order ${order.id} (swap succeeded, transfer failed)`);
+              console.log(`💰 SPX tokens available in smart wallet: ${result.spxReceived}`);
+            } else {
+              console.log(`✅ Successfully executed order ${order.id}`);
+            }
 
-            // Record execution
+            // Record execution (even if transfer failed, since swap succeeded)
             await serverDcaDatabase.recordExecution({
               orderId: order.id,
               amountIn: amountPerOrder,
               amountOut: BigInt(result.spxReceived || '0'),
               txHash: result.txHash!,
               executedAt: Math.floor(Date.now() / 1000),
-              status: 'completed',
+              status: result.transferSuccess === false ? 'partial' : 'completed',
               gasUsed: result.gasUsed || BigInt('0'),
               gasPrice: BigInt('0'), // Gas sponsored
               blockNumber: 0,
@@ -88,6 +94,9 @@ export async function GET(request: NextRequest) {
               success: true,
               txHash: result.txHash,
               transactions: result.transactions,
+              transferSuccess: result.transferSuccess,
+              transferError: result.transferError,
+              note: result.note,
             });
           } else {
             failureCount++;

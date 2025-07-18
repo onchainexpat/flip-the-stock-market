@@ -423,34 +423,73 @@ export class ServerZerodevDCAExecutor {
       console.log('✅ Transfer UserOp hash:', transferUserOpHash);
 
       // Wait for transfer to be mined (with timeout)
-      const transferReceipt = await Promise.race([
-        kernelClient.waitForUserOperationReceipt({
-          hash: transferUserOpHash,
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Transfer timeout after 30 seconds')), 30000)
-        )
-      ]);
+      let transferSuccess = false;
+      let transferError = '';
+      try {
+        const transferReceipt = await Promise.race([
+          kernelClient.waitForUserOperationReceipt({
+            hash: transferUserOpHash,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transfer timeout after 30 seconds')), 30000)
+          )
+        ]);
 
-      transactions.transfer = transferReceipt.receipt.transactionHash;
-      console.log('✅ Transfer tx:', transactions.transfer);
+        transactions.transfer = transferReceipt.receipt.transactionHash;
+        console.log('✅ Transfer tx:', transactions.transfer);
+        transferSuccess = true;
 
-      // Wait for transfer
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+        // Wait for transfer
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+      } catch (transferErr) {
+        transferError = transferErr instanceof Error ? transferErr.message : 'Transfer failed';
+        console.warn('⚠️ Transfer failed but swap succeeded:', transferError);
+        console.log('💰 SPX tokens remain in smart wallet and can be swept later');
+      }
 
       return {
-        success: true,
-        txHash: transactions.transfer, // Final transaction
+        success: true, // Mark as success since swap completed
+        txHash: transactions.swap, // Use swap transaction as primary
         swapAmount: swapAmount.toString(),
         spxReceived: spxBalance.toString(),
         gasUsed: BigInt(0), // Gas is sponsored
         transactions,
+        transferSuccess,
+        transferError: transferSuccess ? undefined : transferError,
+        note: transferSuccess ? undefined : 'SPX tokens in smart wallet - transfer failed',
       };
     } catch (error) {
       console.error('❌ DCA execution failed:', error);
+      
+      // Check if we at least got to the swap stage
+      if (transactions.swap) {
+        console.log('🔄 Swap succeeded but later step failed - marking as partial success');
+        
+        // Try to get SPX balance to see if swap worked
+        try {
+          const spxBalance = await this.getSPXBalance(smartWallet.address);
+          if (spxBalance > 0n) {
+            return {
+              success: true, // Partial success - swap worked
+              txHash: transactions.swap,
+              swapAmount: swapAmount.toString(),
+              spxReceived: spxBalance.toString(),
+              gasUsed: BigInt(0),
+              transactions,
+              transferSuccess: false,
+              transferError: error instanceof Error ? error.message : 'Transfer failed',
+              note: 'Swap succeeded, transfer failed - SPX tokens in smart wallet',
+            };
+          }
+        } catch (balanceError) {
+          console.error('Failed to check SPX balance:', balanceError);
+        }
+      }
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
+        transactions,
       };
     }
   }
