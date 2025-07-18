@@ -625,7 +625,24 @@ class ServerDCADatabase {
     for (const id of executionIds) {
       const data = await redis.get(REDIS_KEYS.EXECUTION(id));
       if (data) {
-        executions.push(this.deserializeExecution(JSON.parse(data as string)));
+        // Handle both string and object responses from Upstash Redis
+        let executionData: any;
+        if (typeof data === 'string') {
+          try {
+            executionData = JSON.parse(data);
+          } catch (e) {
+            console.error(`Failed to parse execution data for ${id}:`, e);
+            continue;
+          }
+        } else if (typeof data === 'object' && data !== null) {
+          // Data is already an object (Upstash auto-parsing)
+          executionData = data;
+        } else {
+          console.error(`Invalid execution data type for ${id}:`, typeof data);
+          continue;
+        }
+        
+        executions.push(this.deserializeExecution(executionData));
       }
     }
 
