@@ -78,9 +78,10 @@ export async function GET(request: NextRequest) {
           const executionsRemaining =
             order.totalExecutions - order.executionsCount;
           const intervalSeconds = getIntervalSeconds(order.frequency);
+          const intervalMs = intervalSeconds * 1000; // Convert to milliseconds
           const nextExecutionAt =
             executionsRemaining > 0 && order.status === 'active'
-              ? lastExecutionTime + intervalSeconds
+              ? lastExecutionTime + intervalMs
               : null;
 
           // Parse session key data for additional details
