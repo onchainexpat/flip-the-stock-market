@@ -12,8 +12,10 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useAccount } from 'wagmi';
+import { erc20Abi } from 'viem';
+import { useAccount, useReadContracts } from 'wagmi';
 import { zerodevSmartWalletService } from '../../services/zerodevSmartWalletService';
+import { TOKENS } from '../../utils/openOceanApi';
 import DCAOrderHistory from './DCAOrderHistory';
 
 interface ZeroDevDCAComponentProps {
@@ -50,6 +52,45 @@ export default function ZeroDevDCAComponent({
   );
   const [usdcBalance, setUSDCBalance] = useState<bigint>(0n);
   const [spxBalance, setSPXBalance] = useState<bigint>(0n);
+
+  // Direct balance reading from blockchain
+  const { data: directBalances, refetch: refetchDirectBalances } = useReadContracts({
+    contracts: [
+      {
+        address: TOKENS.USDC,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [smartWalletAddress as `0x${string}`],
+        chainId: 8453,
+      },
+      {
+        address: TOKENS.SPX6900,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [smartWalletAddress as `0x${string}`],
+        chainId: 8453,
+      },
+    ],
+    query: {
+      enabled: !!smartWalletAddress,
+      refetchInterval: 10000, // Refresh every 10s
+    },
+  });
+
+  // Update balances when direct reads complete
+  useEffect(() => {
+    if (directBalances && smartWalletAddress) {
+      const [usdcResult, spxResult] = directBalances;
+      if (usdcResult.status === 'success' && usdcResult.result !== undefined) {
+        console.log('Direct USDC balance for', smartWalletAddress, ':', Number(usdcResult.result) / 1e6);
+        setUSDCBalance(usdcResult.result as bigint);
+      }
+      if (spxResult.status === 'success' && spxResult.result !== undefined) {
+        console.log('Direct SPX balance for', smartWalletAddress, ':', Number(spxResult.result) / 1e8);
+        setSPXBalance(spxResult.result as bigint);
+      }
+    }
+  }, [directBalances, smartWalletAddress]);
 
   // Process state
   const [isExecuting, setIsExecuting] = useState(false);
@@ -108,45 +149,8 @@ export default function ZeroDevDCAComponent({
     loadExistingWallet();
   }, []);
 
-  // Load balances
-  useEffect(() => {
-    const loadBalances = async () => {
-      if (!walletId) {
-        console.log('No wallet ID yet, skipping balance check');
-        return;
-      }
-
-      try {
-        console.log('Loading balances for wallet:', walletId);
-        const balances =
-          await zerodevSmartWalletService.getWalletBalances(walletId);
-        console.log('Balances loaded:', {
-          smartWalletUSDC: (Number(balances.smartWalletUSDC) / 1e6).toFixed(6),
-          smartWalletSPX: (Number(balances.smartWalletSPX) / 1e8).toFixed(8),
-          userWalletUSDC: (Number(balances.userWalletUSDC) / 1e6).toFixed(6),
-          userWalletSPX: (Number(balances.userWalletSPX) / 1e8).toFixed(8),
-        });
-        setUSDCBalance(balances.smartWalletUSDC);
-        setSPXBalance(balances.userWalletSPX);
-      } catch (error) {
-        console.error('Failed to load balances:', error);
-        // Try to load balance directly if wallet service fails
-        if (smartWalletAddress) {
-          try {
-            const directBalance = await zerodevDCAService.getUSDCBalance(smartWalletAddress as Address);
-            console.log('Direct balance check:', (Number(directBalance) / 1e6).toFixed(6));
-            setUSDCBalance(directBalance);
-          } catch (directError) {
-            console.error('Direct balance check also failed:', directError);
-          }
-        }
-      }
-    };
-
-    loadBalances();
-    const interval = setInterval(loadBalances, 10000); // Refresh every 10s
-    return () => clearInterval(interval);
-  }, [walletId, smartWalletAddress]);
+  // Note: Balance loading is now handled by direct blockchain reads above
+  // The old wallet service balance loading has been replaced with useReadContracts
 
   const createSmartWallet = async () => {
     if (!userWalletAddress || !formData.password) {
