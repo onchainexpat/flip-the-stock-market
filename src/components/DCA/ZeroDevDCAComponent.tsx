@@ -111,22 +111,42 @@ export default function ZeroDevDCAComponent({
   // Load balances
   useEffect(() => {
     const loadBalances = async () => {
-      if (!walletId) return;
+      if (!walletId) {
+        console.log('No wallet ID yet, skipping balance check');
+        return;
+      }
 
       try {
+        console.log('Loading balances for wallet:', walletId);
         const balances =
           await zerodevSmartWalletService.getWalletBalances(walletId);
+        console.log('Balances loaded:', {
+          smartWalletUSDC: (Number(balances.smartWalletUSDC) / 1e6).toFixed(6),
+          smartWalletSPX: (Number(balances.smartWalletSPX) / 1e8).toFixed(8),
+          userWalletUSDC: (Number(balances.userWalletUSDC) / 1e6).toFixed(6),
+          userWalletSPX: (Number(balances.userWalletSPX) / 1e8).toFixed(8),
+        });
         setUSDCBalance(balances.smartWalletUSDC);
         setSPXBalance(balances.userWalletSPX);
       } catch (error) {
         console.error('Failed to load balances:', error);
+        // Try to load balance directly if wallet service fails
+        if (smartWalletAddress) {
+          try {
+            const directBalance = await zerodevDCAService.getUSDCBalance(smartWalletAddress as Address);
+            console.log('Direct balance check:', (Number(directBalance) / 1e6).toFixed(6));
+            setUSDCBalance(directBalance);
+          } catch (directError) {
+            console.error('Direct balance check also failed:', directError);
+          }
+        }
       }
     };
 
     loadBalances();
     const interval = setInterval(loadBalances, 10000); // Refresh every 10s
     return () => clearInterval(interval);
-  }, [walletId]);
+  }, [walletId, smartWalletAddress]);
 
   const createSmartWallet = async () => {
     if (!userWalletAddress || !formData.password) {
@@ -199,7 +219,8 @@ export default function ZeroDevDCAComponent({
       updateStepStatus('session', 'in_progress');
 
       // Get wallet config
-      const walletConfig = zerodevSmartWalletService.getWalletConfig(currentWalletId);
+      const walletConfig =
+        zerodevSmartWalletService.getWalletConfig(currentWalletId);
       if (!walletConfig) {
         throw new Error('Failed to get wallet configuration');
       }
@@ -238,12 +259,18 @@ export default function ZeroDevDCAComponent({
       setCurrentStep('first_execution');
       updateStepStatus('first_execution', 'in_progress');
 
-      const executeResponse = await fetch(`/api/test-force-dca-execution?orderId=${orderId}`);
+      const executeResponse = await fetch(
+        `/api/test-force-dca-execution?orderId=${orderId}`,
+      );
       const executeResult = await executeResponse.json();
 
       if (executeResult.success && executeResult.result.success) {
-        updateStepStatus('first_execution', 'completed', executeResult.result.txHash);
-        
+        updateStepStatus(
+          'first_execution',
+          'completed',
+          executeResult.result.txHash,
+        );
+
         toast.success(
           `🎉 DCA order created! First execution completed: ${(Number(formData.amount) / formData.duration / 1e6).toFixed(6)} USDC → SPX`,
           { duration: 8000 },
@@ -256,26 +283,28 @@ export default function ZeroDevDCAComponent({
         );
       } else {
         updateStepStatus('first_execution', 'error');
-        toast('DCA order created but first execution failed. It will retry automatically.', { icon: '⚠️' });
+        toast(
+          'DCA order created but first execution failed. It will retry automatically.',
+          { icon: '⚠️' },
+        );
       }
 
       setCurrentStep(null);
 
       // Reset form but keep password
-      setFormData({ 
-        amount: '10', 
+      setFormData({
+        amount: '10',
         password: formData.password,
         frequency: 'daily',
         duration: 7,
       });
 
       // Refresh order history
-      setOrderHistoryKey(prev => prev + 1);
-      
+      setOrderHistoryKey((prev) => prev + 1);
+
       if (onOrderCreated) {
         onOrderCreated();
       }
-
     } catch (error: any) {
       console.error('DCA order creation failed:', error);
 
@@ -385,10 +414,32 @@ export default function ZeroDevDCAComponent({
             disabled={isExecuting}
           />
           {hasInsufficientBalance && (
-            <p className="text-red-400 text-sm mt-1">
-              Insufficient balance. You need {formData.amount} USDC but only
-              have {usdcBalanceFormatted.toFixed(6)} USDC.
-            </p>
+            <div className="mt-2">
+              <p className="text-red-400 text-sm">
+                Insufficient balance. You need {formData.amount} USDC but only
+                have {usdcBalanceFormatted.toFixed(6)} USDC in your smart wallet.
+              </p>
+              {smartWalletAddress && (
+                <div className="mt-2 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+                  <p className="text-yellow-400 text-sm mb-2">
+                    💡 Deposit {Math.max(0, Number(formData.amount) - usdcBalanceFormatted).toFixed(6)} USDC to continue
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(smartWalletAddress);
+                      toast.success('Smart wallet address copied to clipboard!');
+                    }}
+                    className="text-xs bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
+                  >
+                    Copy Smart Wallet Address
+                  </button>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Smart Wallet: {smartWalletAddress.slice(0, 6)}...{smartWalletAddress.slice(-4)}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -402,9 +453,9 @@ export default function ZeroDevDCAComponent({
             <select
               value={formData.frequency}
               onChange={(e) =>
-                setFormData((prev) => ({ 
-                  ...prev, 
-                  frequency: e.target.value as 'hourly' | 'daily' | 'weekly'
+                setFormData((prev) => ({
+                  ...prev,
+                  frequency: e.target.value as 'hourly' | 'daily' | 'weekly',
                 }))
               }
               className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -424,7 +475,10 @@ export default function ZeroDevDCAComponent({
               type="number"
               value={formData.duration}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, duration: parseInt(e.target.value) || 1 }))
+                setFormData((prev) => ({
+                  ...prev,
+                  duration: Number.parseInt(e.target.value) || 1,
+                }))
               }
               placeholder="7"
               min="1"
@@ -544,7 +598,10 @@ export default function ZeroDevDCAComponent({
         <h4 className="text-purple-300 font-medium mb-2">Order Summary</h4>
         <div className="space-y-1 text-sm text-purple-200">
           <div>Total Amount: {formData.amount} USDC</div>
-          <div>Per Execution: {(Number(formData.amount) / formData.duration).toFixed(6)} USDC</div>
+          <div>
+            Per Execution:{' '}
+            {(Number(formData.amount) / formData.duration).toFixed(6)} USDC
+          </div>
           <div>Frequency: {formData.frequency}</div>
           <div>Total Executions: {formData.duration}</div>
         </div>
@@ -586,10 +643,10 @@ export default function ZeroDevDCAComponent({
       </button>
 
       {/* Order History */}
-      <DCAOrderHistory 
+      <DCAOrderHistory
         key={orderHistoryKey}
-        className="mt-6" 
-        onOrderUpdate={() => setOrderHistoryKey(prev => prev + 1)}
+        className="mt-6"
+        onOrderUpdate={() => setOrderHistoryKey((prev) => prev + 1)}
       />
     </div>
   );
