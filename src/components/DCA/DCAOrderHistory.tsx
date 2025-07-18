@@ -203,7 +203,7 @@ function formatFrequency(intervalSeconds: number): string {
 }
 
 function formatSpxAmount(amountStr: string): string {
-  const amount = Number(amountStr) / 1e18;
+  const amount = Number(amountStr) / 1e8;
   
   if (amount === 0) {
     return '0';
