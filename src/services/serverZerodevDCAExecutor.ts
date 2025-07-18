@@ -67,6 +67,26 @@ export class ServerZerodevDCAExecutor {
   }
 
   /**
+   * Execute DCA without session key approval (fallback method)
+   */
+  private async executeDirectDCA(
+    agentKeyData: any,
+    smartWalletAddress: Address,
+    userWalletAddress: Address,
+    swapAmount: bigint,
+  ): Promise<ServerDCAExecutionResult> {
+    console.log('🔄 Executing direct DCA without session key approval...');
+    
+    // This is a simplified version that doesn't use session key approval
+    // Instead, it will use the unified smart wallet system or another execution method
+    
+    return {
+      success: false,
+      error: 'Direct DCA execution not yet implemented. Please create a new DCA order with proper session key approval.',
+    };
+  }
+
+  /**
    * Execute DCA swap using server-stored agent key
    */
   async executeDCAWithAgentKey(
@@ -112,8 +132,11 @@ export class ServerZerodevDCAExecutor {
       }
 
       if (!agentKeyData.sessionKeyApproval) {
-        console.error('❌ sessionKeyApproval is missing from agent key data');
-        throw new Error('Permission approval not found in agent key data');
+        console.warn('⚠️  sessionKeyApproval is missing from agent key data');
+        console.log('🔄 Attempting direct execution without session key approval...');
+        
+        // For fallback agent keys, we'll use direct execution without session key approval
+        return this.executeDirectDCA(agentKeyData, smartWalletAddress, userWalletAddress, swapAmount);
       }
 
       console.log('✅ Agent key data retrieved with sessionKeyApproval');
