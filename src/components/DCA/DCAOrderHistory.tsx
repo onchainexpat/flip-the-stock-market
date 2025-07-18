@@ -5,11 +5,11 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  DollarSign,
+  Copy,
   ExternalLink,
-  MoreVertical,
   Pause,
   Play,
+  PlayCircle,
   RefreshCw,
   Trash2,
   X,
@@ -59,7 +59,13 @@ interface CancelModalProps {
   isLoading: boolean;
 }
 
-function CancelModal({ order, isOpen, onClose, onConfirm, isLoading }: CancelModalProps) {
+function CancelModal({
+  order,
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+}: CancelModalProps) {
   const [sweepFunds, setSweepFunds] = useState(true);
 
   if (!isOpen) return null;
@@ -89,19 +95,27 @@ function CancelModal({ order, isOpen, onClose, onConfirm, isLoading }: CancelMod
               <span className="text-red-400 font-medium">Warning</span>
             </div>
             <p className="text-red-200 text-sm">
-              This will permanently cancel your DCA order and stop all future executions.
+              This will permanently cancel your DCA order and stop all future
+              executions.
             </p>
           </div>
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">Order ID:</span>
-              <span className="text-white font-mono">{order.id.slice(0, 8)}...</span>
+              <span className="text-white font-mono">
+                {order.id.slice(0, 8)}...
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Remaining Amount:</span>
               <span className="text-white">
-                {(Number(order.amountPerExecution) * order.executionsRemaining / 1e6).toFixed(6)} USDC
+                {(
+                  (Number(order.amountPerExecution) *
+                    order.executionsRemaining) /
+                  1e6
+                ).toFixed(6)}{' '}
+                USDC
               </span>
             </div>
             <div className="flex justify-between">
@@ -124,7 +138,8 @@ function CancelModal({ order, isOpen, onClose, onConfirm, isLoading }: CancelMod
                   Sweep funds back to your wallet
                 </div>
                 <div className="text-gray-400 text-xs">
-                  Transfer any remaining USDC, SPX, and ETH from the smart wallet back to your original wallet
+                  Transfer any remaining USDC, SPX, and ETH from the smart
+                  wallet back to your original wallet
                 </div>
               </div>
             </label>
@@ -165,14 +180,14 @@ function CancelModal({ order, isOpen, onClose, onConfirm, isLoading }: CancelMod
 function formatTimeRemaining(nextExecutionAt: number): string {
   const now = Date.now();
   const timeUntil = nextExecutionAt - now;
-  
+
   if (timeUntil <= 0) {
     return 'Due now';
   }
-  
+
   const hours = Math.floor(timeUntil / (1000 * 60 * 60));
   const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
-  
+
   if (hours > 0) {
     return `${hours}h ${minutes}m`;
   }
@@ -187,22 +202,30 @@ function formatFrequency(intervalSeconds: number): string {
   return `Every ${hours}h`;
 }
 
-export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOrderHistoryProps) {
+export default function DCAOrderHistory({
+  className = '',
+  onOrderUpdate,
+}: DCAOrderHistoryProps) {
   const { address: userAddress } = useAccount();
   const [orders, setOrders] = useState<DCAOrder[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [cancelModal, setCancelModal] = useState<{ order: DCAOrder; isOpen: boolean } | null>(null);
+  const [cancelModal, setCancelModal] = useState<{
+    order: DCAOrder;
+    isOpen: boolean;
+  } | null>(null);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [executingOrder, setExecutingOrder] = useState<string | null>(null);
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
-  const fetchOrders = async (page: number = 1) => {
+  const fetchOrders = async (page = 1) => {
     if (!userAddress) return;
 
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/dca-order-history?userAddress=${userAddress}&page=${page}&limit=5`
+        `/api/dca-order-history?userAddress=${userAddress}&page=${page}&limit=5`,
       );
       const data = await response.json();
 
@@ -251,6 +274,35 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
       toast.error('Failed to cancel order');
     } finally {
       setIsCanceling(false);
+    }
+  };
+
+  const handleForceExecute = async (orderId: string) => {
+    setExecutingOrder(orderId);
+    try {
+      const response = await fetch('/api/force-execute-now', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('DCA order execution triggered!');
+        // Wait a moment then refresh orders
+        setTimeout(() => {
+          fetchOrders(currentPage);
+          if (onOrderUpdate) onOrderUpdate();
+        }, 2000);
+      } else {
+        toast.error(result.error || 'Failed to execute order');
+      }
+    } catch (error) {
+      console.error('Failed to execute order:', error);
+      toast.error('Failed to execute order');
+    } finally {
+      setExecutingOrder(null);
     }
   };
 
@@ -315,7 +367,9 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
       ) : orders.length === 0 ? (
         <div className="text-center py-8">
           <Calendar className="mx-auto w-12 h-12 text-gray-500 mb-4" />
-          <h4 className="text-lg font-medium text-gray-300 mb-2">No Orders Yet</h4>
+          <h4 className="text-lg font-medium text-gray-300 mb-2">
+            No Orders Yet
+          </h4>
           <p className="text-gray-400">
             Create your first DCA order to see it here
           </p>
@@ -329,8 +383,8 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
                 order.status === 'active'
                   ? 'border-green-500'
                   : order.status === 'completed'
-                  ? 'border-blue-500'
-                  : 'border-red-500'
+                    ? 'border-blue-500'
+                    : 'border-red-500'
               }`}
             >
               <div className="flex items-start justify-between">
@@ -339,13 +393,26 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
                     <span className="text-white font-medium">
                       {(Number(order.totalAmount) / 1e6).toFixed(2)} USDC → SPX
                     </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'active'
-                        ? 'bg-green-900 text-green-300'
-                        : order.status === 'completed'
-                        ? 'bg-blue-900 text-blue-300'
-                        : 'bg-red-900 text-red-300'
-                    }`}>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(order.id);
+                        toast.success('Order ID copied to clipboard');
+                      }}
+                      className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded hover:bg-gray-700 hover:text-gray-400 flex items-center gap-1"
+                      title="Click to copy full order ID"
+                    >
+                      <Copy size={10} />
+                      ID: {order.id.slice(0, 8)}...
+                    </button>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        order.status === 'active'
+                          ? 'bg-green-900 text-green-300'
+                          : order.status === 'completed'
+                            ? 'bg-blue-900 text-blue-300'
+                            : 'bg-red-900 text-red-300'
+                      }`}
+                    >
                       {order.status === 'active' ? (
                         <>
                           <Play size={10} className="inline mr-1" />
@@ -386,7 +453,9 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
                     </div>
                     <div>
                       <span className="text-gray-400">
-                        {order.status === 'active' ? 'Next Execution:' : 'Created:'}
+                        {order.status === 'active'
+                          ? 'Next Execution:'
+                          : 'Created:'}
                       </span>
                       <div className="text-white">
                         {order.status === 'active' && order.nextExecutionAt ? (
@@ -418,7 +487,21 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
 
                 {/* Actions */}
                 {order.status === 'active' && (
-                  <div className="ml-4">
+                  <div className="ml-4 flex gap-2">
+                    {isDevelopment && (
+                      <button
+                        onClick={() => handleForceExecute(order.id)}
+                        disabled={executingOrder === order.id}
+                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-900/20 rounded-lg disabled:opacity-50"
+                        title="Force Execute Now (Dev Only)"
+                      >
+                        {executingOrder === order.id ? (
+                          <RefreshCw size={16} className="animate-spin" />
+                        ) : (
+                          <PlayCircle size={16} />
+                        )}
+                      </button>
+                    )}
                     <button
                       onClick={() => setCancelModal({ order, isOpen: true })}
                       className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg"
@@ -438,9 +521,12 @@ export default function DCAOrderHistory({ className = '', onOrderUpdate }: DCAOr
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-700">
           <span className="text-sm text-gray-400">
-            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
-            {Math.min(pagination.currentPage * pagination.limit, pagination.totalOrders)} of{' '}
-            {pagination.totalOrders} orders
+            Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{' '}
+            {Math.min(
+              pagination.currentPage * pagination.limit,
+              pagination.totalOrders,
+            )}{' '}
+            of {pagination.totalOrders} orders
           </span>
           <div className="flex gap-2">
             <button
