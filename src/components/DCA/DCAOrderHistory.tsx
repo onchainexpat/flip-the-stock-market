@@ -187,11 +187,30 @@ function formatTimeRemaining(nextExecutionAt: number): string {
 
   const hours = Math.floor(timeUntil / (1000 * 60 * 60));
   const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeUntil % (1000 * 60)) / 1000);
 
   if (hours > 0) {
-    return `${hours}h ${minutes}m`;
+    return `${hours}h ${minutes}m ${seconds}s`;
   }
-  return `${minutes}m`;
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
+}
+
+// Live countdown component that updates every second
+function LiveCountdown({ nextExecutionAt }: { nextExecutionAt: number }) {
+  const [timeRemaining, setTimeRemaining] = useState(formatTimeRemaining(nextExecutionAt));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRemaining(formatTimeRemaining(nextExecutionAt));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [nextExecutionAt]);
+
+  return <>{timeRemaining}</>;
 }
 
 function formatFrequency(intervalSeconds: number): string {
@@ -492,7 +511,7 @@ export default function DCAOrderHistory({
                         {order.status === 'active' && order.nextExecutionAt ? (
                           <span className="flex items-center gap-1">
                             <Clock size={12} />
-                            {formatTimeRemaining(order.nextExecutionAt)}
+                            <LiveCountdown nextExecutionAt={order.nextExecutionAt} />
                           </span>
                         ) : (
                           new Date(order.createdAt).toLocaleDateString()
