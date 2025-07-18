@@ -564,80 +564,85 @@ export default function DCAOrderHistory({
 
                 {/* Expandable Details Section */}
                 {isExpanded && (
-                  <div className="border-t border-gray-700 bg-gray-800/50 p-4">
-                    <h4 className="text-white font-medium mb-3 text-sm">Order Details</h4>
+                  <div className="border-t border-gray-700 bg-gray-800/50 p-4 space-y-4">
+                    <h4 className="text-white font-medium text-sm">Order Details</h4>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                      {/* Order ID */}
-                      <div>
-                        <span className="text-gray-400">Order ID:</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-white font-mono text-xs">
-                            {order.id}
-                          </span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(order.id);
-                              toast.success('Order ID copied to clipboard');
-                            }}
-                            className="p-1 text-gray-400 hover:text-white hover:bg-gray-600 rounded"
-                            title="Copy Order ID"
-                          >
-                            <Copy size={12} />
-                          </button>
-                        </div>
+                    {/* Order ID - Full width with copy button */}
+                    <div className="space-y-1">
+                      <span className="text-gray-400 text-sm">Order ID:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-mono text-xs bg-gray-700 px-2 py-1 rounded">
+                          {order.id}
+                        </span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(order.id);
+                            toast.success('Order ID copied to clipboard');
+                          }}
+                          className="p-1 text-gray-400 hover:text-white hover:bg-gray-600 rounded"
+                          title="Copy Order ID"
+                        >
+                          <Copy size={12} />
+                        </button>
                       </div>
-                      
+                    </div>
+                    
+                    {/* Two-column layout for other details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                       {/* Frequency */}
-                      <div>
-                        <span className="text-gray-400">Frequency:</span>
+                      <div className="space-y-1">
+                        <span className="text-gray-400 text-sm">Frequency:</span>
                         <div className="text-white font-medium">
                           {formatFrequency(order.intervalSeconds)}
                         </div>
                       </div>
                       
                       {/* SPX Received */}
-                      <div>
-                        <span className="text-gray-400">SPX Received:</span>
+                      <div className="space-y-1">
+                        <span className="text-gray-400 text-sm">SPX Received:</span>
                         <div className="text-white font-medium">
                           {formatSpxAmount(order.totalSpxReceived)} SPX
                         </div>
                       </div>
                       
-                      {/* Smart Wallet */}
-                      <div>
-                        <span className="text-gray-400">Smart Wallet:</span>
-                        <div className="text-white font-mono text-xs">
-                          {order.smartWalletAddress?.slice(0, 10)}...{order.smartWalletAddress?.slice(-8)}
-                        </div>
-                      </div>
-                      
                       {/* Amount Per Execution */}
-                      <div>
-                        <span className="text-gray-400">Per Execution:</span>
+                      <div className="space-y-1">
+                        <span className="text-gray-400 text-sm">Per Execution:</span>
                         <div className="text-white font-medium">
                           {(Number(order.amountPerExecution) / 1e6).toFixed(2)} USDC
                         </div>
                       </div>
                       
                       {/* Created Date */}
-                      <div>
-                        <span className="text-gray-400">Created:</span>
+                      <div className="space-y-1">
+                        <span className="text-gray-400 text-sm">Created:</span>
                         <div className="text-white">
-                          {new Date(order.createdAt).toLocaleString()}
+                          {new Date(order.createdAt).toLocaleDateString()} at{' '}
+                          {new Date(order.createdAt).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Smart Wallet - Full width */}
+                    <div className="space-y-1">
+                      <span className="text-gray-400 text-sm">Smart Wallet:</span>
+                      <div className="text-white font-mono text-xs bg-gray-700 px-2 py-1 rounded inline-block">
+                        {order.smartWalletAddress}
                       </div>
                     </div>
 
                     {/* Transaction Links */}
                     {order.lastExecutionHash && (
-                      <div className="mt-4 pt-3 border-t border-gray-600">
-                        <span className="text-gray-400 text-sm mb-2 block">Recent Transactions:</span>
+                      <div className="pt-3 border-t border-gray-600 space-y-2">
+                        <span className="text-gray-400 text-sm block">Recent Transactions:</span>
                         <a
                           href={`https://basescan.org/tx/${order.lastExecutionHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                          className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
                         >
                           <ExternalLink size={14} />
                           View Last Transaction
