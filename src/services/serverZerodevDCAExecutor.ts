@@ -20,7 +20,7 @@ import { TOKENS } from '../utils/openOceanApi';
 import { aggregatorExecutionService } from './aggregatorExecutionService';
 import { serverAgentKeyService } from './serverAgentKeyService';
 
-// ZeroDev configuration  
+// ZeroDev configuration
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
 const ZERODEV_RPC_URL =
   process.env.NEXT_PUBLIC_ZERODEV_RPC_URL ||
@@ -79,12 +79,22 @@ export class ServerZerodevDCAExecutor {
       console.log('🔐 Retrieving agent key and permission approval...');
 
       // Add timeout wrapper for all operations
-      const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> => {
+      const withTimeout = <T>(
+        promise: Promise<T>,
+        timeoutMs: number,
+        operation: string,
+      ): Promise<T> => {
         return Promise.race([
           promise,
-          new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error(`${operation} timed out after ${timeoutMs}ms`)), timeoutMs)
-          )
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new Error(`${operation} timed out after ${timeoutMs}ms`),
+                ),
+              timeoutMs,
+            ),
+          ),
         ]);
       };
 
@@ -93,9 +103,9 @@ export class ServerZerodevDCAExecutor {
       const agentKeyData = await withTimeout(
         serverAgentKeyService.getAgentKey(agentKeyId),
         10000,
-        'Agent key retrieval'
+        'Agent key retrieval',
       );
-      
+
       if (!agentKeyData) {
         console.error('❌ Agent key not found for keyId:', agentKeyId);
         throw new Error('Agent key not found');
@@ -120,7 +130,7 @@ export class ServerZerodevDCAExecutor {
       const privateKey = await withTimeout(
         serverAgentKeyService.getPrivateKey(agentKeyId),
         5000,
-        'Private key retrieval'
+        'Private key retrieval',
       );
       if (!privateKey) {
         throw new Error('Agent private key not found or inactive');
@@ -142,7 +152,7 @@ export class ServerZerodevDCAExecutor {
 
       // Deserialize the permission account using the stored approval
       console.log('🔓 Deserializing permission account (with 20s timeout)...');
-      
+
       // Use the working pattern from 1-click-trading.ts example:
       // When private key is included in serialization, deserialize WITHOUT the signer parameter
       const smartWallet = await withTimeout(
@@ -154,24 +164,33 @@ export class ServerZerodevDCAExecutor {
           // NO session signer parameter - private key is embedded in serialized data
         ),
         20000,
-        'Permission account deserialization'
+        'Permission account deserialization',
       );
-      
+
       console.log('✅ Permission account deserialized successfully');
-      
+
       // Test the deserialized account
       console.log('🧪 Testing deserialized account...');
       console.log('   Account type:', smartWallet.type);
       console.log('   Has signMessage:', typeof smartWallet.signMessage);
-      console.log('   Has signTransaction:', typeof smartWallet.signTransaction);
-      console.log('   Has signUserOperation:', typeof smartWallet.signUserOperation);
-      
+      console.log(
+        '   Has signTransaction:',
+        typeof smartWallet.signTransaction,
+      );
+      console.log(
+        '   Has signUserOperation:',
+        typeof smartWallet.signUserOperation,
+      );
+
       // Test if the account can actually sign
       try {
         if (smartWallet.signMessage) {
           console.log('🧪 Testing account signMessage...');
           const testSig = await smartWallet.signMessage({ message: 'test' });
-          console.log('   ✅ Account can sign messages, signature length:', testSig.length);
+          console.log(
+            '   ✅ Account can sign messages, signature length:',
+            testSig.length,
+          );
         } else {
           console.log('   ❌ Account does not have signMessage method');
         }
@@ -248,9 +267,11 @@ export class ServerZerodevDCAExecutor {
               maxFeePerGas: userOperation.maxFeePerGas,
               maxPriorityFeePerGas: userOperation.maxPriorityFeePerGas,
             });
-            
+
             try {
-              const sponsorResult = await paymasterClient.sponsorUserOperation({ userOperation });
+              const sponsorResult = await paymasterClient.sponsorUserOperation({
+                userOperation,
+              });
               console.log('✅ Sponsorship result:', {
                 paymaster: sponsorResult.paymaster,
                 paymasterDataLength: sponsorResult.paymasterData?.length,
@@ -278,73 +299,94 @@ export class ServerZerodevDCAExecutor {
 
       // Test: Try a simple operation first to check permissions
       console.log('🧪 Testing session key with simple operation...');
-      
+
       try {
         // Try to check balance first (this should work with minimal permissions)
         const currentBalance = await this.getUSDCBalance(smartWallet.address);
         console.log('✅ Current USDC balance:', currentBalance.toString());
-        
+
         // Try a simple transaction to test permissions (use zeroAddress instead of self)
         const testUserOpHash = await kernelClient.sendUserOperation({
-          callData: await smartWallet.encodeCalls([{
-            to: zeroAddress,
-            value: BigInt(0),
-            data: '0x',
-          }]),
+          callData: await smartWallet.encodeCalls([
+            {
+              to: zeroAddress,
+              value: BigInt(0),
+              data: '0x',
+            },
+          ]),
         });
 
         console.log('✅ Test UserOp hash:', testUserOpHash);
-        
-        // Wait for test to be mined
-        const testReceipt = await kernelClient.waitForUserOperationReceipt({
-          hash: testUserOpHash,
-        });
-        
+
+        // Wait for test to be mined (with timeout)
+        const testReceipt = await Promise.race([
+          kernelClient.waitForUserOperationReceipt({
+            hash: testUserOpHash,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Test operation timeout after 30 seconds')), 30000)
+          )
+        ]);
+
         console.log('✅ Test tx mined:', testReceipt.receipt.transactionHash);
-        
+
         // If we get here, permissions are working, now try the approval
         console.log(`📝 Step 1: Approving USDC spend for ${routerAddress}...`);
-        
+
         const approveUserOpHash = await kernelClient.sendUserOperation({
-          callData: await smartWallet.encodeCalls([{
-            to: TOKENS.USDC,
-            value: BigInt(0),
-            data: approveData,
-          }]),
+          callData: await smartWallet.encodeCalls([
+            {
+              to: TOKENS.USDC,
+              value: BigInt(0),
+              data: approveData,
+            },
+          ]),
         });
 
         console.log('✅ Approval UserOp hash:', approveUserOpHash);
-        
-        // Wait for approval to be mined
-        const approveReceipt = await kernelClient.waitForUserOperationReceipt({
-          hash: approveUserOpHash,
-        });
-        
+
+        // Wait for approval to be mined (with timeout)
+        const approveReceipt = await Promise.race([
+          kernelClient.waitForUserOperationReceipt({
+            hash: approveUserOpHash,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Approval timeout after 30 seconds')), 30000)
+          )
+        ]);
+
         transactions.approve = approveReceipt.receipt.transactionHash;
         console.log('✅ Approval tx mined:', transactions.approve);
-        
       } catch (error) {
         console.error('❌ Transaction failed:', error);
         throw new Error(`Transaction failed: ${error.message}`);
       }
 
-      // Step 2: Execute swap (using working UserOperation pattern) 
+      // Step 2: Execute swap (using working UserOperation pattern)
       console.log('📝 Step 2: Executing swap...');
       const swapUserOpHash = await kernelClient.sendUserOperation({
-        callData: await smartWallet.encodeCalls([{
-          to: swapQuote.transaction!.to,
-          value: BigInt(swapQuote.transaction!.value || '0'),
-          data: swapQuote.transaction!.data,
-        }]),
+        callData: await smartWallet.encodeCalls([
+          {
+            to: swapQuote.transaction!.to,
+            value: BigInt(swapQuote.transaction!.value || '0'),
+            data: swapQuote.transaction!.data,
+          },
+        ]),
       });
 
       console.log('✅ Swap UserOp hash:', swapUserOpHash);
-      
-      // Wait for swap to be mined
-      const swapReceipt = await kernelClient.waitForUserOperationReceipt({
-        hash: swapUserOpHash,
-      });
-      
+
+      // Wait for swap to be mined (with timeout)
+      console.log('⏳ Waiting for swap to be mined...');
+      const swapReceipt = await Promise.race([
+        kernelClient.waitForUserOperationReceipt({
+          hash: swapUserOpHash,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Swap timeout after 60 seconds')), 60000)
+        )
+      ]);
+
       transactions.swap = swapReceipt.receipt.transactionHash;
       console.log('✅ Swap tx mined:', transactions.swap);
 
@@ -369,19 +411,26 @@ export class ServerZerodevDCAExecutor {
       });
 
       const transferUserOpHash = await kernelClient.sendUserOperation({
-        callData: await smartWallet.encodeCalls([{
-          to: TOKENS.SPX6900,
-          value: BigInt(0),
-          data: transferData,
-        }]),
+        callData: await smartWallet.encodeCalls([
+          {
+            to: TOKENS.SPX6900,
+            value: BigInt(0),
+            data: transferData,
+          },
+        ]),
       });
-      
+
       console.log('✅ Transfer UserOp hash:', transferUserOpHash);
-      
-      // Wait for transfer to be mined
-      const transferReceipt = await kernelClient.waitForUserOperationReceipt({
-        hash: transferUserOpHash,
-      });
+
+      // Wait for transfer to be mined (with timeout)
+      const transferReceipt = await Promise.race([
+        kernelClient.waitForUserOperationReceipt({
+          hash: transferUserOpHash,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Transfer timeout after 30 seconds')), 30000)
+        )
+      ]);
 
       transactions.transfer = transferReceipt.receipt.transactionHash;
       console.log('✅ Transfer tx:', transactions.transfer);
@@ -511,8 +560,10 @@ export class ServerZerodevDCAExecutor {
     receiverAddress: Address,
   ): Promise<SwapQuoteResult> {
     try {
-      console.log('🔄 OpenOcean blocked, trying Direct Aerodrome DEX fallback...');
-      
+      console.log(
+        '🔄 OpenOcean blocked, trying Direct Aerodrome DEX fallback...',
+      );
+
       const requestBody = {
         sellToken: TOKENS.USDC,
         buyToken: TOKENS.SPX6900,
@@ -531,9 +582,13 @@ export class ServerZerodevDCAExecutor {
 
       if (!response.ok) {
         console.error('❌ Direct Aerodrome failed, trying Uniswap V3...');
-        
+
         // Fallback to Uniswap
-        return this.getUniswapFallback(sellAmount, takerAddress, receiverAddress);
+        return this.getUniswapFallback(
+          sellAmount,
+          takerAddress,
+          receiverAddress,
+        );
       }
 
       const data = await response.json();
@@ -550,7 +605,7 @@ export class ServerZerodevDCAExecutor {
       };
     } catch (error) {
       console.error('❌ Direct Aerodrome fallback failed:', error);
-      
+
       // Fallback to Uniswap
       return this.getUniswapFallback(sellAmount, takerAddress, receiverAddress);
     }
@@ -566,7 +621,7 @@ export class ServerZerodevDCAExecutor {
   ): Promise<SwapQuoteResult> {
     try {
       console.log('🦄 Trying Uniswap V3 as secondary fallback...');
-      
+
       const requestBody = {
         sellToken: TOKENS.USDC,
         buyToken: TOKENS.SPX6900,
@@ -585,9 +640,13 @@ export class ServerZerodevDCAExecutor {
 
       if (!response.ok) {
         console.error('❌ Uniswap V3 failed, trying original OpenOcean...');
-        
+
         // Last resort: try original OpenOcean
-        return this.getOriginalOpenOceanFallback(sellAmount, takerAddress, receiverAddress);
+        return this.getOriginalOpenOceanFallback(
+          sellAmount,
+          takerAddress,
+          receiverAddress,
+        );
       }
 
       const data = await response.json();
@@ -604,9 +663,13 @@ export class ServerZerodevDCAExecutor {
       };
     } catch (error) {
       console.error('❌ Uniswap V3 fallback failed:', error);
-      
+
       // Last resort: try original OpenOcean
-      return this.getOriginalOpenOceanFallback(sellAmount, takerAddress, receiverAddress);
+      return this.getOriginalOpenOceanFallback(
+        sellAmount,
+        takerAddress,
+        receiverAddress,
+      );
     }
   }
 
@@ -620,7 +683,7 @@ export class ServerZerodevDCAExecutor {
   ): Promise<SwapQuoteResult> {
     try {
       console.log('🌊 Trying original OpenOcean as last resort...');
-      
+
       const requestBody = {
         sellToken: TOKENS.USDC,
         buyToken: TOKENS.SPX6900,
@@ -648,7 +711,9 @@ export class ServerZerodevDCAExecutor {
         const error = await response.json();
         return {
           success: false,
-          error: error.error || 'All swap aggregators failed - OpenOcean blocked by Cloudflare, Uniswap direct failed',
+          error:
+            error.error ||
+            'All swap aggregators failed - OpenOcean blocked by Cloudflare, Uniswap direct failed',
         };
       }
 
@@ -755,25 +820,25 @@ export class ServerZerodevDCAExecutor {
   ): Promise<any> {
     try {
       console.log('🔄 Using direct Aerodrome swap (bypassing blocked APIs)');
-      
+
       // Aerodrome router on Base
       const AERODROME_ROUTER = '0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43';
       const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
-      
+
       // Define swap route: USDC → WETH → SPX
       const routes = [
         {
           from: TOKENS.USDC,
           to: WETH_ADDRESS,
           stable: false,
-          factory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da'
+          factory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da',
         },
         {
           from: WETH_ADDRESS,
           to: TOKENS.SPX6900,
           stable: false,
-          factory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da'
-        }
+          factory: '0x420DD381b31aEf6683db6B902084cB0FFECe40Da',
+        },
       ];
 
       // Get expected output from Aerodrome router
@@ -784,14 +849,18 @@ export class ServerZerodevDCAExecutor {
           stateMutability: 'view',
           inputs: [
             { name: 'amountIn', type: 'uint256' },
-            { name: 'routes', type: 'tuple[]', components: [
-              { name: 'from', type: 'address' },
-              { name: 'to', type: 'address' },
-              { name: 'stable', type: 'bool' },
-              { name: 'factory', type: 'address' }
-            ]}
+            {
+              name: 'routes',
+              type: 'tuple[]',
+              components: [
+                { name: 'from', type: 'address' },
+                { name: 'to', type: 'address' },
+                { name: 'stable', type: 'bool' },
+                { name: 'factory', type: 'address' },
+              ],
+            },
           ],
-          outputs: [{ name: 'amounts', type: 'uint256[]' }]
+          outputs: [{ name: 'amounts', type: 'uint256[]' }],
         },
         {
           name: 'swapExactTokensForTokens',
@@ -800,17 +869,21 @@ export class ServerZerodevDCAExecutor {
           inputs: [
             { name: 'amountIn', type: 'uint256' },
             { name: 'amountOutMin', type: 'uint256' },
-            { name: 'routes', type: 'tuple[]', components: [
-              { name: 'from', type: 'address' },
-              { name: 'to', type: 'address' },
-              { name: 'stable', type: 'bool' },
-              { name: 'factory', type: 'address' }
-            ]},
+            {
+              name: 'routes',
+              type: 'tuple[]',
+              components: [
+                { name: 'from', type: 'address' },
+                { name: 'to', type: 'address' },
+                { name: 'stable', type: 'bool' },
+                { name: 'factory', type: 'address' },
+              ],
+            },
             { name: 'to', type: 'address' },
-            { name: 'deadline', type: 'uint256' }
+            { name: 'deadline', type: 'uint256' },
           ],
-          outputs: [{ name: 'amounts', type: 'uint256[]' }]
-        }
+          outputs: [{ name: 'amounts', type: 'uint256[]' }],
+        },
       ];
 
       try {
@@ -820,15 +893,15 @@ export class ServerZerodevDCAExecutor {
           functionName: 'getAmountsOut',
           args: [sellAmount, routes],
         });
-        
+
         const expectedOutput = amountsOut[2]; // SPX amount (final token in route)
         const minOutput = (expectedOutput * 99n) / 100n; // 1% slippage
-        
+
         console.log(`✅ Aerodrome quote: ${Number(expectedOutput) / 1e8} SPX`);
-        
+
         // Create swap transaction data
         const deadline = Math.floor(Date.now() / 1000) + 1800; // 30 minutes
-        
+
         const swapData = encodeFunctionData({
           abi: aerodromeRouterAbi,
           functionName: 'swapExactTokensForTokens',
@@ -837,7 +910,7 @@ export class ServerZerodevDCAExecutor {
             minOutput,
             routes,
             takerAddress, // Receive in smart wallet
-            deadline
+            deadline,
           ],
         });
 
@@ -870,12 +943,10 @@ export class ServerZerodevDCAExecutor {
             estimatedExecutionTime: 30,
           },
         };
-        
       } catch (quoteError) {
         console.error('❌ Aerodrome quote failed:', quoteError);
         throw new Error(`Aerodrome quote failed: ${quoteError.message}`);
       }
-      
     } catch (error) {
       console.error('❌ Aerodrome swap data failed:', error);
       throw error;
@@ -900,7 +971,9 @@ export class ServerZerodevDCAExecutor {
     };
   }> {
     try {
-      console.log(`💰 Sweeping funds from ${smartWalletAddress} to ${userWalletAddress}`);
+      console.log(
+        `💰 Sweeping funds from ${smartWalletAddress} to ${userWalletAddress}`,
+      );
 
       // Get the agent key
       const agentKey = await serverAgentKeyService.getAgentKey(agentKeyId);
@@ -1026,7 +1099,9 @@ export class ServerZerodevDCAExecutor {
         hash: userOpHash,
       });
 
-      console.log(`✅ Fund sweep completed: ${receipt.receipt.transactionHash}`);
+      console.log(
+        `✅ Fund sweep completed: ${receipt.receipt.transactionHash}`,
+      );
 
       return {
         success: true,
