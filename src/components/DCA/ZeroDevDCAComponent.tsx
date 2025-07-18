@@ -44,7 +44,7 @@ export default function ZeroDevDCAComponent({
     amount: '10', // Start with 10 USDC for testing
     password: '',
     frequency: 'daily' as 'hourly' | 'daily' | 'weekly',
-    duration: 7, // 7 executions
+    duration: '7', // 7 executions as string for better input handling
   });
 
   // Wallet state
@@ -246,7 +246,7 @@ export default function ZeroDevDCAComponent({
           smartWalletAddress: smartWalletAddressForOrder,
           totalAmount: formData.amount,
           frequency: formData.frequency,
-          duration: formData.duration,
+          duration: Number.parseInt(formData.duration) || 1,
           // Use an existing session key if available, or create new one
           useExistingSessionKey: true,
           password: formData.password,
@@ -281,13 +281,13 @@ export default function ZeroDevDCAComponent({
         );
 
         toast.success(
-          `🎉 DCA order created! First execution completed: ${(Number(formData.amount) / formData.duration / 1e6).toFixed(6)} USDC → SPX`,
+          `🎉 DCA order created! First execution completed: ${(Number(formData.amount) / (Number.parseInt(formData.duration) || 1) / 1e6).toFixed(6)} USDC → SPX`,
           { duration: 8000 },
         );
 
         // Show order details
         toast.success(
-          `📅 Order will execute ${formData.frequency} for ${formData.duration} times`,
+          `📅 Order will execute ${formData.frequency} for ${Number.parseInt(formData.duration) || 1} times`,
           { duration: 6000 },
         );
       } else {
@@ -305,7 +305,7 @@ export default function ZeroDevDCAComponent({
         amount: '10',
         password: formData.password,
         frequency: 'daily',
-        duration: 7,
+        duration: '7',
       });
 
       // Refresh order history
@@ -483,12 +483,11 @@ export default function ZeroDevDCAComponent({
             <input
               type="number"
               value={formData.duration}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  duration: Number.parseInt(e.target.value) || 1,
-                }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow any input - validation happens on submit
+                setFormData((prev) => ({ ...prev, duration: value }));
+              }}
               placeholder="7"
               min="1"
               max="100"
@@ -609,10 +608,10 @@ export default function ZeroDevDCAComponent({
           <div>Total Amount: {formData.amount} USDC</div>
           <div>
             Per Execution:{' '}
-            {(Number(formData.amount) / formData.duration).toFixed(6)} USDC
+            {(Number(formData.amount) / (Number.parseInt(formData.duration) || 1)).toFixed(6)} USDC
           </div>
           <div>Frequency: {formData.frequency}</div>
-          <div>Total Executions: {formData.duration}</div>
+          <div>Total Executions: {Number.parseInt(formData.duration) || 1}</div>
         </div>
       </div>
 
@@ -625,14 +624,14 @@ export default function ZeroDevDCAComponent({
           !formData.password ||
           hasInsufficientBalance ||
           Number.parseFloat(formData.amount) <= 0 ||
-          formData.duration < 1
+          (Number.parseInt(formData.duration) || 1) < 1
         }
         className={`w-full py-4 px-6 rounded-lg font-medium text-white transition-all duration-200 ${
           isExecuting ||
           !formData.amount ||
           !formData.password ||
           hasInsufficientBalance ||
-          formData.duration < 1
+          (Number.parseInt(formData.duration) || 1) < 1
             ? 'bg-gray-700 cursor-not-allowed'
             : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transform hover:scale-[1.02]'
         } flex items-center justify-center gap-2`}
