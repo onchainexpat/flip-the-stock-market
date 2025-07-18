@@ -1,8 +1,5 @@
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-import {
-  createKernelAccount,
-  createKernelAccountClient,
-} from '@zerodev/sdk';
+import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { KERNEL_V3_2, getEntryPoint } from '@zerodev/sdk/constants';
 import {
   http,
@@ -12,7 +9,7 @@ import {
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
-import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { TOKENS } from '../utils/openOceanApi';
 
@@ -23,7 +20,8 @@ const ZERODEV_RPC_URL =
   `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`;
 
 // OpenOcean router
-const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+const OPENOCEAN_ROUTER =
+  '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
 export interface DCAAgentConfig {
   privateKey: Hex;
@@ -82,7 +80,7 @@ export class ZeroDevDCAService {
   }> {
     try {
       const agentAccount = privateKeyToAccount(agentPrivateKey);
-      
+
       // Create ECDSA validator
       const ecdsaValidator = await signerToEcdsaValidator(this.publicClient, {
         signer: agentAccount,
@@ -166,13 +164,16 @@ export class ZeroDevDCAService {
         maxHops: 2,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/openocean-swap`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/openocean-swap`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -210,7 +211,7 @@ export class ZeroDevDCAService {
     try {
       // Create agent account and smart wallet
       const agentAccount = privateKeyToAccount(agentConfig.privateKey);
-      
+
       const ecdsaValidator = await signerToEcdsaValidator(this.publicClient, {
         signer: agentAccount,
         entryPoint: getEntryPoint('0.7'),
@@ -233,7 +234,9 @@ export class ZeroDevDCAService {
       // Check USDC balance
       const usdcBalance = await this.getUSDCBalance(smartWallet.address);
       if (usdcBalance < swapAmount) {
-        throw new Error(`Insufficient USDC balance: ${usdcBalance} < ${swapAmount}`);
+        throw new Error(
+          `Insufficient USDC balance: ${usdcBalance} < ${swapAmount}`,
+        );
       }
 
       // Get swap quote (use smart wallet as receiver for reliable execution)
@@ -265,40 +268,46 @@ export class ZeroDevDCAService {
       console.log('📝 Step 1: Approving USDC spend...');
       const approveTxHash = await kernelClient.sendUserOperation({
         account: smartWallet,
-        calls: [{
-          to: TOKENS.USDC,
-          value: 0n,
-          data: approveData,
-        }],
+        calls: [
+          {
+            to: TOKENS.USDC,
+            value: 0n,
+            data: approveData,
+          },
+        ],
       });
 
       console.log('✅ USDC approval transaction:', approveTxHash);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Step 2: Execute swap
       console.log('📝 Step 2: Executing USDC → SPX swap...');
       const swapTxHash = await kernelClient.sendUserOperation({
         account: smartWallet,
-        calls: [{
-          to: swapQuote.transaction!.to,
-          value: BigInt(swapQuote.transaction!.value || '0'),
-          data: swapQuote.transaction!.data,
-        }],
+        calls: [
+          {
+            to: swapQuote.transaction!.to,
+            value: BigInt(swapQuote.transaction!.value || '0'),
+            data: swapQuote.transaction!.data,
+          },
+        ],
       });
 
       console.log('✅ Swap transaction:', swapTxHash);
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
 
       // Step 3: Check SPX balance and transfer to user wallet
       console.log('📝 Step 3: Transferring SPX to user wallet...');
       const smartWalletSPX = await this.getSPXBalance(smartWallet.address);
-      
+
       if (smartWalletSPX === 0n) {
         throw new Error('No SPX tokens received from swap');
       }
 
-      console.log(`📤 Transferring ${smartWalletSPX.toString()} SPX to user wallet...`);
-      
+      console.log(
+        `📤 Transferring ${smartWalletSPX.toString()} SPX to user wallet...`,
+      );
+
       const transferData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'transfer',
@@ -307,15 +316,17 @@ export class ZeroDevDCAService {
 
       const transferTxHash = await kernelClient.sendUserOperation({
         account: smartWallet,
-        calls: [{
-          to: TOKENS.SPX6900,
-          value: 0n,
-          data: transferData,
-        }],
+        calls: [
+          {
+            to: TOKENS.SPX6900,
+            value: 0n,
+            data: transferData,
+          },
+        ],
       });
 
       console.log('✅ SPX transfer transaction:', transferTxHash);
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
 
       return {
         success: true,
@@ -329,7 +340,6 @@ export class ZeroDevDCAService {
           transfer: transferTxHash,
         },
       };
-
     } catch (error) {
       return {
         success: false,

@@ -4,7 +4,7 @@
  * Check wallet balances for DCA test verification
  */
 
-import { createPublicClient, http, erc20Abi, type Address } from 'viem';
+import { http, type Address, createPublicClient, erc20Abi } from 'viem';
 import { base } from 'viem/chains';
 
 const TOKENS = {
@@ -68,17 +68,20 @@ async function checkBalances() {
 
     // Check transaction on Basescan
     console.log('\n🔗 Transaction verification:');
-    console.log('   View on Basescan: https://basescan.org/tx/0xc9e0c6ece6a5da0aa15c682808826d6f4a74d7d8dad7ab771d41a3c9c49cbc5f');
+    console.log(
+      '   View on Basescan: https://basescan.org/tx/0xc9e0c6ece6a5da0aa15c682808826d6f4a74d7d8dad7ab771d41a3c9c49cbc5f',
+    );
 
     // Summary
     console.log('\n📊 Summary:');
     if (Number(userWalletSPX) > 0) {
       console.log('   ✅ User wallet has SPX tokens!');
-      console.log(`   📈 Successfully received ${(Number(userWalletSPX) / 1e8).toFixed(8)} SPX`);
+      console.log(
+        `   📈 Successfully received ${(Number(userWalletSPX) / 1e8).toFixed(8)} SPX`,
+      );
     } else {
       console.log('   ❌ No SPX tokens found in user wallet');
     }
-
   } catch (error) {
     console.error('❌ Error checking balances:', error);
   }

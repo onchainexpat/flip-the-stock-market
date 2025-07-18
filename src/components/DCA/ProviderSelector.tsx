@@ -1,8 +1,6 @@
 'use client';
-
-import React from 'react';
-import { Zap, TrendingUp, Info } from 'lucide-react';
 import { useUnifiedDCAProvider } from '@/hooks/useOpenOceanDCAProvider';
+import { Info, TrendingUp, Zap } from 'lucide-react';
 
 export type DCAProviderType = 'smart_wallet' | 'openocean';
 
@@ -12,10 +10,10 @@ interface ProviderSelectorProps {
   disabled?: boolean;
 }
 
-export function ProviderSelector({ 
-  selectedProvider, 
-  onProviderChange, 
-  disabled = false 
+export function ProviderSelector({
+  selectedProvider,
+  onProviderChange,
+  disabled = false,
 }: ProviderSelectorProps) {
   const { recommendation, isSupported, walletStatus } = useUnifiedDCAProvider();
 
@@ -30,12 +28,9 @@ export function ProviderSelector({
         'Gas-free transactions',
         'Automated execution',
         'Session key security',
-        'No minimum interval'
+        'No minimum interval',
       ],
-      limitations: [
-        'Smart wallet required',
-        'More complex setup'
-      ]
+      limitations: ['Smart wallet required', 'More complex setup'],
     },
     {
       id: 'openocean' as const,
@@ -47,26 +42,30 @@ export function ProviderSelector({
         'Simple setup',
         'Direct wallet interaction',
         'OpenOcean execution',
-        'No smart wallet needed'
+        'No smart wallet needed',
       ],
       limitations: [
         'User pays gas',
         'Manual execution',
         '$5 minimum order',
-        '60s minimum interval'
-      ]
-    }
+        '60s minimum interval',
+      ],
+    },
   ];
 
-  const getProviderStyles = (providerId: DCAProviderType, isSelected: boolean) => {
-    const baseStyles = "p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer";
-    
+  const getProviderStyles = (
+    providerId: DCAProviderType,
+    isSelected: boolean,
+  ) => {
+    const baseStyles =
+      'p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer';
+
     if (disabled) {
       return `${baseStyles} border-gray-600 bg-gray-800/50 cursor-not-allowed opacity-50`;
     }
 
     if (isSelected) {
-      return providerId === 'smart_wallet' 
+      return providerId === 'smart_wallet'
         ? `${baseStyles} border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20`
         : `${baseStyles} border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20`;
     }
@@ -88,11 +87,15 @@ export function ProviderSelector({
   return (
     <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
       <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-lg font-semibold text-white">Choose DCA Provider</h3>
+        <h3 className="text-lg font-semibold text-white">
+          Choose DCA Provider
+        </h3>
         <div className="group relative">
           <Info className="w-4 h-4 text-gray-400 cursor-help" />
           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-            <p className="font-medium mb-1">Recommendation: {recommendation.recommended}</p>
+            <p className="font-medium mb-1">
+              Recommendation: {recommendation.recommended}
+            </p>
             <p className="text-gray-300">{recommendation.reason}</p>
           </div>
         </div>
@@ -106,20 +109,26 @@ export function ProviderSelector({
             onClick={() => !disabled && onProviderChange(provider.id)}
           >
             {getRecommendationBadge(provider.id)}
-            
+
             <div className="flex items-start gap-3 mb-3">
-              <div className={`${provider.color === 'blue' ? 'text-blue-400' : 'text-purple-400'}`}>
+              <div
+                className={`${provider.color === 'blue' ? 'text-blue-400' : 'text-purple-400'}`}
+              >
                 {provider.icon}
               </div>
               <div className="flex-1">
                 <div className="font-medium text-white">{provider.name}</div>
-                <div className="text-sm text-gray-400">{provider.description}</div>
+                <div className="text-sm text-gray-400">
+                  {provider.description}
+                </div>
               </div>
             </div>
 
             <div className="space-y-2">
               <div>
-                <div className="text-sm font-medium text-green-400 mb-1">Features:</div>
+                <div className="text-sm font-medium text-green-400 mb-1">
+                  Features:
+                </div>
                 <ul className="text-xs text-gray-300 space-y-1">
                   {provider.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-1">
@@ -131,7 +140,9 @@ export function ProviderSelector({
               </div>
 
               <div>
-                <div className="text-sm font-medium text-orange-400 mb-1">Limitations:</div>
+                <div className="text-sm font-medium text-orange-400 mb-1">
+                  Limitations:
+                </div>
                 <ul className="text-xs text-gray-300 space-y-1">
                   {provider.limitations.map((limitation, index) => (
                     <li key={index} className="flex items-center gap-1">
@@ -154,7 +165,9 @@ export function ProviderSelector({
       <div className="text-sm text-gray-400 border-t border-gray-700 pt-3">
         <div className="flex items-center justify-between">
           <span>Wallet Status: {walletStatus}</span>
-          <span className={`${isSupported ? 'text-green-400' : 'text-red-400'}`}>
+          <span
+            className={`${isSupported ? 'text-green-400' : 'text-red-400'}`}
+          >
             {isSupported ? 'Compatible' : 'Not Compatible'}
           </span>
         </div>
@@ -185,7 +198,9 @@ export function ProviderSelector({
             <div>Setup</div>
             <div className="text-orange-400">Complex</div>
             <div className="text-green-400">Simple</div>
-            <div className="text-gray-500">Smart wallet deployment required</div>
+            <div className="text-gray-500">
+              Smart wallet deployment required
+            </div>
           </div>
           <div className="grid grid-cols-4 gap-2">
             <div>Min Amount</div>

@@ -21,9 +21,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -32,12 +30,8 @@
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/security/ReentrancyGuard.sol"
       ],
-      "versionPragmas": [
-        "^0.8.19"
-      ],
-      "artifacts": [
-        "DCAAutomationResolver"
-      ]
+      "versionPragmas": ["^0.8.19"],
+      "artifacts": ["DCAAutomationResolver"]
     },
     "/home/onchainexpat/projects/flip-the-stock-market/contracts/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
       "lastModificationDate": 1752248742935,
@@ -59,22 +53,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "Ownable"
-      ]
+      "imports": ["../utils/Context.sol"],
+      "versionPragmas": ["^0.8.0"],
+      "artifacts": ["Ownable"]
     },
     "/home/onchainexpat/projects/flip-the-stock-market/contracts/node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol": {
       "lastModificationDate": 1752248742935,
@@ -96,20 +82,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "ReentrancyGuard"
-      ]
+      "versionPragmas": ["^0.8.0"],
+      "artifacts": ["ReentrancyGuard"]
     },
     "/home/onchainexpat/projects/flip-the-stock-market/contracts/node_modules/@openzeppelin/contracts/utils/Context.sol": {
       "lastModificationDate": 1752248742869,
@@ -131,20 +111,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "Context"
-      ]
+      "versionPragmas": ["^0.8.0"],
+      "artifacts": ["Context"]
     }
   }
 }

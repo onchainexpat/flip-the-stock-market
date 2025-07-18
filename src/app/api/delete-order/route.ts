@@ -14,11 +14,11 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('orderId');
     const userAddress = searchParams.get('userAddress');
-    
+
     if (!orderId || !userAddress) {
       return NextResponse.json(
         { error: 'Missing orderId or userAddress' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,18 +26,15 @@ export async function DELETE(request: NextRequest) {
 
     // Get the order first to verify ownership
     const order = await serverDcaDatabase.getOrder(orderId);
-    
+
     if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
     if (order.userAddress.toLowerCase() !== userAddress.toLowerCase()) {
       return NextResponse.json(
         { error: 'Unauthorized - order belongs to different user' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

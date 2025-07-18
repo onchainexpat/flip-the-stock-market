@@ -27,3 +27,6 @@ export const NEXT_PUBLIC_BASE_PAYMASTER_URL =
 
 // 0x API removed - using OpenOcean exclusively for security
 // export const NEXT_PUBLIC_0X_API_KEY = process.env.NEXT_PUBLIC_0X_API_KEY;
+
+// Gelato Configuration
+export const GELATO_SPONSOR_API_KEY = process.env.GELATO_SPONSOR_API_KEY;

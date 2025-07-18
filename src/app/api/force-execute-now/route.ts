@@ -12,30 +12,24 @@ export async function POST(request: NextRequest) {
 
   try {
     const { orderId } = await request.json();
-    
+
     if (!orderId) {
-      return NextResponse.json(
-        { error: 'Missing orderId' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
     }
 
     console.log(`⚡ Forcing immediate execution for order: ${orderId}`);
 
     // Get the order
     const order = await serverDcaDatabase.getOrder(orderId);
-    
+
     if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
     if (order.status !== 'active') {
       return NextResponse.json(
         { error: 'Order is not active' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,17 +39,22 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(`✅ Order ${orderId} updated for immediate execution`);
-    console.log(`   Next execution time set to: ${new Date(updatedOrder!.nextExecutionAt).toISOString()}`);
+    console.log(
+      `   Next execution time set to: ${new Date(updatedOrder!.nextExecutionAt).toISOString()}`,
+    );
 
     // Now trigger the cron job
     console.log('🚀 Triggering DCA execution...');
-    
-    const executeResponse = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3001'}/api/cron/execute-dca-v2`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${process.env.CRON_SECRET_KEY || 'dev-secret'}`,
+
+    const executeResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3001'}/api/cron/execute-dca-v2`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${process.env.CRON_SECRET_KEY || 'dev-secret'}`,
+        },
       },
-    });
+    );
 
     let executionResult;
     try {
@@ -72,7 +71,6 @@ export async function POST(request: NextRequest) {
       executionTriggered: executeResponse.ok,
       executionResult,
     });
-
   } catch (error) {
     console.error('Failed to force execution:', error);
     return NextResponse.json(

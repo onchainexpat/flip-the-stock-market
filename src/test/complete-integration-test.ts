@@ -1,6 +1,6 @@
 /**
  * Complete Integration Test
- * 
+ *
  * Tests the full DCA automation stack:
  * - Multi-aggregator service
  * - Gelato Web3 Functions integration
@@ -8,10 +8,10 @@
  * - Error handling and fallback mechanisms
  */
 
-import { unifiedDCAExecutor } from '../services/unifiedDCAExecutor';
+import { aggregatorExecutionService } from '../services/aggregatorExecutionService';
 import { gelatoDCAService } from '../services/gelatoDCAService';
 import { multiAggregatorService } from '../services/multiAggregatorService';
-import { aggregatorExecutionService } from '../services/aggregatorExecutionService';
+import { unifiedDCAExecutor } from '../services/unifiedDCAExecutor';
 import { TOKENS } from '../utils/openOceanApi';
 
 async function testUnifiedDCACreation() {
@@ -31,8 +31,8 @@ async function testUnifiedDCACreation() {
         frequency: 3600, // 1 hour
         totalExecutions: 24, // 24 executions = 1 day
         executionMethod: 'hybrid', // Server with Gelato backup
-        maxSlippage: 2.0
-      }
+        maxSlippage: 2.0,
+      },
     );
 
     if (result.success) {
@@ -46,7 +46,6 @@ async function testUnifiedDCACreation() {
     } else {
       console.error('❌ Failed to create unified DCA order:', result.error);
     }
-
   } catch (error) {
     console.error('❌ Unified DCA creation test failed:', error);
   }
@@ -68,8 +67,8 @@ async function testGelatoIntegration() {
           orderId: 'test_order_123',
           userAddress: '0x742E4e12936393F21CAcEE8087Db76bF304E4534',
           smartWalletAddress: '0x1234567890123456789012345678901234567890',
-          agentKeyId: 'test_agent_key'
-        }
+          agentKeyId: 'test_agent_key',
+        },
       );
 
       if (taskResult.success) {
@@ -84,7 +83,6 @@ async function testGelatoIntegration() {
     }
 
     console.log('✅ Gelato integration structure validated');
-
   } catch (error) {
     console.error('❌ Gelato integration test failed:', error);
   }
@@ -99,7 +97,7 @@ async function testExecutionFlow() {
     console.log('📋 Testing batch execution process...');
 
     const batchResult = await unifiedDCAExecutor.processReadyOrders();
-    
+
     console.log('✅ Batch execution test completed');
     console.log(`   Orders processed: ${batchResult.processed}`);
     console.log(`   Successful: ${batchResult.successful}`);
@@ -108,12 +106,11 @@ async function testExecutionFlow() {
     // Test execution statistics
     console.log('\n📊 Testing execution statistics...');
     const stats = await unifiedDCAExecutor.getExecutionStats();
-    
+
     console.log('✅ Statistics collection working');
     console.log(`   Total orders: ${stats.totalOrders}`);
     console.log(`   Active orders: ${stats.activeOrders}`);
     console.log(`   Success rate: ${stats.successRate}%`);
-
   } catch (error) {
     console.error('❌ Execution flow test failed:', error);
   }
@@ -126,26 +123,30 @@ async function testMultiAggregatorResilience() {
   try {
     // Test circuit breaker functionality
     console.log('🔌 Testing circuit breaker system...');
-    
+
     const circuitStatus = multiAggregatorService.getCircuitBreakerStatus();
     console.log('✅ Circuit breaker monitoring active');
-    
+
     Object.entries(circuitStatus).forEach(([aggregator, status]) => {
       const statusIcon = status.isOpen ? '🔴' : '🟢';
-      console.log(`   ${statusIcon} ${aggregator}: ${status.failures} failures`);
+      console.log(
+        `   ${statusIcon} ${aggregator}: ${status.failures} failures`,
+      );
     });
 
     // Test aggregator execution resilience
     console.log('\n🔄 Testing execution service resilience...');
-    
-    const execCircuitStatus = aggregatorExecutionService.getCircuitBreakerStatus();
+
+    const execCircuitStatus =
+      aggregatorExecutionService.getCircuitBreakerStatus();
     console.log('✅ Execution circuit breakers active');
-    
+
     Object.entries(execCircuitStatus).forEach(([aggregator, status]) => {
       const statusIcon = status.isOpen ? '🔴' : '🟢';
-      console.log(`   ${statusIcon} ${aggregator}: ${status.failures} execution failures`);
+      console.log(
+        `   ${statusIcon} ${aggregator}: ${status.failures} execution failures`,
+      );
     });
-
   } catch (error) {
     console.error('❌ Resilience test failed:', error);
   }
@@ -161,7 +162,8 @@ async function testSystemMonitoring() {
 
     // Mock Gelato task health monitoring
     try {
-      const healthResult = await gelatoDCAService.monitorTaskHealth('mock_task_id');
+      const healthResult =
+        await gelatoDCAService.monitorTaskHealth('mock_task_id');
       if (healthResult.success) {
         console.log('✅ Gelato health monitoring: WORKING');
       } else {
@@ -178,7 +180,6 @@ async function testSystemMonitoring() {
     console.log(`   Success rate: ${integrationStats.successRate}%`);
 
     console.log('✅ System monitoring validated');
-
   } catch (error) {
     console.error('❌ Monitoring test failed:', error);
   }
@@ -192,58 +193,73 @@ async function generateSystemReport() {
     {
       name: 'Multi-Aggregator Service',
       status: '✅ IMPLEMENTED',
-      description: 'Compares rates from OpenOcean, 1inch, Paraswap with fallbacks'
+      description:
+        'Compares rates from OpenOcean, 1inch, Paraswap with fallbacks',
     },
     {
       name: 'Circuit Breaker Protection',
-      status: '✅ IMPLEMENTED', 
-      description: 'Automatic failure detection and aggregator isolation'
+      status: '✅ IMPLEMENTED',
+      description: 'Automatic failure detection and aggregator isolation',
     },
     {
       name: 'Gelato Web3 Functions',
       status: '✅ IMPLEMENTED',
-      description: 'Decentralized execution with multi-aggregator integration'
+      description: 'Decentralized execution with multi-aggregator integration',
     },
     {
       name: 'Unified DCA Executor',
       status: '✅ IMPLEMENTED',
-      description: 'Hybrid execution: Server + Gelato backup'
+      description: 'Hybrid execution: Server + Gelato backup',
     },
     {
       name: 'Error Handling & Fallbacks',
       status: '✅ IMPLEMENTED',
-      description: 'Comprehensive error recovery and graceful degradation'
+      description: 'Comprehensive error recovery and graceful degradation',
     },
     {
       name: 'Monitoring & Analytics',
       status: '✅ IMPLEMENTED',
-      description: 'Performance tracking and health monitoring'
+      description: 'Performance tracking and health monitoring',
     },
     {
       name: 'API Integration',
       status: '✅ IMPLEMENTED',
-      description: 'REST API for Gelato task management'
-    }
+      description: 'REST API for Gelato task management',
+    },
   ];
 
   console.log('🎯 **FEATURE IMPLEMENTATION STATUS**\n');
-  
-  features.forEach(feature => {
+
+  features.forEach((feature) => {
     console.log(`${feature.status} **${feature.name}**`);
     console.log(`   ${feature.description}\n`);
   });
 
   console.log('🔧 **TECHNICAL ARCHITECTURE**\n');
-  console.log('   📱 Frontend: React components with multi-aggregator price display');
-  console.log('   🖥️  Backend: Node.js API with Redis caching and encrypted key storage');
-  console.log('   🤖 Automation: Gelato Web3 Functions for decentralized execution');
-  console.log('   🔗 Blockchain: ZeroDev smart wallets with session key automation');
-  console.log('   💱 DEX Integration: OpenOcean, 1inch, Paraswap with intelligent routing');
-  console.log('   🛡️  Reliability: Circuit breakers, retries, fallbacks, monitoring\n');
+  console.log(
+    '   📱 Frontend: React components with multi-aggregator price display',
+  );
+  console.log(
+    '   🖥️  Backend: Node.js API with Redis caching and encrypted key storage',
+  );
+  console.log(
+    '   🤖 Automation: Gelato Web3 Functions for decentralized execution',
+  );
+  console.log(
+    '   🔗 Blockchain: ZeroDev smart wallets with session key automation',
+  );
+  console.log(
+    '   💱 DEX Integration: OpenOcean, 1inch, Paraswap with intelligent routing',
+  );
+  console.log(
+    '   🛡️  Reliability: Circuit breakers, retries, fallbacks, monitoring\n',
+  );
 
   console.log('⚡ **KEY BENEFITS ACHIEVED**\n');
   console.log('   🎯 Best swap rates through multi-aggregator comparison');
-  console.log('   🚀 Decentralized execution via Gelato (no single point of failure)');
+  console.log(
+    '   🚀 Decentralized execution via Gelato (no single point of failure)',
+  );
   console.log('   🛡️  Robust error handling with automatic recovery');
   console.log('   📊 Comprehensive monitoring and performance tracking');
   console.log('   🔧 Hybrid execution model (server + decentralized backup)');
@@ -256,7 +272,7 @@ async function generateSystemReport() {
 async function runCompleteIntegrationTest() {
   console.log('🚀 COMPLETE DCA AUTOMATION INTEGRATION TEST\n');
   console.log('='.repeat(80));
-  
+
   try {
     await testUnifiedDCACreation();
     await testGelatoIntegration();
@@ -264,9 +280,8 @@ async function runCompleteIntegrationTest() {
     await testMultiAggregatorResilience();
     await testSystemMonitoring();
     await generateSystemReport();
-    
+
     console.log('\n✅ ALL INTEGRATION TESTS COMPLETED SUCCESSFULLY! ✅');
-    
   } catch (error) {
     console.error('\n❌ Integration test suite failed:', error);
   }

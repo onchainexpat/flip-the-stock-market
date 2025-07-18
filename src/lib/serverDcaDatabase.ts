@@ -54,11 +54,11 @@ export interface DCAOrder {
 export interface OpenOceanDCAOrder {
   id: string;
   userAddress: Address;
-  
+
   // OpenOcean specific fields
   orderHash: string; // OpenOcean order hash
   orderData: any; // OpenOcean order data from SDK
-  
+
   // Order parameters
   fromToken: Address;
   toToken: Address;
@@ -66,19 +66,19 @@ export interface OpenOceanDCAOrder {
   totalAmount: bigint;
   intervalSeconds: number; // Interval in seconds (OpenOcean uses seconds)
   numberOfBuys: number; // Number of DCA executions
-  
+
   // Price range constraints (optional)
   minPrice?: string;
   maxPrice?: string;
-  
+
   // Fee tracking
   platformFeePercentage: number;
   totalPlatformFees: bigint;
-  
+
   // Execution tracking
   status:
     | 'active'
-    | 'paused' 
+    | 'paused'
     | 'completed'
     | 'cancelled'
     | 'expired'
@@ -86,31 +86,33 @@ export interface OpenOceanDCAOrder {
   executedAmount: bigint;
   executionsCount: number;
   remainingMakerAmount: bigint;
-  
+
   // OpenOcean status mapping
   openOceanStatus: number; // 1-unfilled, 3-cancel, 4-filled, 5-pending, 6-hash not exist, 7-expire
-  
+
   // Timestamps
   createdAt: number;
   updatedAt?: number;
   lastExecutedAt?: number;
   nextExecutionAt: number;
   expiresAt: number;
-  
+
   // OpenOcean specific timestamps
   openOceanCreateDateTime?: string;
   openOceanExpireTime?: string;
-  
+
   // Transaction hashes
   creationTxHash?: string;
   executionTxHashes: string[];
-  
+
   // Provider type for unified interface
   provider: 'openocean';
 }
 
 // Union type for unified DCA order handling
-export type UnifiedDCAOrder = DCAOrder & { provider: 'smart_wallet' } | OpenOceanDCAOrder;
+export type UnifiedDCAOrder =
+  | (DCAOrder & { provider: 'smart_wallet' })
+  | OpenOceanDCAOrder;
 
 export interface DCAExecution {
   id: string;
@@ -137,15 +139,17 @@ const REDIS_KEYS = {
   EXECUTION: (id: string) => `dca:execution:${id}`,
   ORDER_EXECUTIONS: (orderId: string) => `dca:order:${orderId}:executions`,
   ALL_ORDERS: 'dca:all_orders',
-  
+
   // OpenOcean specific keys
   OPENOCEAN_ORDER: (id: string) => `dca:openocean:order:${id}`,
-  OPENOCEAN_USER_ORDERS: (address: string) => `dca:openocean:user:${address}:orders`,
+  OPENOCEAN_USER_ORDERS: (address: string) =>
+    `dca:openocean:user:${address}:orders`,
   OPENOCEAN_ORDER_HASH: (hash: string) => `dca:openocean:hash:${hash}`,
   ALL_OPENOCEAN_ORDERS: 'dca:all_openocean_orders',
-  
+
   // Unified keys for both order types
-  UNIFIED_USER_ORDERS: (address: string) => `dca:unified:user:${address}:orders`,
+  UNIFIED_USER_ORDERS: (address: string) =>
+    `dca:unified:user:${address}:orders`,
   ALL_UNIFIED_ORDERS: 'dca:all_unified_orders',
 };
 
@@ -217,7 +221,10 @@ class ServerDCADatabase {
     const newOrder: DCAOrder = { ...order, id };
 
     // Store order in Redis
-    await redis.set(REDIS_KEYS.ORDER(id), JSON.stringify(this.serializeOrder(newOrder)));
+    await redis.set(
+      REDIS_KEYS.ORDER(id),
+      JSON.stringify(this.serializeOrder(newOrder)),
+    );
 
     // Add to user orders index
     const userOrderIds =
@@ -233,7 +240,7 @@ class ServerDCADatabase {
   async getOrder(id: string): Promise<DCAOrder | null> {
     const data = await redis.get(REDIS_KEYS.ORDER(id));
     if (!data) return null;
-    
+
     // Handle both string and object responses from Upstash Redis
     let parsedData;
     if (typeof data === 'string') {
@@ -244,7 +251,7 @@ class ServerDCADatabase {
       console.error('Unexpected Redis data type:', typeof data, data);
       return null;
     }
-    
+
     return this.deserializeOrder(parsedData);
   }
 
@@ -290,7 +297,10 @@ class ServerDCADatabase {
     if (!order) return null;
 
     const updatedOrder = { ...order, ...updates, updatedAt: Date.now() };
-    await redis.set(REDIS_KEYS.ORDER(id), JSON.stringify(this.serializeOrder(updatedOrder)));
+    await redis.set(
+      REDIS_KEYS.ORDER(id),
+      JSON.stringify(this.serializeOrder(updatedOrder)),
+    );
     return updatedOrder;
   }
 
@@ -299,6 +309,27 @@ class ServerDCADatabase {
     status: DCAOrder['status'],
   ): Promise<DCAOrder | null> {
     return this.updateOrder(id, { status });
+  }
+
+  async cancelOrder(id: string): Promise<DCAOrder | null> {
+    const order = await this.getOrder(id);
+    if (!order) {
+      return null;
+    }
+
+    // Update order to canceled status 
+    const canceledOrder = {
+      ...order,
+      status: 'cancelled' as const,
+      updatedAt: Math.floor(Date.now() / 1000),
+    };
+
+    await redis.set(
+      REDIS_KEYS.ORDER(id),
+      JSON.stringify(this.serializeOrder(canceledOrder)),
+    );
+
+    return canceledOrder;
   }
 
   async getAllActiveOrders(): Promise<DCAOrder[]> {
@@ -337,9 +368,10 @@ class ServerDCADatabase {
     for (const order of activeOrders) {
       try {
         // Parse order data to get agent key info
-        const orderData = typeof order.sessionKeyData === 'string' 
-          ? JSON.parse(order.sessionKeyData) 
-          : order.sessionKeyData;
+        const orderData =
+          typeof order.sessionKeyData === 'string'
+            ? JSON.parse(order.sessionKeyData)
+            : order.sessionKeyData;
 
         // Check if order has agent key (automated orders)
         if (!orderData.agentKeyId) continue;
@@ -353,12 +385,17 @@ class ServerDCADatabase {
 
         // Check if enough time has passed and order has remaining executions
         const executionsCompleted = order.executionsCount || 0;
-        if (now >= nextExecutionTime && executionsCompleted < order.totalExecutions) {
+        if (
+          now >= nextExecutionTime &&
+          executionsCompleted < order.totalExecutions
+        ) {
           console.log(`📅 Order ${order.id} is ready for execution`);
           console.log(`   Frequency: ${frequency} (${frequencyMs}ms)`);
           console.log(`   Next execution: ${nextExecutionTime.toISOString()}`);
           console.log(`   Current time: ${now.toISOString()}`);
-          console.log(`   Executions: ${executionsCompleted}/${order.totalExecutions}`);
+          console.log(
+            `   Executions: ${executionsCompleted}/${order.totalExecutions}`,
+          );
           ordersReady.push(order);
         } else {
           console.log(`⏳ Order ${order.id} not ready yet`);
@@ -366,7 +403,10 @@ class ServerDCADatabase {
           console.log(`   Current time: ${now.toISOString()}`);
         }
       } catch (error) {
-        console.error(`❌ Error checking order ${order.id} for execution:`, error);
+        console.error(
+          `❌ Error checking order ${order.id} for execution:`,
+          error,
+        );
       }
     }
 
@@ -375,21 +415,31 @@ class ServerDCADatabase {
 
   private getFrequencyInMs(frequency: string): number {
     switch (frequency.toLowerCase()) {
-      case 'hourly': return 60 * 60 * 1000;
-      case 'daily': return 24 * 60 * 60 * 1000;
-      case 'weekly': return 7 * 24 * 60 * 60 * 1000;
-      case 'monthly': return 30 * 24 * 60 * 60 * 1000;
-      default: return 24 * 60 * 60 * 1000; // Default to daily
+      case 'hourly':
+        return 60 * 60 * 1000;
+      case 'daily':
+        return 24 * 60 * 60 * 1000;
+      case 'weekly':
+        return 7 * 24 * 60 * 60 * 1000;
+      case 'monthly':
+        return 30 * 24 * 60 * 60 * 1000;
+      default:
+        return 24 * 60 * 60 * 1000; // Default to daily
     }
   }
 
   // OpenOcean DCA Orders
-  async createOpenOceanOrder(order: Omit<OpenOceanDCAOrder, 'id'>): Promise<OpenOceanDCAOrder> {
+  async createOpenOceanOrder(
+    order: Omit<OpenOceanDCAOrder, 'id'>,
+  ): Promise<OpenOceanDCAOrder> {
     const id = `ooorder_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newOrder: OpenOceanDCAOrder = { ...order, id };
 
     // Store order in Redis
-    await redis.set(REDIS_KEYS.OPENOCEAN_ORDER(id), JSON.stringify(this.serializeOpenOceanOrder(newOrder)));
+    await redis.set(
+      REDIS_KEYS.OPENOCEAN_ORDER(id),
+      JSON.stringify(this.serializeOpenOceanOrder(newOrder)),
+    );
 
     // Add to user orders index
     await redis.sadd(REDIS_KEYS.OPENOCEAN_USER_ORDERS(order.userAddress), id);
@@ -398,7 +448,10 @@ class ServerDCADatabase {
     await redis.sadd(REDIS_KEYS.ALL_OPENOCEAN_ORDERS, id);
 
     // Add to unified orders list
-    await redis.sadd(REDIS_KEYS.UNIFIED_USER_ORDERS(order.userAddress), `openocean:${id}`);
+    await redis.sadd(
+      REDIS_KEYS.UNIFIED_USER_ORDERS(order.userAddress),
+      `openocean:${id}`,
+    );
     await redis.sadd(REDIS_KEYS.ALL_UNIFIED_ORDERS, `openocean:${id}`);
 
     // Create order hash mapping for quick lookup
@@ -410,7 +463,7 @@ class ServerDCADatabase {
   async getOpenOceanOrder(id: string): Promise<OpenOceanDCAOrder | null> {
     const data = await redis.get(REDIS_KEYS.OPENOCEAN_ORDER(id));
     if (!data) return null;
-    
+
     // Handle both string and object responses from Upstash Redis
     let parsedData;
     if (typeof data === 'string') {
@@ -421,19 +474,25 @@ class ServerDCADatabase {
       console.error('Unexpected Redis data type:', typeof data, data);
       return null;
     }
-    
+
     return this.deserializeOpenOceanOrder(parsedData);
   }
 
-  async getOpenOceanOrderByHash(orderHash: string): Promise<OpenOceanDCAOrder | null> {
+  async getOpenOceanOrderByHash(
+    orderHash: string,
+  ): Promise<OpenOceanDCAOrder | null> {
     const id = await redis.get(REDIS_KEYS.OPENOCEAN_ORDER_HASH(orderHash));
     if (!id) return null;
-    
+
     return this.getOpenOceanOrder(id as string);
   }
 
-  async getUserOpenOceanOrders(userAddress: Address): Promise<OpenOceanDCAOrder[]> {
-    const orderIds = await redis.smembers(REDIS_KEYS.OPENOCEAN_USER_ORDERS(userAddress));
+  async getUserOpenOceanOrders(
+    userAddress: Address,
+  ): Promise<OpenOceanDCAOrder[]> {
+    const orderIds = await redis.smembers(
+      REDIS_KEYS.OPENOCEAN_USER_ORDERS(userAddress),
+    );
     const orders: OpenOceanDCAOrder[] = [];
 
     for (const id of orderIds) {
@@ -452,7 +511,10 @@ class ServerDCADatabase {
     if (!order) return null;
 
     const updatedOrder = { ...order, ...updates, updatedAt: Date.now() };
-    await redis.set(REDIS_KEYS.OPENOCEAN_ORDER(id), JSON.stringify(this.serializeOpenOceanOrder(updatedOrder)));
+    await redis.set(
+      REDIS_KEYS.OPENOCEAN_ORDER(id),
+      JSON.stringify(this.serializeOpenOceanOrder(updatedOrder)),
+    );
     return updatedOrder;
   }
 
@@ -474,7 +536,7 @@ class ServerDCADatabase {
   ): Promise<OpenOceanDCAOrder | null> {
     const id = await redis.get(REDIS_KEYS.OPENOCEAN_ORDER_HASH(orderHash));
     if (!id) return null;
-    
+
     return this.updateOpenOceanOrder(id as string, updates);
   }
 
@@ -492,7 +554,9 @@ class ServerDCADatabase {
     return activeOrders;
   }
 
-  async getOpenOceanOrdersByStatus(status: OpenOceanDCAOrder['status']): Promise<OpenOceanDCAOrder[]> {
+  async getOpenOceanOrdersByStatus(
+    status: OpenOceanDCAOrder['status'],
+  ): Promise<OpenOceanDCAOrder[]> {
     const allOrderIds = await redis.smembers(REDIS_KEYS.ALL_OPENOCEAN_ORDERS);
     const filteredOrders: OpenOceanDCAOrder[] = [];
 
@@ -514,7 +578,10 @@ class ServerDCADatabase {
     ]);
 
     const unifiedOrders: UnifiedDCAOrder[] = [
-      ...smartWalletOrders.map(order => ({ ...order, provider: 'smart_wallet' as const })),
+      ...smartWalletOrders.map((order) => ({
+        ...order,
+        provider: 'smart_wallet' as const,
+      })),
       ...openOceanOrders,
     ];
 
@@ -528,7 +595,10 @@ class ServerDCADatabase {
     ]);
 
     const unifiedOrders: UnifiedDCAOrder[] = [
-      ...smartWalletOrders.map(order => ({ ...order, provider: 'smart_wallet' as const })),
+      ...smartWalletOrders.map((order) => ({
+        ...order,
+        provider: 'smart_wallet' as const,
+      })),
       ...openOceanOrders,
     ];
 

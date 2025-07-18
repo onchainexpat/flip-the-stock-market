@@ -48,7 +48,9 @@ export async function POST(request: NextRequest) {
       params.append('receiver', receiverAddress);
       params.append('to', receiverAddress); // Alternative parameter name
       console.log('🎯 Receiver address specified:', receiverAddress);
-      console.log('🎯 Added both receiver and to parameters for v4 compatibility');
+      console.log(
+        '🎯 Added both receiver and to parameters for v4 compatibility',
+      );
     }
 
     const url = `https://open-api.openocean.finance/v4/8453/swap?${params}`;
@@ -69,8 +71,24 @@ export async function POST(request: NextRequest) {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
         'Content-Type': 'application/json',
-        'User-Agent': 'FlipTheStockMarket/1.0',
+        'DNT': '1',
+        'Origin': 'https://app.openocean.finance',
+        'Pragma': 'no-cache',
+        'Referer': 'https://app.openocean.finance/',
+        'Sec-CH-UA': '"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"',
+        'Sec-CH-UA-Mobile': '?0',
+        'Sec-CH-UA-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest',
       },
     });
 

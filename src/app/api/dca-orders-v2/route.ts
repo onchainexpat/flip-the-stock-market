@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
         agentKey = await serverAgentKeyService.storeSessionKey(
           userAddress as Address,
           smartWalletAddress as Address,
-          dummyPrivateKey,
+          dummyPrivateKey as `0x${string}`,
           sessionKeyApproval,
         );
         console.log('✅ Agent key created with session approval only');
@@ -186,21 +186,21 @@ export async function POST(request: NextRequest) {
         fromToken: TOKENS.USDC,
         toToken: TOKENS.SPX6900,
         destinationAddress: userAddress as Address, // SPX goes to user wallet
-        totalAmount: totalAmountWei.toString(), // Convert BigInt to string
+        totalAmount: totalAmountWei,
         frequency,
         duration: durationDays,
 
         // Fee tracking
         platformFeePercentage,
-        totalPlatformFees: platformFees.toString(), // Convert BigInt to string
-        netInvestmentAmount: netAmount.toString(), // Convert BigInt to string
+        totalPlatformFees: platformFees,
+        netInvestmentAmount: netAmount,
 
         // Execution tracking
         status: 'active',
-        executedAmount: '0', // Convert BigInt to string
+        executedAmount: BigInt(0),
         executionsCount: 0,
         totalExecutions,
-        amountPerOrder: amountPerOrder.toString(), // Convert BigInt to string
+        // Note: amountPerOrder is calculated as totalAmount / totalExecutions
 
         // Price impact
         estimatedPriceImpact,

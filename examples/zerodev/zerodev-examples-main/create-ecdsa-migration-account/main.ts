@@ -10,9 +10,15 @@ import {
 } from '@zerodev/sdk';
 import { getKernelVersion } from '@zerodev/sdk/actions';
 import { KERNEL_V3_0, KERNEL_V3_1 } from '@zerodev/sdk/constants';
-import { http, Address, Hex, createPublicClient, zeroAddress } from 'viem';
 import {
-  EntryPointVersion,
+  http,
+  type Address,
+  type Hex,
+  createPublicClient,
+  zeroAddress,
+} from 'viem';
+import {
+  type EntryPointVersion,
   entryPoint07Address,
 } from 'viem/account-abstraction';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
@@ -95,7 +101,7 @@ const main = async () => {
         from: originalKernelVersion,
         to: migrationVersion,
       },
-    }
+    },
   );
 
   const migrationKernelClient = createKernelAccountClient({

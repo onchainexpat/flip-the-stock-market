@@ -10,7 +10,7 @@ import {
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
 import {
   http,
-  Hex,
+  type Hex,
   createPublicClient,
   parseAbi,
   parseEther,

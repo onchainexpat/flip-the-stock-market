@@ -1,6 +1,5 @@
-import { OpenOceanDCAService } from './openOceanDCAService';
 import { serverDcaDatabase } from '../lib/serverDcaDatabase';
-import axios from 'axios';
+import { OpenOceanDCAService } from './openOceanDCAService';
 
 export interface OrderSyncResult {
   orderId: string;
@@ -42,7 +41,10 @@ export class OpenOceanSyncService {
   /**
    * Sync a single order with OpenOcean API
    */
-  async syncOrder(orderHash: string, forceSync: boolean = false): Promise<OrderSyncResult> {
+  async syncOrder(
+    orderHash: string,
+    forceSync = false,
+  ): Promise<OrderSyncResult> {
     try {
       // Check cache first (unless force sync)
       if (!forceSync && this.syncCache.has(orderHash)) {
@@ -53,19 +55,21 @@ export class OpenOceanSyncService {
       }
 
       // Get local order
-      const localOrder = await serverDcaDatabase.getOpenOceanOrderByHash(orderHash);
+      const localOrder =
+        await serverDcaDatabase.getOpenOceanOrderByHash(orderHash);
       if (!localOrder) {
         throw new Error('Order not found in local database');
       }
 
       // Get current status from OpenOcean
-      const openOceanStatus = await this.openOceanService.getOrderStatus(orderHash);
+      const openOceanStatus =
+        await this.openOceanService.getOrderStatus(orderHash);
       if (!openOceanStatus) {
         // Order not found in OpenOcean - mark as expired
         await serverDcaDatabase.updateOpenOceanOrder(localOrder.id, {
           status: 'expired',
           openOceanStatus: 7,
-          updatedAt: Date.now()
+          updatedAt: Date.now(),
         });
 
         const result: OrderSyncResult = {
@@ -75,7 +79,7 @@ export class OpenOceanSyncService {
           previousStatus: localOrder.status,
           newStatus: 'expired',
           previousExecutions: localOrder.executionsCount,
-          newExecutions: localOrder.executionsCount
+          newExecutions: localOrder.executionsCount,
         };
 
         // Cache the result
@@ -84,13 +88,15 @@ export class OpenOceanSyncService {
       }
 
       // Map OpenOcean status to internal status
-      let newStatus = this.mapOpenOceanStatusToInternal(openOceanStatus.status);
+      const newStatus = this.mapOpenOceanStatusToInternal(
+        openOceanStatus.status,
+      );
       const newExecutions = openOceanStatus.executionCount;
       const remainingAmount = BigInt(openOceanStatus.remainingAmount);
       const executedAmount = BigInt(openOceanStatus.executedAmount);
 
       // Check if update is needed
-      const hasChanges = 
+      const hasChanges =
         newStatus !== localOrder.status ||
         openOceanStatus.status !== localOrder.openOceanStatus ||
         executedAmount !== localOrder.executedAmount ||
@@ -103,7 +109,7 @@ export class OpenOceanSyncService {
           executedAmount,
           executionsCount: newExecutions,
           remainingMakerAmount: remainingAmount,
-          updatedAt: Date.now()
+          updatedAt: Date.now(),
         });
       }
 
@@ -115,13 +121,13 @@ export class OpenOceanSyncService {
         newStatus,
         previousExecutions: localOrder.executionsCount,
         newExecutions,
-        needsOnChainUpdate: openOceanStatus.status === 3 && newStatus === 'cancelled'
+        needsOnChainUpdate:
+          openOceanStatus.status === 3 && newStatus === 'cancelled',
       };
 
       // Cache the result
       this.syncCache.set(orderHash, { lastSync: Date.now(), data: result });
       return result;
-
     } catch (error) {
       const result: OrderSyncResult = {
         orderId: '',
@@ -131,7 +137,7 @@ export class OpenOceanSyncService {
         newStatus: '',
         previousExecutions: 0,
         newExecutions: 0,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
 
       return result;
@@ -141,16 +147,22 @@ export class OpenOceanSyncService {
   /**
    * Sync multiple orders efficiently
    */
-  async syncOrdersBatch(orderHashes: string[], forceSync: boolean = false): Promise<BulkSyncResult> {
+  async syncOrdersBatch(
+    orderHashes: string[],
+    forceSync = false,
+  ): Promise<BulkSyncResult> {
     const results: OrderSyncResult[] = [];
-    const errors: Array<{ orderId: string; orderHash: string; error: string }> = [];
+    const errors: Array<{ orderId: string; orderHash: string; error: string }> =
+      [];
 
     // Process in batches to avoid overwhelming the API
     const batchSize = 5;
     for (let i = 0; i < orderHashes.length; i += batchSize) {
       const batch = orderHashes.slice(i, i + batchSize);
-      
-      const batchPromises = batch.map(orderHash => this.syncOrder(orderHash, forceSync));
+
+      const batchPromises = batch.map((orderHash) =>
+        this.syncOrder(orderHash, forceSync),
+      );
       const batchResults = await Promise.allSettled(batchPromises);
 
       for (let j = 0; j < batchResults.length; j++) {
@@ -162,21 +174,21 @@ export class OpenOceanSyncService {
             errors.push({
               orderId: result.value.orderId,
               orderHash: batch[j],
-              error: result.value.error || 'Unknown error'
+              error: result.value.error || 'Unknown error',
             });
           }
         } else {
           errors.push({
             orderId: '',
             orderHash: batch[j],
-            error: result.reason?.message || 'Promise rejected'
+            error: result.reason?.message || 'Promise rejected',
           });
         }
       }
 
       // Rate limiting - wait between batches
       if (i + batchSize < orderHashes.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
@@ -185,18 +197,22 @@ export class OpenOceanSyncService {
       syncedOrders: results.length,
       errorCount: errors.length,
       results,
-      errors
+      errors,
     };
   }
 
   /**
    * Sync all orders for a specific user
    */
-  async syncUserOrders(userAddress: string, forceSync: boolean = false): Promise<BulkSyncResult> {
+  async syncUserOrders(
+    userAddress: string,
+    forceSync = false,
+  ): Promise<BulkSyncResult> {
     try {
-      const userOrders = await serverDcaDatabase.getUserOpenOceanOrders(userAddress);
-      const orderHashes = userOrders.map(order => order.orderHash);
-      
+      const userOrders =
+        await serverDcaDatabase.getUserOpenOceanOrders(userAddress);
+      const orderHashes = userOrders.map((order) => order.orderHash);
+
       return await this.syncOrdersBatch(orderHashes, forceSync);
     } catch (error) {
       return {
@@ -204,11 +220,16 @@ export class OpenOceanSyncService {
         syncedOrders: 0,
         errorCount: 1,
         results: [],
-        errors: [{
-          orderId: '',
-          orderHash: '',
-          error: error instanceof Error ? error.message : 'Failed to fetch user orders'
-        }]
+        errors: [
+          {
+            orderId: '',
+            orderHash: '',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to fetch user orders',
+          },
+        ],
       };
     }
   }
@@ -216,21 +237,25 @@ export class OpenOceanSyncService {
   /**
    * Get sync status for orders without triggering sync
    */
-  async getOrderSyncStatus(orderHashes: string[]): Promise<Array<{
-    orderHash: string;
-    lastSyncAt: number;
-    timeSinceLastSync: number;
-    needsSync: boolean;
-    status: string;
-    openOceanStatus: number;
-  }>> {
+  async getOrderSyncStatus(orderHashes: string[]): Promise<
+    Array<{
+      orderHash: string;
+      lastSyncAt: number;
+      timeSinceLastSync: number;
+      needsSync: boolean;
+      status: string;
+      openOceanStatus: number;
+    }>
+  > {
     const results = [];
-    
+
     for (const orderHash of orderHashes) {
       try {
-        const order = await serverDcaDatabase.getOpenOceanOrderByHash(orderHash);
+        const order =
+          await serverDcaDatabase.getOpenOceanOrderByHash(orderHash);
         if (order) {
-          const timeSinceLastSync = Date.now() - (order.updatedAt || order.createdAt);
+          const timeSinceLastSync =
+            Date.now() - (order.updatedAt || order.createdAt);
           const needsSync = timeSinceLastSync > 5 * 60 * 1000; // 5 minutes
 
           results.push({
@@ -239,7 +264,7 @@ export class OpenOceanSyncService {
             timeSinceLastSync,
             needsSync,
             status: order.status,
-            openOceanStatus: order.openOceanStatus
+            openOceanStatus: order.openOceanStatus,
           });
         }
       } catch (error) {
@@ -264,7 +289,7 @@ export class OpenOceanSyncService {
   getCacheStats(): { size: number; entries: string[] } {
     return {
       size: this.syncCache.size,
-      entries: Array.from(this.syncCache.keys())
+      entries: Array.from(this.syncCache.keys()),
     };
   }
 
@@ -295,18 +320,23 @@ export class OpenOceanSyncService {
    */
   async startPeriodicSync(intervalMs: number = 5 * 60 * 1000): Promise<void> {
     console.log('Starting periodic OpenOcean order sync...');
-    
+
     const syncActiveOrders = async () => {
       try {
-        const activeOrders = await serverDcaDatabase.getAllActiveOpenOceanOrders();
+        const activeOrders =
+          await serverDcaDatabase.getAllActiveOpenOceanOrders();
         if (activeOrders.length === 0) return;
 
-        console.log(`Syncing ${activeOrders.length} active OpenOcean orders...`);
-        
-        const orderHashes = activeOrders.map(order => order.orderHash);
+        console.log(
+          `Syncing ${activeOrders.length} active OpenOcean orders...`,
+        );
+
+        const orderHashes = activeOrders.map((order) => order.orderHash);
         const result = await this.syncOrdersBatch(orderHashes);
-        
-        console.log(`Sync completed: ${result.syncedOrders} synced, ${result.errorCount} errors`);
+
+        console.log(
+          `Sync completed: ${result.syncedOrders} synced, ${result.errorCount} errors`,
+        );
       } catch (error) {
         console.error('Error in periodic sync:', error);
       }

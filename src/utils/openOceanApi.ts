@@ -86,8 +86,24 @@ export class OpenOceanApi {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
           'Content-Type': 'application/json',
-          'User-Agent': 'FlipTheStockMarket/1.0',
+          'DNT': '1',
+          'Origin': 'https://app.openocean.finance',
+          'Pragma': 'no-cache',
+          'Referer': 'https://app.openocean.finance/',
+          'Sec-CH-UA': '"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"',
+          'Sec-CH-UA-Mobile': '?0',
+          'Sec-CH-UA-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'empty',
+          'Sec-Fetch-Mode': 'cors',
+          'Sec-Fetch-Site': 'same-site',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       });
 
@@ -228,26 +244,39 @@ export class OpenOceanApi {
   }
 
   // Get current SPX6900 price in USDC using multi-aggregator (best rates)
-  async getSPX6900Price(): Promise<{ price: number; priceImpact: number; bestAggregator?: string; savings?: string }> {
+  async getSPX6900Price(): Promise<{
+    price: number;
+    priceImpact: number;
+    bestAggregator?: string;
+    savings?: string;
+  }> {
     try {
       console.log('🔍 Fetching SPX6900 price from multiple aggregators...');
 
       // Use multi-aggregator service for best rates
       const result = await multiAggregatorService.getSPX6900Price();
-      
+
       const price = Number.parseFloat(result.price);
-      
-      console.log(`✅ Best SPX6900 Price: $${price} (via ${result.bestAggregator})`);
+
+      console.log(
+        `✅ Best SPX6900 Price: $${price} (via ${result.bestAggregator})`,
+      );
       console.log('📊 All aggregator prices:', result.allPrices);
 
-      return { 
-        price, 
+      return {
+        price,
         priceImpact: 0.5, // Default low impact for price display
         bestAggregator: result.bestAggregator,
-        savings: result.allPrices.length > 1 ? 'Multi-aggregator comparison' : undefined
+        savings:
+          result.allPrices.length > 1
+            ? 'Multi-aggregator comparison'
+            : undefined,
       };
     } catch (error) {
-      console.error('Multi-aggregator price fetch failed, falling back to OpenOcean only:', error);
+      console.error(
+        'Multi-aggregator price fetch failed, falling back to OpenOcean only:',
+        error,
+      );
 
       // Fallback to OpenOcean only
       try {
@@ -268,7 +297,10 @@ export class OpenOceanApi {
           priceImpact: Number.parseFloat(result.estimatedPriceImpact),
         };
       } catch (openOceanError) {
-        console.error('OpenOcean fallback failed, trying CoinGecko:', openOceanError);
+        console.error(
+          'OpenOcean fallback failed, trying CoinGecko:',
+          openOceanError,
+        );
 
         // Final fallback to CoinGecko API
         try {
@@ -319,24 +351,24 @@ export class OpenOceanApi {
       const result = await multiAggregatorService.getBestSwapQuote(
         TOKENS.USDC,
         TOKENS.SPX6900,
-        '1000000' // 1 USDC
+        '1000000', // 1 USDC
       );
 
       const bestPrice = Number.parseFloat(result.bestQuote.price);
-      
+
       return {
         bestPrice,
         bestAggregator: result.bestQuote.aggregator,
-        allPrices: result.allQuotes.map(quote => ({
+        allPrices: result.allQuotes.map((quote) => ({
           aggregator: quote.aggregator,
           price: quote.price,
           buyAmount: quote.buyAmount,
-          responseTime: quote.responseTime
+          responseTime: quote.responseTime,
         })),
         savings: {
           amount: result.savingsVsWorst.amount,
-          percentage: result.savingsVsWorst.percentage
-        }
+          percentage: result.savingsVsWorst.percentage,
+        },
       };
     } catch (error) {
       console.error('Failed to get detailed price comparison:', error);

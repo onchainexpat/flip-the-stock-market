@@ -1,8 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { useUnifiedDCAProvider } from '@/hooks/useOpenOceanDCAProvider';
-import { Clock, DollarSign, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  RefreshCw,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface OpenOceanDCAFormProps {
@@ -10,9 +16,13 @@ interface OpenOceanDCAFormProps {
   onError?: (error: string) => void;
 }
 
-export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormProps) {
-  const { createOpenOceanOrder, isSupported, walletStatus } = useUnifiedDCAProvider();
-  
+export function OpenOceanDCAForm({
+  onOrderCreated,
+  onError,
+}: OpenOceanDCAFormProps) {
+  const { createOpenOceanOrder, isSupported, walletStatus } =
+    useUnifiedDCAProvider();
+
   const [formData, setFormData] = useState({
     totalAmount: '',
     intervalHours: '24',
@@ -20,15 +30,17 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
     minPrice: '',
     maxPrice: '',
   });
-  
+
   const [isCreating, setIsCreating] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
   const [orderSummary, setOrderSummary] = useState<any>(null);
 
   // Calculate derived values
-  const totalAmount = parseFloat(formData.totalAmount) || 0;
-  const intervalHours = parseFloat(formData.intervalHours) || 24;
-  const numberOfBuys = parseInt(formData.numberOfBuys) || 1;
+  const totalAmount = Number.parseFloat(formData.totalAmount) || 0;
+  const intervalHours = Number.parseFloat(formData.intervalHours) || 24;
+  const numberOfBuys = Number.parseInt(formData.numberOfBuys) || 1;
   const perExecutionAmount = totalAmount / numberOfBuys;
   const totalDurationDays = (intervalHours * numberOfBuys) / 24;
   const intervalSeconds = intervalHours * 3600;
@@ -41,7 +53,7 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
       errors.totalAmount = 'Minimum order amount is $5 USD';
     }
 
-    if (intervalHours && intervalHours < 1/60) {
+    if (intervalHours && intervalHours < 1 / 60) {
       errors.intervalHours = 'Minimum interval is 1 minute (0.0167 hours)';
     }
 
@@ -57,7 +69,7 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
   }, [totalAmount, intervalHours, numberOfBuys, perExecutionAmount]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateOrder = async () => {
@@ -72,7 +84,7 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
     }
 
     setIsCreating(true);
-    
+
     try {
       const order = await createOpenOceanOrder({
         provider: {} as any, // Will be populated by the hook
@@ -85,7 +97,7 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
 
       toast.success('OpenOcean DCA order created successfully!');
       onOrderCreated?.(order);
-      
+
       // Reset form
       setFormData({
         totalAmount: '',
@@ -94,10 +106,10 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
         minPrice: '',
         maxPrice: '',
       });
-      
     } catch (error) {
       console.error('Error creating OpenOcean DCA order:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to create order';
       toast.error(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -116,11 +128,13 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
   return (
     <div className="space-y-6">
       {/* Wallet Status */}
-      <div className={`p-3 rounded-lg border ${
-        isSupported 
-          ? 'border-green-500/30 bg-green-500/10' 
-          : 'border-red-500/30 bg-red-500/10'
-      }`}>
+      <div
+        className={`p-3 rounded-lg border ${
+          isSupported
+            ? 'border-green-500/30 bg-green-500/10'
+            : 'border-red-500/30 bg-red-500/10'
+        }`}
+      >
         <div className="flex items-center gap-2">
           {isSupported ? (
             <CheckCircle className="w-5 h-5 text-green-400" />
@@ -128,7 +142,9 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             <AlertCircle className="w-5 h-5 text-red-400" />
           )}
           <span className="text-sm font-medium text-white">
-            {isSupported ? 'OpenOcean DCA Supported' : 'OpenOcean DCA Not Supported'}
+            {isSupported
+              ? 'OpenOcean DCA Supported'
+              : 'OpenOcean DCA Not Supported'}
           </span>
         </div>
         <div className="text-sm text-gray-400 mt-1">
@@ -156,7 +172,9 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             />
           </div>
           {validationErrors.totalAmount && (
-            <div className="text-red-400 text-sm mt-1">{validationErrors.totalAmount}</div>
+            <div className="text-red-400 text-sm mt-1">
+              {validationErrors.totalAmount}
+            </div>
           )}
         </div>
 
@@ -170,7 +188,9 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             <input
               type="number"
               value={formData.intervalHours}
-              onChange={(e) => handleInputChange('intervalHours', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('intervalHours', e.target.value)
+              }
               className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
               placeholder="Enter interval in hours"
               min="0.0167"
@@ -178,7 +198,9 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             />
           </div>
           {validationErrors.intervalHours && (
-            <div className="text-red-400 text-sm mt-1">{validationErrors.intervalHours}</div>
+            <div className="text-red-400 text-sm mt-1">
+              {validationErrors.intervalHours}
+            </div>
           )}
           <div className="text-xs text-gray-400 mt-1">
             Minimum: 1 minute (0.0167 hours)
@@ -195,7 +217,9 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             <input
               type="number"
               value={formData.numberOfBuys}
-              onChange={(e) => handleInputChange('numberOfBuys', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('numberOfBuys', e.target.value)
+              }
               className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
               placeholder="Enter number of buys"
               min="1"
@@ -204,7 +228,9 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             />
           </div>
           {validationErrors.numberOfBuys && (
-            <div className="text-red-400 text-sm mt-1">{validationErrors.numberOfBuys}</div>
+            <div className="text-red-400 text-sm mt-1">
+              {validationErrors.numberOfBuys}
+            </div>
           )}
         </div>
 
@@ -250,15 +276,21 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Per Execution:</span>
-              <span className="text-white">${perExecutionAmount.toFixed(2)} USDC</span>
+              <span className="text-white">
+                ${perExecutionAmount.toFixed(2)} USDC
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Frequency:</span>
-              <span className="text-white">Every {formatDuration(intervalHours)}</span>
+              <span className="text-white">
+                Every {formatDuration(intervalHours)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Total Duration:</span>
-              <span className="text-white">{totalDurationDays.toFixed(1)} days</span>
+              <span className="text-white">
+                {totalDurationDays.toFixed(1)} days
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Platform Fee:</span>
@@ -289,9 +321,17 @@ export function OpenOceanDCAForm({ onOrderCreated, onError }: OpenOceanDCAFormPr
       {/* Create Order Button */}
       <button
         onClick={handleCreateOrder}
-        disabled={!isSupported || isCreating || Object.keys(validationErrors).length > 0 || !totalAmount}
+        disabled={
+          !isSupported ||
+          isCreating ||
+          Object.keys(validationErrors).length > 0 ||
+          !totalAmount
+        }
         className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-          isSupported && !isCreating && Object.keys(validationErrors).length === 0 && totalAmount
+          isSupported &&
+          !isCreating &&
+          Object.keys(validationErrors).length === 0 &&
+          totalAmount
             ? 'bg-purple-600 hover:bg-purple-700 text-white'
             : 'bg-gray-600 cursor-not-allowed text-gray-400'
         }`}

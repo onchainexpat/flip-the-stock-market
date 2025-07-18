@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 
 async function deleteOrder(orderId) {
   console.log(`🗑️ Deleting order: ${orderId}...`);
-  
+
   try {
     const response = await fetch('http://localhost:3000/api/delete-order', {
       method: 'POST',
@@ -10,12 +10,12 @@ async function deleteOrder(orderId) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        orderId: orderId
-      })
+        orderId: orderId,
+      }),
     });
 
     const result = await response.json();
-    
+
     if (response.ok) {
       console.log(`✅ Order ${orderId} deleted successfully`);
       console.log('   Response:', result);
@@ -30,18 +30,18 @@ async function deleteOrder(orderId) {
 
 async function main() {
   console.log('🧹 Cleaning up old DCA orders...\n');
-  
+
   const orderIds = [
-    '4bqyj64p',  // First order (partial ID)
-    'c5wlzh1j'   // Second order (partial ID)
+    '4bqyj64p', // First order (partial ID)
+    'c5wlzh1j', // Second order (partial ID)
   ];
-  
+
   // Delete both orders
   for (const orderId of orderIds) {
     await deleteOrder(orderId);
     console.log(''); // Add spacing
   }
-  
+
   console.log('🎯 Cleanup complete! You can now create a new test order.');
 }
 

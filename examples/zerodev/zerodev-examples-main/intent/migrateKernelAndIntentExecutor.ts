@@ -126,7 +126,7 @@ async function main() {
     ],
   });
   console.log(
-    `succesfully send cab tx, intentId: ${result.outputUiHash.uiHash}`
+    `succesfully send cab tx, intentId: ${result.outputUiHash.uiHash}`,
   );
 
   // wait for the intent to be opened on the input chains
@@ -136,9 +136,9 @@ async function main() {
         uiHash: data.uiHash,
       });
       console.log(
-        `intent open on chain ${openReceipts?.openChainId} txHash: ${openReceipts?.receipt?.transactionHash}`
+        `intent open on chain ${openReceipts?.openChainId} txHash: ${openReceipts?.receipt?.transactionHash}`,
       );
-    })
+    }),
   );
 
   // wait for the intent to be executed on the destination chain
@@ -146,7 +146,7 @@ async function main() {
     uiHash: result.outputUiHash.uiHash,
   });
   console.log(
-    `intent executed on chain: ${intentReceipt?.executionChainId} txHash: ${intentReceipt?.receipt?.transactionHash}`
+    `intent executed on chain: ${intentReceipt?.executionChainId} txHash: ${intentReceipt?.receipt?.transactionHash}`,
   );
 
   process.exit(0);

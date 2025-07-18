@@ -14,7 +14,7 @@ import {
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
 import dotenv from 'dotenv';
-import { http, Hex, createPublicClient, zeroAddress } from 'viem';
+import { http, type Hex, createPublicClient, zeroAddress } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { optimismSepolia, sepolia } from 'viem/chains';
 
@@ -28,7 +28,7 @@ if (
   !process.env.OPTIMISM_SEPOLIA_ZERODEV_RPC
 ) {
   console.error(
-    'Please set PRIVATE_KEY, RPC_URL, OPTIMISM_SEPOLIA_RPC_URL, ZERODEV_RPC, OPTIMISM_SEPOLIA_ZERODEV_RPC'
+    'Please set PRIVATE_KEY, RPC_URL, OPTIMISM_SEPOLIA_RPC_URL, ZERODEV_RPC, OPTIMISM_SEPOLIA_ZERODEV_RPC',
   );
   process.exit(1);
 }
@@ -61,7 +61,7 @@ const main = async () => {
       entryPoint,
       signer,
       kernelVersion: KERNEL_V3_1,
-    }
+    },
   );
   const optimismSepoliaMultiSigECDSAValidatorPlugin =
     await toMultiChainECDSAValidator(optimismSepoliaPublicClient, {
@@ -73,15 +73,15 @@ const main = async () => {
   const sepoliaSessionKeyAccount = privateKeyToAccount(generatePrivateKey());
 
   const optimismSepoliaSessionKeyAccount = privateKeyToAccount(
-    generatePrivateKey()
+    generatePrivateKey(),
   );
 
   // create an empty account as the session key signer for approvals
   const sepoliaEmptyAccount = addressToEmptyAccount(
-    sepoliaSessionKeyAccount.address
+    sepoliaSessionKeyAccount.address,
   );
   const optimismSepoliaEmptyAccount = addressToEmptyAccount(
-    optimismSepoliaSessionKeyAccount.address
+    optimismSepoliaSessionKeyAccount.address,
   );
 
   const sepoliaEmptySessionKeySigner = await toECDSASigner({
@@ -102,7 +102,7 @@ const main = async () => {
       signer: sepoliaEmptySessionKeySigner,
       policies: [sudoPolicy],
       kernelVersion: KERNEL_V3_1,
-    }
+    },
   );
 
   const optimismSepoliaPermissionPlugin = await toPermissionValidator(
@@ -112,7 +112,7 @@ const main = async () => {
       signer: optimismSepoliaEmptySessionKeySigner,
       policies: [sudoPolicy],
       kernelVersion: KERNEL_V3_1,
-    }
+    },
   );
 
   const sepoliaKernelAccount = await createKernelAccount(sepoliaPublicClient, {
@@ -133,13 +133,13 @@ const main = async () => {
         regular: optimismSepoliaPermissionPlugin,
       },
       kernelVersion: KERNEL_V3_1,
-    }
+    },
   );
 
   console.log('sepoliaKernelAccount.address', sepoliaKernelAccount.address);
   console.log(
     'optimismSepoliaKernelAccount.address',
-    optimismSepoliaKernelAccount.address
+    optimismSepoliaKernelAccount.address,
   );
 
   // serialize multi chain permission account with empty account signer, so get approvals
@@ -168,7 +168,7 @@ const main = async () => {
     entryPoint,
     KERNEL_V3_1,
     sepoliaApproval,
-    sepoliaSessionKeySigner
+    sepoliaSessionKeySigner,
   );
 
   const deserializeOptimismSepoliaKernelAccount =
@@ -177,7 +177,7 @@ const main = async () => {
       entryPoint,
       KERNEL_V3_1,
       optimismSepoliaApproval,
-      optimismSepoliaSessionKeySigner
+      optimismSepoliaSessionKeySigner,
     );
 
   const sepoliaZeroDevPaymasterClient = createZeroDevPaymasterClient({

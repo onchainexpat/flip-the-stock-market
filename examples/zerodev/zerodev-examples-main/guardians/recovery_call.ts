@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
   AccountNotFoundError,
-  KernelValidator,
+  type KernelValidator,
   createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
@@ -10,8 +10,8 @@ import {
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
 import {
   http,
-  Address,
-  Hex,
+  type Address,
+  type Hex,
   concat,
   createPublicClient,
   encodeAbiParameters,
@@ -63,7 +63,7 @@ export async function registerGuardian<
   chain extends Chain | undefined,
 >(
   client: Client<Transport, chain, account>,
-  args: Prettify<RegisterGuardianParameters>
+  args: Prettify<RegisterGuardianParameters>,
 ): Promise<Hash> {
   const { guardian, account: account_ = client.account } = args;
   if (!account_) throw new AccountNotFoundError();
@@ -73,7 +73,7 @@ export async function registerGuardian<
   return await getAction(
     client,
     sendUserOperation,
-    'sendUserOperation'
+    'sendUserOperation',
   )({
     account,
     callData: encodeFunctionData({
@@ -84,7 +84,7 @@ export async function registerGuardian<
         RECOVERY_ACTION_ADDRESS,
         concat([
           toFunctionSelector(
-            parseAbi([recoveryExecutorFunction])[0]
+            parseAbi([recoveryExecutorFunction])[0],
           ) as `0x${string}`,
           CALLER_HOOK as `0x${string}`,
           encodeAbiParameters(
@@ -97,7 +97,7 @@ export async function registerGuardian<
                   [guardian],
                 ]),
               ]),
-            ]
+            ],
           ),
         ]),
       ],
@@ -116,14 +116,14 @@ export async function recoverAccount<
   chain extends Chain | undefined,
 >(
   client: Client<Transport, chain, account>,
-  args: Prettify<RecoveryParameters>
+  args: Prettify<RecoveryParameters>,
 ) {
   const { targetAccount, guardian, newSigner } = args;
 
   return await getAction(
     client,
     sendUserOperation,
-    'sendUserOperation'
+    'sendUserOperation',
   )({
     account: guardian,
     calls: [

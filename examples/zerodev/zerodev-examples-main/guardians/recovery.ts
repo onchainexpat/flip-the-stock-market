@@ -15,7 +15,7 @@ import {
 } from '@zerodev/weighted-ecdsa-validator';
 import {
   http,
-  Hex,
+  type Hex,
   createPublicClient,
   encodeFunctionData,
   parseAbi,

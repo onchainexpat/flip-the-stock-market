@@ -23,9 +23,12 @@ async function verifyServices() {
     const keyId = await agentKeyService.storeAgentKey(agentKey, password);
     console.log('✅ Key stored with ID:', keyId);
 
-    const retrievedKey = await agentKeyService.retrieveAgentKey(keyId, password);
+    const retrievedKey = await agentKeyService.retrieveAgentKey(
+      keyId,
+      password,
+    );
     console.log('✅ Key retrieved successfully');
-    
+
     if (retrievedKey.privateKey === agentKey.privateKey) {
       console.log('✅ Key integrity verified');
     } else {
@@ -34,18 +37,27 @@ async function verifyServices() {
 
     // Test 3: Smart Wallet Creation
     console.log('\n3️⃣ Testing smart wallet creation...');
-    const { smartWalletAddress, agentAddress } = await zerodevDCAService.createSmartWallet(
-      agentKey.privateKey
-    );
+    const { smartWalletAddress, agentAddress } =
+      await zerodevDCAService.createSmartWallet(agentKey.privateKey);
     console.log('✅ Smart wallet created:', smartWalletAddress);
     console.log('✅ Agent address matches:', agentAddress === agentKey.address);
 
     // Test 4: Balance Checking (should be 0 for new wallet)
     console.log('\n4️⃣ Testing balance checking...');
-    const usdcBalance = await zerodevDCAService.getUSDCBalance(smartWalletAddress);
-    const spxBalance = await zerodevDCAService.getSPXBalance(smartWalletAddress);
-    console.log('✅ USDC balance:', (Number(usdcBalance) / 1e6).toFixed(6), 'USDC');
-    console.log('✅ SPX balance:', (Number(spxBalance) / 1e8).toFixed(8), 'SPX');
+    const usdcBalance =
+      await zerodevDCAService.getUSDCBalance(smartWalletAddress);
+    const spxBalance =
+      await zerodevDCAService.getSPXBalance(smartWalletAddress);
+    console.log(
+      '✅ USDC balance:',
+      (Number(usdcBalance) / 1e6).toFixed(6),
+      'USDC',
+    );
+    console.log(
+      '✅ SPX balance:',
+      (Number(spxBalance) / 1e8).toFixed(8),
+      'SPX',
+    );
 
     // Test 5: Swap Quote (without execution)
     console.log('\n5️⃣ Testing swap quote...');
@@ -53,25 +65,28 @@ async function verifyServices() {
     const swapQuote = await zerodevDCAService.getSwapQuote(
       testAmount,
       smartWalletAddress,
-      smartWalletAddress
+      smartWalletAddress,
     );
-    
+
     if (swapQuote.success) {
       console.log('✅ Swap quote successful');
       console.log('   Expected output:', swapQuote.expectedOutput);
     } else {
-      console.log('⚠️ Swap quote failed (expected for unfunded wallet):', swapQuote.error);
+      console.log(
+        '⚠️ Swap quote failed (expected for unfunded wallet):',
+        swapQuote.error,
+      );
     }
 
     // Test 6: Service Integration
     console.log('\n6️⃣ Testing service integration...');
     const userWallet = '0x742f96b3e80a4b3633c7f3ec5bd1b5f9b6b0123e'; // Test wallet
-    
+
     const walletCreation = await zerodevSmartWalletService.createSmartWallet(
       userWallet as any,
-      password
+      password,
     );
-    
+
     if (walletCreation.success) {
       console.log('✅ Integrated wallet service working');
       console.log('   Wallet ID:', walletCreation.walletConfig?.walletId);
@@ -87,7 +102,6 @@ async function verifyServices() {
     console.log('✅ OpenOcean integration working');
     console.log('✅ Service integration working');
     console.log('✅ KERNEL_V3_2 support verified');
-
   } catch (error) {
     console.error('\n❌ Service verification failed:', error);
     process.exit(1);

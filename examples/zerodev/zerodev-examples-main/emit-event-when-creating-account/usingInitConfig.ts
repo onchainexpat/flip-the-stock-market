@@ -9,8 +9,8 @@ import {
 import { KERNEL_V3_1, VALIDATOR_TYPE } from '@zerodev/sdk/constants';
 import {
   http,
-  Address,
-  Hex,
+  type Address,
+  type Hex,
   concatHex,
   createPublicClient,
   decodeEventLog,
@@ -19,7 +19,7 @@ import {
   zeroAddress,
 } from 'viem';
 import {
-  EntryPointVersion,
+  type EntryPointVersion,
   entryPoint07Address,
 } from 'viem/account-abstraction';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
@@ -36,7 +36,7 @@ const publicClient = createPublicClient({
 });
 
 const signer = privateKeyToAccount(
-  generatePrivateKey() ?? (process.env.PRIVATE_KEY as Hex)
+  generatePrivateKey() ?? (process.env.PRIVATE_KEY as Hex),
 );
 const entryPoint = {
   address: entryPoint07Address as Address,

@@ -6,7 +6,7 @@ import {
 } from '@zerodev/sdk';
 import { getUserOperationGasPrice } from '@zerodev/sdk/actions';
 import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, zeroAddress } from 'viem';
+import { http, type Hex, createPublicClient, zeroAddress } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -29,7 +29,7 @@ const publicClient = createPublicClient({
 
 const main = async () => {
   const eip7702Account = privateKeyToAccount(
-    generatePrivateKey() ?? (process.env['PRIVATE_KEY'] as Hex)
+    generatePrivateKey() ?? (process.env['PRIVATE_KEY'] as Hex),
   );
   console.log('EOA Address:', eip7702Account.address);
 
@@ -84,7 +84,7 @@ const main = async () => {
   });
   console.log(
     'UserOp completed',
-    `${chain.blockExplorers.default.url}/tx/${receipt.transactionHash}`
+    `${chain.blockExplorers.default.url}/tx/${receipt.transactionHash}`,
   );
 
   process.exit(0);

@@ -12,12 +12,12 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useAccount, useReadContracts } from 'wagmi';
 import { type Address, erc20Abi } from 'viem';
-import { TOKENS } from '../../utils/openOceanApi';
+import { useAccount, useReadContracts } from 'wagmi';
 import { useOneClickDCA } from '../../services/oneClickDCAService';
+import { TOKENS } from '../../utils/openOceanApi';
 
 interface DCAOrder {
   id: string;
@@ -58,13 +58,17 @@ export default function AutomatedDCAComponent({
   // Process state
   const [isCreating, setIsCreating] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [smartWalletAddress, setSmartWalletAddress] = useState<string | null>(null);
+  const [smartWalletAddress, setSmartWalletAddress] = useState<string | null>(
+    null,
+  );
   const [showFundingInstructions, setShowFundingInstructions] = useState(false);
-  
+
   // Order history state
   const [orders, setOrders] = useState<DCAOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
-  const [cancellingOrders, setCancellingOrders] = useState<Set<string>>(new Set());
+  const [cancellingOrders, setCancellingOrders] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Fetch USDC balance
   const { data: balanceData } = useReadContracts({
@@ -89,7 +93,7 @@ export default function AutomatedDCAComponent({
 
   // Calculate order details
   const calculateOrders = () => {
-    const days = parseInt(formData.duration) || 0;
+    const days = Number.parseInt(formData.duration) || 0;
     switch (formData.frequency) {
       case 'hourly':
         return days * 24;
@@ -105,19 +109,22 @@ export default function AutomatedDCAComponent({
   };
 
   const numberOfOrders = calculateOrders();
-  const amountPerOrder = parseFloat(formData.amount) / numberOfOrders;
+  const amountPerOrder = Number.parseFloat(formData.amount) / numberOfOrders;
   const platformFeePercentage = 0; // No platform fee
   const platformFeePerOrder = amountPerOrder * (platformFeePercentage / 100);
   const netAmountPerOrder = amountPerOrder - platformFeePerOrder;
-  const totalPlatformFees = parseFloat(formData.amount) * (platformFeePercentage / 100);
+  const totalPlatformFees =
+    Number.parseFloat(formData.amount) * (platformFeePercentage / 100);
 
   // Load user's DCA orders
   const loadOrders = async () => {
     if (!userWalletAddress) return;
-    
+
     setLoadingOrders(true);
     try {
-      const response = await fetch(`/api/dca-orders-v2?userAddress=${userWalletAddress}`);
+      const response = await fetch(
+        `/api/dca-orders-v2?userAddress=${userWalletAddress}`,
+      );
       if (response.ok) {
         const data = await response.json();
         setOrders(data.orders || []);
@@ -139,14 +146,17 @@ export default function AutomatedDCAComponent({
   // Cancel order function
   const cancelOrder = async (orderId: string) => {
     if (!userWalletAddress) return;
-    
-    setCancellingOrders(prev => new Set(prev).add(orderId));
-    
+
+    setCancellingOrders((prev) => new Set(prev).add(orderId));
+
     try {
-      const response = await fetch(`/api/delete-order?orderId=${orderId}&userAddress=${userWalletAddress}`, {
-        method: 'DELETE'
-      });
-      
+      const response = await fetch(
+        `/api/delete-order?orderId=${orderId}&userAddress=${userWalletAddress}`,
+        {
+          method: 'DELETE',
+        },
+      );
+
       if (response.ok) {
         toast.success('Order cancelled successfully');
         loadOrders(); // Reload orders
@@ -156,9 +166,11 @@ export default function AutomatedDCAComponent({
       }
     } catch (error) {
       console.error('Failed to cancel order:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to cancel order');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to cancel order',
+      );
     } finally {
-      setCancellingOrders(prev => {
+      setCancellingOrders((prev) => {
         const newSet = new Set(prev);
         newSet.delete(orderId);
         return newSet;
@@ -177,7 +189,7 @@ export default function AutomatedDCAComponent({
       return;
     }
 
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+    if (!formData.amount || Number.parseFloat(formData.amount) <= 0) {
       toast.error('Please enter a valid amount');
       return;
     }
@@ -197,16 +209,16 @@ export default function AutomatedDCAComponent({
       if (!result.success) {
         throw new Error(result.error || 'Failed to create DCA order');
       }
-      
+
       console.log('✅ One-click DCA complete:', result);
-      
+
       setOrderId(result.orderId!);
       setSmartWalletAddress(result.smartWalletAddress!);
       setShowFundingInstructions(true);
 
       toast.success(
         `🎉 One-click DCA setup complete! Your automated DCA is now active.`,
-        { duration: 8000 }
+        { duration: 8000 },
       );
 
       // Reload orders to show the new one
@@ -215,7 +227,6 @@ export default function AutomatedDCAComponent({
       if (onOrderCreated) {
         onOrderCreated();
       }
-
     } catch (error: any) {
       console.error('❌ One-click DCA failed:', error);
       toast.error(
@@ -242,7 +253,6 @@ export default function AutomatedDCAComponent({
     );
   }
 
-
   return (
     <div className={`bg-gray-900 rounded-lg p-6 ${className}`}>
       {/* Header */}
@@ -251,24 +261,111 @@ export default function AutomatedDCAComponent({
           <Repeat size={20} className="text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-white">One-Click Automated DCA</h3>
+          <h3 className="text-lg font-semibold text-white">
+            One-Click Automated DCA
+          </h3>
           <p className="text-sm text-gray-400">
-            Single transaction sets up everything: wallet, funding, and automation
+            Single transaction sets up everything: wallet, funding, and
+            automation
           </p>
         </div>
       </div>
 
-      {!showFundingInstructions ? (
+      {showFundingInstructions ? (
+        /* Funding Instructions */
+        <div className="space-y-6">
+          <div className="bg-green-900/20 border border-green-700 rounded-lg p-4">
+            <h4 className="text-green-300 font-semibold mb-2">
+              ✅ One-Click DCA Setup Complete!
+            </h4>
+            <p className="text-green-200 text-sm">
+              Your automated DCA order is active and funded. Trades will execute
+              automatically on schedule.
+            </p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h4 className="text-white font-medium mb-3">Order Details</h4>
+            <div className="space-y-3">
+              <div>
+                <span className="text-gray-400 text-sm">Order ID:</span>
+                <div className="text-white font-mono text-sm">{orderId}</div>
+              </div>
+              <div>
+                <span className="text-gray-400 text-sm">Total Amount:</span>
+                <div className="text-white font-semibold">
+                  ${formData.amount} USDC
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-400 text-sm">Frequency:</span>
+                <div className="text-white capitalize">
+                  {formData.frequency}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-400 text-sm">Duration:</span>
+                <div className="text-white">{formData.duration} days</div>
+              </div>
+              <div>
+                <span className="text-gray-400 text-sm">Amount per Trade:</span>
+                <div className="text-white">
+                  ${amountPerOrder.toFixed(2)} USDC
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
+            <h4 className="text-blue-300 font-medium mb-2">
+              What Happens Next?
+            </h4>
+            <ol className="space-y-2 text-blue-200 text-sm">
+              <li>
+                ✅ Smart wallet deployed and funded with {formData.amount} USDC
+              </li>
+              <li>✅ Agent permissions set up for automated execution</li>
+              <li>
+                🕐 DCA executions will start according to your{' '}
+                {formData.frequency} schedule
+              </li>
+              <li>📈 SPX tokens will be sent to your wallet after each swap</li>
+              <li>🔔 Monitor progress through your wallet or our dashboard</li>
+            </ol>
+          </div>
+
+          <button
+            onClick={() => {
+              setShowFundingInstructions(false);
+              setOrderId(null);
+              setSmartWalletAddress(null);
+              setFormData({
+                amount: '100',
+                frequency: 'daily',
+                duration: '30',
+              });
+            }}
+            className="w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white font-medium transition-colors"
+          >
+            Create Another Order
+          </button>
+        </div>
+      ) : (
         <>
           {/* One-Click Description */}
           <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4 mb-6">
-            <h4 className="text-blue-300 font-semibold mb-2">🚀 One-Click Setup Process</h4>
+            <h4 className="text-blue-300 font-semibold mb-2">
+              🚀 One-Click Setup Process
+            </h4>
             <p className="text-blue-200 text-sm mb-3">
-              When you click "One-Click DCA Setup", we'll handle everything in a single flow:
+              When you click "One-Click DCA Setup", we'll handle everything in a
+              single flow:
             </p>
             <ul className="space-y-1 text-blue-200 text-xs">
               <li>• Deploy your gas-sponsored smart wallet</li>
-              <li>• Request USDC transfer from your wallet to the smart wallet</li>
+              <li>
+                • Request USDC transfer from your wallet to the smart wallet
+              </li>
               <li>• Set up automated trading permissions</li>
               <li>• Create your DCA order with server-managed execution</li>
             </ul>
@@ -357,7 +454,9 @@ export default function AutomatedDCAComponent({
 
           {/* Order Summary */}
           <div className="bg-gray-800 rounded-lg p-4 mb-6">
-            <h4 className="text-sm font-medium text-gray-300 mb-3">Order Summary</h4>
+            <h4 className="text-sm font-medium text-gray-300 mb-3">
+              Order Summary
+            </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Number of orders:</span>
@@ -369,15 +468,21 @@ export default function AutomatedDCAComponent({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Platform fee per order:</span>
-                <span className="text-white">${platformFeePerOrder.toFixed(2)}</span>
+                <span className="text-white">
+                  ${platformFeePerOrder.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Net amount per order:</span>
-                <span className="text-white">${netAmountPerOrder.toFixed(2)}</span>
+                <span className="text-white">
+                  ${netAmountPerOrder.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between font-medium pt-2 border-t border-gray-700">
                 <span className="text-gray-400">Total platform fees:</span>
-                <span className="text-white">${totalPlatformFees.toFixed(2)}</span>
+                <span className="text-white">
+                  ${totalPlatformFees.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
@@ -413,11 +518,13 @@ export default function AutomatedDCAComponent({
             disabled={
               isCreating ||
               !formData.amount ||
-              parseFloat(formData.amount) <= 0 ||
-              !parseInt(formData.duration)
+              Number.parseFloat(formData.amount) <= 0 ||
+              !Number.parseInt(formData.duration)
             }
             className={`w-full py-4 px-6 rounded-lg font-medium text-white transition-all duration-200 ${
-              isCreating || !formData.amount || parseFloat(formData.amount) <= 0
+              isCreating ||
+              !formData.amount ||
+              Number.parseFloat(formData.amount) <= 0
                 ? 'bg-gray-700 cursor-not-allowed'
                 : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 transform hover:scale-[1.02]'
             } flex items-center justify-center gap-2`}
@@ -436,71 +543,6 @@ export default function AutomatedDCAComponent({
             )}
           </button>
         </>
-      ) : (
-        /* Funding Instructions */
-        <div className="space-y-6">
-          <div className="bg-green-900/20 border border-green-700 rounded-lg p-4">
-            <h4 className="text-green-300 font-semibold mb-2">
-              ✅ One-Click DCA Setup Complete!
-            </h4>
-            <p className="text-green-200 text-sm">
-              Your automated DCA order is active and funded. Trades will execute automatically on schedule.
-            </p>
-          </div>
-
-          <div className="bg-gray-800 rounded-lg p-4">
-            <h4 className="text-white font-medium mb-3">Order Details</h4>
-            <div className="space-y-3">
-              <div>
-                <span className="text-gray-400 text-sm">Order ID:</span>
-                <div className="text-white font-mono text-sm">{orderId}</div>
-              </div>
-              <div>
-                <span className="text-gray-400 text-sm">Total Amount:</span>
-                <div className="text-white font-semibold">${formData.amount} USDC</div>
-              </div>
-              <div>
-                <span className="text-gray-400 text-sm">Frequency:</span>
-                <div className="text-white capitalize">{formData.frequency}</div>
-              </div>
-              <div>
-                <span className="text-gray-400 text-sm">Duration:</span>
-                <div className="text-white">{formData.duration} days</div>
-              </div>
-              <div>
-                <span className="text-gray-400 text-sm">Amount per Trade:</span>
-                <div className="text-white">${amountPerOrder.toFixed(2)} USDC</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
-            <h4 className="text-blue-300 font-medium mb-2">What Happens Next?</h4>
-            <ol className="space-y-2 text-blue-200 text-sm">
-              <li>✅ Smart wallet deployed and funded with {formData.amount} USDC</li>
-              <li>✅ Agent permissions set up for automated execution</li>
-              <li>🕐 DCA executions will start according to your {formData.frequency} schedule</li>
-              <li>📈 SPX tokens will be sent to your wallet after each swap</li>
-              <li>🔔 Monitor progress through your wallet or our dashboard</li>
-            </ol>
-          </div>
-
-          <button
-            onClick={() => {
-              setShowFundingInstructions(false);
-              setOrderId(null);
-              setSmartWalletAddress(null);
-              setFormData({
-                amount: '100',
-                frequency: 'daily',
-                duration: '30',
-              });
-            }}
-            className="w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white font-medium transition-colors"
-          >
-            Create Another Order
-          </button>
-        </div>
       )}
 
       {/* Order History Section */}
@@ -510,7 +552,7 @@ export default function AutomatedDCAComponent({
             <Clock size={20} />
             Your DCA Orders
           </h3>
-          
+
           {loadingOrders ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
@@ -520,7 +562,9 @@ export default function AutomatedDCAComponent({
             <div className="text-center py-8">
               <Repeat className="mx-auto w-12 h-12 text-gray-500 mb-4" />
               <p className="text-gray-400">No DCA orders yet</p>
-              <p className="text-gray-500 text-sm">Create your first automated DCA order above!</p>
+              <p className="text-gray-500 text-sm">
+                Create your first automated DCA order above!
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -539,13 +583,15 @@ export default function AutomatedDCAComponent({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.status === 'active' 
-                          ? 'bg-green-900 text-green-300' 
-                          : order.status === 'completed'
-                          ? 'bg-blue-900 text-blue-300'
-                          : 'bg-red-900 text-red-300'
-                      }`}>
+                      <div
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                          order.status === 'active'
+                            ? 'bg-green-900 text-green-300'
+                            : order.status === 'completed'
+                              ? 'bg-blue-900 text-blue-300'
+                              : 'bg-red-900 text-red-300'
+                        }`}
+                      >
                         {order.status}
                       </div>
                       {order.status === 'active' && (
@@ -564,7 +610,7 @@ export default function AutomatedDCAComponent({
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-400">Order ID:</span>
@@ -581,7 +627,8 @@ export default function AutomatedDCAComponent({
                     <div>
                       <span className="text-gray-400">Smart Wallet:</span>
                       <div className="text-white font-mono text-xs">
-                        {order.smartWalletAddress?.slice(0, 6)}...{order.smartWalletAddress?.slice(-4)}
+                        {order.smartWalletAddress?.slice(0, 6)}...
+                        {order.smartWalletAddress?.slice(-4)}
                       </div>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import {
-  ModularSigner,
+  type ModularSigner,
   deserializePermissionAccount,
   serializePermissionAccount,
   toPermissionValidator,
@@ -13,7 +13,7 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, zeroAddress } from 'viem';
+import { http, type Hex, createPublicClient, zeroAddress } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -38,7 +38,7 @@ const kernelVersion = KERNEL_V3_3;
 
 const createSessionKey = async (
   sessionKeySigner: ModularSigner,
-  sessionPrivateKey: Hex
+  sessionPrivateKey: Hex,
 ) => {
   const permissionPlugin = await toPermissionValidator(publicClient, {
     entryPoint,
@@ -70,7 +70,7 @@ const useSessionKey = async (serializedSessionKey: string) => {
     publicClient,
     entryPoint,
     KERNEL_V3_3,
-    serializedSessionKey
+    serializedSessionKey,
   );
   console.log('Session key account address:', sessionKeyAccount.address);
 
@@ -101,7 +101,7 @@ const useSessionKey = async (serializedSessionKey: string) => {
   });
   console.log(
     'UserOp completed',
-    `${chain.blockExplorers.default.url}/tx/${receipt.transactionHash}`
+    `${chain.blockExplorers.default.url}/tx/${receipt.transactionHash}`,
   );
 };
 
@@ -115,7 +115,7 @@ const main = async () => {
   // The owner creates a session key, serializes it, and shares it with the agent.
   const serializedSessionKey = await createSessionKey(
     sessionKeySigner,
-    sessionPrivateKey
+    sessionPrivateKey,
   );
 
   // The agent reconstructs the session key using the serialized value

@@ -11,8 +11,8 @@ import {
   getEntryPoint,
 } from '@zerodev/sdk/constants';
 import dotenv from 'dotenv';
-import { http, Address, createPublicClient, zeroAddress } from 'viem';
-import { SmartAccount } from 'viem/account-abstraction';
+import { http, type Address, createPublicClient, zeroAddress } from 'viem';
+import type { SmartAccount } from 'viem/account-abstraction';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { arbitrum } from 'viem/chains';
 
@@ -130,7 +130,7 @@ async function main() {
   await verifyUpgrade(upgradedClient);
 
   console.log(
-    'Successfully upgraded kernel to V3.2 with intent functionality enabled'
+    'Successfully upgraded kernel to V3.2 with intent functionality enabled',
   );
 }
 

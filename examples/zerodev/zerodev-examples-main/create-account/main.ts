@@ -6,7 +6,7 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, zeroAddress } from 'viem';
+import { http, type Hex, createPublicClient, zeroAddress } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -22,7 +22,7 @@ const publicClient = createPublicClient({
 });
 
 const signer = privateKeyToAccount(
-  (process.env.PRIVATE_KEY as Hex) || generatePrivateKey()
+  (process.env.PRIVATE_KEY as Hex) || generatePrivateKey(),
 );
 const entryPoint = getEntryPoint('0.7');
 const kernelVersion = KERNEL_V3_1;

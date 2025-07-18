@@ -9,9 +9,8 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
-import { serverAgentKeyService } from './serverAgentKeyService';
 import { TOKENS } from '../utils/openOceanApi';
-import { aggregatorExecutionService } from './aggregatorExecutionService';
+import { serverAgentKeyService } from './serverAgentKeyService';
 
 // ZeroDev configuration
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
@@ -20,7 +19,8 @@ const ZERODEV_RPC_URL =
   `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`;
 
 // OpenOcean router
-const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+const OPENOCEAN_ROUTER =
+  '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
 export interface GaslessDCAExecutionResult {
   success: boolean;
@@ -61,7 +61,7 @@ export class GaslessDCAExecutor {
       console.log(`   Agent key: ${agentKeyId}`);
       console.log(`   Smart wallet: ${smartWalletAddress}`);
       console.log(`   Swap amount: ${swapAmount.toString()} USDC`);
-      
+
       // Get agent key data
       const agentKeyData = await serverAgentKeyService.getAgentKey(agentKeyId);
       if (!agentKeyData || !agentKeyData.sessionKeyApproval) {
@@ -80,28 +80,42 @@ export class GaslessDCAExecutor {
 
       // Check smart wallet balance (should have USDC but no ETH needed)
       const usdcBalance = await this.getUSDCBalance(smartWalletAddress);
-      console.log('💰 USDC balance:', (Number(usdcBalance) / 1e6).toFixed(6), 'USDC');
+      console.log(
+        '💰 USDC balance:',
+        (Number(usdcBalance) / 1e6).toFixed(6),
+        'USDC',
+      );
 
       if (usdcBalance < swapAmount) {
         throw new Error(`Insufficient USDC: ${usdcBalance} < ${swapAmount}`);
       }
 
       // Check ETH balance (should be 0 - that's the point!)
-      const ethBalance = await this.publicClient.getBalance({ address: smartWalletAddress });
-      console.log('⛽ ETH balance:', (Number(ethBalance) / 1e18).toFixed(6), 'ETH');
-      
+      const ethBalance = await this.publicClient.getBalance({
+        address: smartWalletAddress,
+      });
+      console.log(
+        '⛽ ETH balance:',
+        (Number(ethBalance) / 1e18).toFixed(6),
+        'ETH',
+      );
+
       if (ethBalance === 0n) {
-        console.log('✅ Smart wallet has 0 ETH - perfect for gasless execution test');
+        console.log(
+          '✅ Smart wallet has 0 ETH - perfect for gasless execution test',
+        );
       }
 
       // Import ZeroDev modules
       const { toECDSASigner } = await import('@zerodev/permissions/signers');
-      const { deserializePermissionAccount } = await import('@zerodev/permissions');
-      const { KERNEL_V3_1, getEntryPoint } = await import('@zerodev/sdk/constants');
-      const { 
-        createKernelAccountClient, 
-        createZeroDevPaymasterClient 
-      } = await import('@zerodev/sdk');
+      const { deserializePermissionAccount } = await import(
+        '@zerodev/permissions'
+      );
+      const { KERNEL_V3_1, getEntryPoint } = await import(
+        '@zerodev/sdk/constants'
+      );
+      const { createKernelAccountClient, createZeroDevPaymasterClient } =
+        await import('@zerodev/sdk');
 
       // Create agent signer
       const agentSigner = await toECDSASigner({ signer: agentAccount });
@@ -113,11 +127,13 @@ export class GaslessDCAExecutor {
         getEntryPoint('0.7'),
         KERNEL_V3_1,
         agentKeyData.sessionKeyApproval,
-        agentSigner
+        agentSigner,
       );
 
       console.log('✅ Permission account deserialized');
-      console.log(`   Address match: ${smartWallet.address.toLowerCase() === smartWalletAddress.toLowerCase()}`);
+      console.log(
+        `   Address match: ${smartWallet.address.toLowerCase() === smartWalletAddress.toLowerCase()}`,
+      );
 
       // Create ZeroDev paymaster client
       console.log('💰 Setting up ZeroDev paymaster...');
@@ -135,7 +151,7 @@ export class GaslessDCAExecutor {
           // Use correct ZeroDev sponsorship method
           sponsorUserOperation: async (args) => {
             console.log('💰 Sponsoring user operation...');
-            
+
             // Try the correct ZeroDev API method
             const response = await fetch(ZERODEV_RPC_URL, {
               method: 'POST',
@@ -147,13 +163,13 @@ export class GaslessDCAExecutor {
                 params: [args.userOperation, args.entryPoint],
               }),
             });
-            
+
             const result = await response.json();
             if (result.error) {
               console.error('❌ Sponsorship failed:', result.error);
               throw new Error(`Sponsorship failed: ${result.error.message}`);
             }
-            
+
             console.log('✅ User operation sponsored');
             return result.result;
           },
@@ -206,7 +222,7 @@ export class GaslessDCAExecutor {
         console.log('✅ Approval tx (gas sponsored):', approveTxHash);
 
         // Wait for approval
-        await new Promise(resolve => setTimeout(resolve, 8000));
+        await new Promise((resolve) => setTimeout(resolve, 8000));
 
         // Step 2: Execute swap
         console.log('📝 Step 2: Executing swap...');
@@ -220,7 +236,7 @@ export class GaslessDCAExecutor {
         console.log('✅ Swap tx (gas sponsored):', swapTxHash);
 
         // Wait for swap to complete
-        await new Promise(resolve => setTimeout(resolve, 15000));
+        await new Promise((resolve) => setTimeout(resolve, 15000));
 
         // Step 3: Transfer SPX to user wallet
         console.log('📝 Step 3: Transferring SPX to user wallet...');
@@ -230,7 +246,11 @@ export class GaslessDCAExecutor {
           throw new Error('No SPX tokens received from swap');
         }
 
-        console.log('📤 Transferring', (Number(spxBalance) / 1e8).toFixed(8), 'SPX to user wallet...');
+        console.log(
+          '📤 Transferring',
+          (Number(spxBalance) / 1e8).toFixed(8),
+          'SPX to user wallet...',
+        );
 
         const transferData = encodeFunctionData({
           abi: erc20Abi,
@@ -248,13 +268,21 @@ export class GaslessDCAExecutor {
         console.log('✅ Transfer tx (gas sponsored):', transferTxHash);
 
         // Verify final state
-        await new Promise(resolve => setTimeout(resolve, 8000));
-        
-        const finalEthBalance = await this.publicClient.getBalance({ address: smartWalletAddress });
-        console.log('⛽ Final ETH balance:', (Number(finalEthBalance) / 1e18).toFixed(6), 'ETH');
-        
+        await new Promise((resolve) => setTimeout(resolve, 8000));
+
+        const finalEthBalance = await this.publicClient.getBalance({
+          address: smartWalletAddress,
+        });
+        console.log(
+          '⛽ Final ETH balance:',
+          (Number(finalEthBalance) / 1e18).toFixed(6),
+          'ETH',
+        );
+
         if (finalEthBalance === ethBalance) {
-          console.log('🎉 Perfect! Smart wallet ETH balance unchanged - fully gasless execution');
+          console.log(
+            '🎉 Perfect! Smart wallet ETH balance unchanged - fully gasless execution',
+          );
         }
 
         return {
@@ -266,21 +294,29 @@ export class GaslessDCAExecutor {
           transactions,
           gasSponsored: true,
         };
-
       } catch (executionError) {
         console.error('❌ Transaction execution failed:', executionError);
-        
+
         // Check if it's an AA23 error
-        const errorMessage = executionError instanceof Error ? executionError.message : 'Unknown error';
-        if (errorMessage.includes('AA23') || errorMessage.includes('reverted')) {
+        const errorMessage =
+          executionError instanceof Error
+            ? executionError.message
+            : 'Unknown error';
+        if (
+          errorMessage.includes('AA23') ||
+          errorMessage.includes('reverted')
+        ) {
           console.log('🔍 AA23 error detected - permission validation failed');
-          console.log('   This suggests the session key permissions are incorrect');
-          console.log('   Consider regenerating session keys with proper gas policies');
+          console.log(
+            '   This suggests the session key permissions are incorrect',
+          );
+          console.log(
+            '   Consider regenerating session keys with proper gas policies',
+          );
         }
-        
+
         throw executionError;
       }
-
     } catch (error) {
       console.error('❌ Gasless DCA execution failed:', error);
       return {
@@ -302,7 +338,7 @@ export class GaslessDCAExecutor {
   ): Promise<GaslessDCAExecutionResult> {
     try {
       console.log('🚀 Starting alternative paymaster DCA execution...');
-      
+
       // Get agent key data
       const agentKeyData = await serverAgentKeyService.getAgentKey(agentKeyId);
       if (!agentKeyData || !agentKeyData.sessionKeyApproval) {
@@ -318,8 +354,12 @@ export class GaslessDCAExecutor {
 
       // Import ZeroDev modules
       const { toECDSASigner } = await import('@zerodev/permissions/signers');
-      const { deserializePermissionAccount } = await import('@zerodev/permissions');
-      const { KERNEL_V3_1, getEntryPoint } = await import('@zerodev/sdk/constants');
+      const { deserializePermissionAccount } = await import(
+        '@zerodev/permissions'
+      );
+      const { KERNEL_V3_1, getEntryPoint } = await import(
+        '@zerodev/sdk/constants'
+      );
       const { createKernelAccountClient } = await import('@zerodev/sdk');
 
       const agentSigner = await toECDSASigner({ signer: agentAccount });
@@ -329,12 +369,12 @@ export class GaslessDCAExecutor {
         getEntryPoint('0.7'),
         KERNEL_V3_1,
         agentKeyData.sessionKeyApproval,
-        agentSigner
+        agentSigner,
       );
 
       // Try a simpler paymaster configuration
       console.log('💰 Setting up alternative paymaster configuration...');
-      
+
       const kernelClient = createKernelAccountClient({
         account: smartWallet,
         chain: base,
@@ -353,12 +393,12 @@ export class GaslessDCAExecutor {
                 params: [args.userOperation, args.entryPoint],
               }),
             });
-            
+
             const result = await response.json();
             if (result.error) {
               throw new Error(`Paymaster error: ${result.error.message}`);
             }
-            
+
             return result.result;
           },
           gasPrice: async () => {
@@ -398,7 +438,6 @@ export class GaslessDCAExecutor {
         transactions: { approve: testTxHash },
         gasSponsored: true,
       };
-
     } catch (error) {
       console.error('❌ Alternative paymaster execution failed:', error);
       return {
@@ -442,7 +481,7 @@ export class GaslessDCAExecutor {
   }> {
     try {
       console.log('💱 Getting swap quote via OpenOcean direct...');
-      
+
       // Use OpenOcean directly to bypass multi-aggregator issues
       const requestBody = {
         sellToken: TOKENS.USDC,
@@ -477,7 +516,7 @@ export class GaslessDCAExecutor {
 
       const data = await response.json();
       console.log('✅ OpenOcean quote successful');
-      
+
       return {
         success: true,
         transaction: {
@@ -487,7 +526,6 @@ export class GaslessDCAExecutor {
         },
         expectedOutput: data.outAmount || data.buyAmount,
       };
-      
     } catch (error) {
       console.error('❌ Swap quote failed:', error);
       return {

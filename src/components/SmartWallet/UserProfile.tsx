@@ -22,7 +22,6 @@ import { useReadContracts } from 'wagmi';
 import { useSmartWallet } from '../../hooks/useSmartWallet';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
 import { TOKENS, formatTokenAmount } from '../../utils/dexApi';
-import ReceiveModal from './ReceiveModal';
 import SweepFundsModal from './SweepFundsModal';
 
 interface UserProfileProps {
@@ -40,7 +39,6 @@ export default function UserProfile({ className = '' }: UserProfileProps) {
     canCreateDCAOrders,
   } = useUnifiedSmartWallet();
   const [isOpen, setIsOpen] = useState(false);
-  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSweepModalOpen, setIsSweepModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -145,7 +143,7 @@ export default function UserProfile({ className = '' }: UserProfileProps) {
   };
 
   const handleReceiveClick = () => {
-    setIsReceiveModalOpen(true);
+    // TODO: Implement receive modal
     setIsOpen(false); // Close dropdown when opening modal
   };
 
@@ -340,15 +338,7 @@ export default function UserProfile({ className = '' }: UserProfileProps) {
         </div>
       )}
 
-      {/* Receive Modal */}
-      {address && (
-        <ReceiveModal
-          isOpen={isReceiveModalOpen}
-          onClose={() => setIsReceiveModalOpen(false)}
-          address={address}
-          displayName={displayName}
-        />
-      )}
+      {/* TODO: Implement receive modal */}
 
       {/* Sweep Funds Modal */}
       {smartWalletAddress && externalWalletAddress && (

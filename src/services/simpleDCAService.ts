@@ -13,10 +13,7 @@ import {
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
-import {
-  generatePrivateKey,
-  privateKeyToAccount,
-} from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';
@@ -28,7 +25,8 @@ const ZERODEV_RPC_URL =
   `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`;
 
 // OpenOcean router on Base
-const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+const OPENOCEAN_ROUTER =
+  '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
 export interface SimpleSmartWallet {
   address: Address;
@@ -46,11 +44,11 @@ export interface ExecutionResult {
 
 /**
  * Simplified DCA Service using KERNEL_V3_2 without complex permissions
- * 
+ *
  * This bypasses the permissions API issues by using the agent's key directly
  * as the smart wallet owner. While not as secure as the owner/agent model,
  * it allows testing the DCA flow with KERNEL_V3_2 and chain abstraction.
- * 
+ *
  * Security Note: In this model, the agent has full control of the smart wallet.
  * This is acceptable for testing but should be enhanced with permissions for production.
  */
@@ -84,7 +82,7 @@ export class SimpleDCAService {
       // Agent generates their own private key and controls the smart wallet directly
       const agentPrivateKey = generatePrivateKey();
       const agentAccount = privateKeyToAccount(agentPrivateKey);
-      
+
       console.log(`🤖 Agent address: ${agentAccount.address}`);
 
       // Create ECDSA validator for agent using KERNEL_V3_2
@@ -195,7 +193,9 @@ export class SimpleDCAService {
         args: [wallet.address],
       });
 
-      console.log(`💰 Current USDC balance: ${(Number(currentBalance) / 1e6).toFixed(6)} USDC`);
+      console.log(
+        `💰 Current USDC balance: ${(Number(currentBalance) / 1e6).toFixed(6)} USDC`,
+      );
 
       if (currentBalance < swapAmount) {
         return {
@@ -231,7 +231,10 @@ export class SimpleDCAService {
           data: encodeFunctionData({
             abi: erc20Abi,
             functionName: 'transfer',
-            args: [wallet.userWalletAddress, BigInt(swapQuote.expectedOutput || '0')],
+            args: [
+              wallet.userWalletAddress,
+              BigInt(swapQuote.expectedOutput || '0'),
+            ],
           }),
         },
       ];

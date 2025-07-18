@@ -1,11 +1,11 @@
 /**
  * Gelato DCA Integration Service
- * 
+ *
  * This service manages the integration between our DCA system and Gelato Web3 Functions.
  * It handles task creation, monitoring, and coordination with our existing infrastructure.
  */
 
-import { type Address } from 'viem';
+import type { Address } from 'viem';
 
 export interface GelatoTask {
   taskId: string;
@@ -43,7 +43,7 @@ export interface GelatoIntegrationConfig {
 export class GelatoDCAService {
   private readonly GELATO_API_BASE = 'https://api.gelato.digital';
   private readonly BASE_CHAIN_ID = 8453;
-  
+
   constructor(private config: GelatoIntegrationConfig) {}
 
   /**
@@ -51,7 +51,7 @@ export class GelatoDCAService {
    */
   async createDCATask(
     taskName: string,
-    userArgs: Record<string, any>
+    userArgs: Record<string, any>,
   ): Promise<{ success: boolean; taskId?: string; error?: string }> {
     try {
       console.log('🚀 Creating Gelato DCA task...');
@@ -62,20 +62,20 @@ export class GelatoDCAService {
         web3FunctionArgsHash: this.hashUserArgs(userArgs),
         trigger: {
           type: 'time',
-          interval: this.config.executionInterval * 1000 // Convert to milliseconds
+          interval: this.config.executionInterval * 1000, // Convert to milliseconds
         },
         dedicatedMsgSender: false,
         useTaskTreasuryFunds: true,
-        singleExec: false
+        singleExec: false,
       };
 
       const response = await fetch(`${this.GELATO_API_BASE}/tasks/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.gelatoApiKey}`
+          Authorization: `Bearer ${this.config.gelatoApiKey}`,
         },
-        body: JSON.stringify(taskConfig)
+        body: JSON.stringify(taskConfig),
       });
 
       if (!response.ok) {
@@ -88,14 +88,13 @@ export class GelatoDCAService {
 
       return {
         success: true,
-        taskId: result.taskId
+        taskId: result.taskId,
       };
-
     } catch (error) {
       console.error('❌ Failed to create Gelato task:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -105,22 +104,25 @@ export class GelatoDCAService {
    */
   async fundTask(
     taskId: string,
-    amount: string
+    amount: string,
   ): Promise<{ success: boolean; txHash?: string; error?: string }> {
     try {
       console.log(`💰 Funding Gelato task ${taskId} with ${amount} ETH...`);
 
-      const response = await fetch(`${this.GELATO_API_BASE}/tasks/${taskId}/fund`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.gelatoApiKey}`
+      const response = await fetch(
+        `${this.GELATO_API_BASE}/tasks/${taskId}/fund`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.config.gelatoApiKey}`,
+          },
+          body: JSON.stringify({
+            amount: amount,
+            token: 'ETH',
+          }),
         },
-        body: JSON.stringify({
-          amount: amount,
-          token: 'ETH'
-        })
-      });
+      );
 
       if (!response.ok) {
         const error = await response.text();
@@ -132,14 +134,13 @@ export class GelatoDCAService {
 
       return {
         success: true,
-        txHash: result.txHash
+        txHash: result.txHash,
       };
-
     } catch (error) {
       console.error('❌ Failed to fund task:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -160,8 +161,8 @@ export class GelatoDCAService {
     try {
       const response = await fetch(`${this.GELATO_API_BASE}/tasks/${taskId}`, {
         headers: {
-          'Authorization': `Bearer ${this.config.gelatoApiKey}`
-        }
+          Authorization: `Bearer ${this.config.gelatoApiKey}`,
+        },
       });
 
       if (!response.ok) {
@@ -176,15 +177,14 @@ export class GelatoDCAService {
           isActive: result.status === 'active',
           lastExecution: result.lastExecution || 0,
           executionCount: result.executionCount || 0,
-          balance: result.balance || '0'
-        }
+          balance: result.balance || '0',
+        },
       };
-
     } catch (error) {
       console.error('❌ Failed to get task status:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -194,7 +194,7 @@ export class GelatoDCAService {
    */
   async getExecutionLogs(
     taskId: string,
-    limit = 50
+    limit = 50,
   ): Promise<{
     success: boolean;
     executions?: Array<{
@@ -211,9 +211,9 @@ export class GelatoDCAService {
         `${this.GELATO_API_BASE}/tasks/${taskId}/executions?limit=${limit}`,
         {
           headers: {
-            'Authorization': `Bearer ${this.config.gelatoApiKey}`
-          }
-        }
+            Authorization: `Bearer ${this.config.gelatoApiKey}`,
+          },
+        },
       );
 
       if (!response.ok) {
@@ -224,14 +224,13 @@ export class GelatoDCAService {
 
       return {
         success: true,
-        executions: result.executions || []
+        executions: result.executions || [],
       };
-
     } catch (error) {
       console.error('❌ Failed to get execution logs:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -239,15 +238,17 @@ export class GelatoDCAService {
   /**
    * Cancel a Gelato task
    */
-  async cancelTask(taskId: string): Promise<{ success: boolean; error?: string }> {
+  async cancelTask(
+    taskId: string,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       console.log(`🛑 Cancelling Gelato task ${taskId}...`);
 
       const response = await fetch(`${this.GELATO_API_BASE}/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${this.config.gelatoApiKey}`
-        }
+          Authorization: `Bearer ${this.config.gelatoApiKey}`,
+        },
       });
 
       if (!response.ok) {
@@ -256,12 +257,11 @@ export class GelatoDCAService {
 
       console.log(`✅ Task cancelled: ${taskId}`);
       return { success: true };
-
     } catch (error) {
       console.error('❌ Failed to cancel task:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -285,7 +285,7 @@ export class GelatoDCAService {
       // Get task status and recent executions
       const [statusResult, logsResult] = await Promise.all([
         this.getTaskStatus(taskId),
-        this.getExecutionLogs(taskId, 20)
+        this.getExecutionLogs(taskId, 20),
       ]);
 
       if (!statusResult.success || !logsResult.success) {
@@ -297,37 +297,49 @@ export class GelatoDCAService {
 
       // Calculate health metrics
       const now = Date.now() / 1000;
-      const lastSuccessfulExecution = executions
-        .filter(e => e.success)
-        .map(e => new Date(e.executionDate).getTime() / 1000)
-        .sort((a, b) => b - a)[0] || 0;
+      const lastSuccessfulExecution =
+        executions
+          .filter((e) => e.success)
+          .map((e) => new Date(e.executionDate).getTime() / 1000)
+          .sort((a, b) => b - a)[0] || 0;
 
-      const failureRate = executions.length > 0 
-        ? executions.filter(e => !e.success).length / executions.length 
-        : 0;
+      const failureRate =
+        executions.length > 0
+          ? executions.filter((e) => !e.success).length / executions.length
+          : 0;
 
-      const averageGasUsed = executions.length > 0
-        ? executions.reduce((sum, e) => sum + parseInt(e.gasUsed || '0'), 0) / executions.length
-        : 0;
+      const averageGasUsed =
+        executions.length > 0
+          ? executions.reduce(
+              (sum, e) => sum + Number.parseInt(e.gasUsed || '0'),
+              0,
+            ) / executions.length
+          : 0;
 
       // Generate recommendations
       const recommendations: string[] = [];
-      
+
       if (failureRate > 0.2) {
-        recommendations.push('High failure rate detected - check DCA order conditions');
-      }
-      
-      if (parseFloat(status.balance) < 0.01) {
-        recommendations.push('Low balance - consider adding more ETH for gas');
-      }
-      
-      if (now - lastSuccessfulExecution > 7200) { // 2 hours
-        recommendations.push('No successful executions in 2+ hours - check system health');
+        recommendations.push(
+          'High failure rate detected - check DCA order conditions',
+        );
       }
 
-      const isHealthy = failureRate < 0.3 && 
-                       parseFloat(status.balance) > 0.005 && 
-                       (now - lastSuccessfulExecution) < 3600;
+      if (Number.parseFloat(status.balance) < 0.01) {
+        recommendations.push('Low balance - consider adding more ETH for gas');
+      }
+
+      if (now - lastSuccessfulExecution > 7200) {
+        // 2 hours
+        recommendations.push(
+          'No successful executions in 2+ hours - check system health',
+        );
+      }
+
+      const isHealthy =
+        failureRate < 0.3 &&
+        Number.parseFloat(status.balance) > 0.005 &&
+        now - lastSuccessfulExecution < 3600;
 
       return {
         success: true,
@@ -337,15 +349,14 @@ export class GelatoDCAService {
           failureRate: Math.round(failureRate * 100) / 100,
           averageGasUsed: averageGasUsed.toString(),
           balance: status.balance,
-          recommendations
-        }
+          recommendations,
+        },
       };
-
     } catch (error) {
       console.error('❌ Failed to monitor task health:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -359,7 +370,7 @@ export class GelatoDCAService {
     let hash = 0;
     for (let i = 0; i < argsString.length; i++) {
       const char = argsString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return hash.toString(16);
@@ -381,7 +392,7 @@ export class GelatoDCAService {
       totalExecutions: 0,
       successRate: 0,
       totalGasSaved: '0',
-      averageExecutionTime: 0
+      averageExecutionTime: 0,
     };
   }
 }
@@ -392,5 +403,5 @@ export const gelatoDCAService = new GelatoDCAService({
   web3FunctionHash: process.env.GELATO_WEB3_FUNCTION_HASH || '',
   fundingAmount: '0.1', // 0.1 ETH default
   maxExecutionsPerRun: 5,
-  executionInterval: 300 // 5 minutes
+  executionInterval: 300, // 5 minutes
 });

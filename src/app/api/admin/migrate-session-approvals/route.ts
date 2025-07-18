@@ -39,24 +39,34 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if order has agent key but missing sessionKeyApproval
-        if (orderData.agentKeyId && orderData.serverManaged && !orderData.sessionKeyApproval) {
-          console.log(`🔧 Order ${order.id}: Missing sessionKeyApproval, attempting to retrieve...`);
-          
+        if (
+          orderData.agentKeyId &&
+          orderData.serverManaged &&
+          !orderData.sessionKeyApproval
+        ) {
+          console.log(
+            `🔧 Order ${order.id}: Missing sessionKeyApproval, attempting to retrieve...`,
+          );
+
           // Try to get the agent key data
-          const agentKey = await serverAgentKeyService.getAgentKey(orderData.agentKeyId);
-          
+          const agentKey = await serverAgentKeyService.getAgentKey(
+            orderData.agentKeyId,
+          );
+
           if (agentKey && agentKey.sessionKeyApproval) {
             // Update the order with the sessionKeyApproval
             const updatedSessionData = {
               ...orderData,
               sessionKeyApproval: agentKey.sessionKeyApproval,
             };
-            
+
             await serverDcaDatabase.updateOrder(order.id, {
               sessionKeyData: JSON.stringify(updatedSessionData),
             });
-            
-            console.log(`✅ Order ${order.id}: Added sessionKeyApproval to order data`);
+
+            console.log(
+              `✅ Order ${order.id}: Added sessionKeyApproval to order data`,
+            );
             migratedCount++;
             results.push({
               orderId: order.id,
@@ -64,7 +74,9 @@ export async function POST(request: NextRequest) {
               message: 'Added sessionKeyApproval to order data',
             });
           } else {
-            console.log(`❌ Order ${order.id}: Agent key not found or no sessionKeyApproval`);
+            console.log(
+              `❌ Order ${order.id}: Agent key not found or no sessionKeyApproval`,
+            );
             results.push({
               orderId: order.id,
               success: false,
@@ -72,7 +84,9 @@ export async function POST(request: NextRequest) {
             });
           }
         } else {
-          console.log(`✅ Order ${order.id}: Already has sessionKeyApproval or not server-managed`);
+          console.log(
+            `✅ Order ${order.id}: Already has sessionKeyApproval or not server-managed`,
+          );
           skippedCount++;
           results.push({
             orderId: order.id,
@@ -90,7 +104,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`🎉 Migration completed: ${migratedCount} migrated, ${skippedCount} skipped`);
+    console.log(
+      `🎉 Migration completed: ${migratedCount} migrated, ${skippedCount} skipped`,
+    );
 
     return NextResponse.json({
       success: true,
@@ -107,7 +123,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Migration failed',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -116,10 +132,10 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const activeOrders = await serverDcaDatabase.getAllActiveOrders();
-    
+
     let needsMigration = 0;
     let alreadyMigrated = 0;
-    
+
     for (const order of activeOrders) {
       try {
         const orderData = JSON.parse(order.sessionKeyData);
@@ -134,7 +150,7 @@ export async function GET() {
         // Skip invalid orders
       }
     }
-    
+
     return NextResponse.json({
       success: true,
       totalActiveOrders: activeOrders.length,
@@ -145,9 +161,12 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to check migration status',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to check migration status',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

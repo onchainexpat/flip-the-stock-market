@@ -5,9 +5,9 @@
  * Shows what's working and what still needs implementation
  */
 
-import { ownerAgentPermissionServiceFinal } from '../services/ownerAgentPermissionServiceFinal';
-import { generatePrivateKey } from 'viem/accounts';
 import type { Address } from 'viem';
+import { generatePrivateKey } from 'viem/accounts';
+import { ownerAgentPermissionServiceFinal } from '../services/ownerAgentPermissionServiceFinal';
 
 // Test configuration
 const TEST_CONFIG = {
@@ -25,13 +25,17 @@ async function testCoreInfrastructure(): Promise<boolean> {
   try {
     // Generate test keys
     const ownerPrivateKey = generatePrivateKey();
-    
+
     console.log('📋 Step 1: Creating owner smart wallet with KERNEL_V3_2...');
-    const ownerWallet = await ownerAgentPermissionServiceFinal.createOwnerSmartWallet(ownerPrivateKey);
+    const ownerWallet =
+      await ownerAgentPermissionServiceFinal.createOwnerSmartWallet(
+        ownerPrivateKey,
+      );
     console.log(`✅ Smart Wallet Created: ${ownerWallet.address}`);
 
     console.log('\n📋 Step 2: Creating agent key pair...');
-    const agentKeyPair = await ownerAgentPermissionServiceFinal.createAgentKeyPair();
+    const agentKeyPair =
+      await ownerAgentPermissionServiceFinal.createAgentKeyPair();
     console.log(`✅ Agent Key Pair Created: ${agentKeyPair.agentAddress}`);
     console.log('✅ Agent private key stays with agent (never transmitted)');
 
@@ -55,37 +59,45 @@ async function testPermissionsSystem(): Promise<boolean> {
 
   try {
     const ownerPrivateKey = generatePrivateKey();
-    const ownerWallet = await ownerAgentPermissionServiceFinal.createOwnerSmartWallet(ownerPrivateKey);
-    const agentKeyPair = await ownerAgentPermissionServiceFinal.createAgentKeyPair();
+    const ownerWallet =
+      await ownerAgentPermissionServiceFinal.createOwnerSmartWallet(
+        ownerPrivateKey,
+      );
+    const agentKeyPair =
+      await ownerAgentPermissionServiceFinal.createAgentKeyPair();
 
     console.log('📋 Step 3: Attempting to authorize agent permissions...');
-    
+
     try {
-      const serializedPermissions = await ownerAgentPermissionServiceFinal.authorizeAgentPermissions(
-        ownerPrivateKey,
-        ownerWallet.address,
-        agentKeyPair.agentAddress,
-        TEST_CONFIG.USER_WALLET,
-        TEST_CONFIG.TEST_USDC_AMOUNT,
-        TEST_CONFIG.DCA_DURATION_DAYS
-      );
+      const serializedPermissions =
+        await ownerAgentPermissionServiceFinal.authorizeAgentPermissions(
+          ownerPrivateKey,
+          ownerWallet.address,
+          agentKeyPair.agentAddress,
+          TEST_CONFIG.USER_WALLET,
+          TEST_CONFIG.TEST_USDC_AMOUNT,
+          TEST_CONFIG.DCA_DURATION_DAYS,
+        );
 
       console.log('✅ Permissions authorized successfully!');
-      
+
       console.log('\n📋 Step 4: Creating agent permission key...');
       const now = Math.floor(Date.now() / 1000);
-      const agentPermissionKey = await ownerAgentPermissionServiceFinal.createAgentPermissionKey(
-        serializedPermissions,
-        agentKeyPair.agentPrivateKey,
-        TEST_CONFIG.USER_WALLET,
-        ownerWallet.address,
-        now,
-        now + TEST_CONFIG.DCA_DURATION_DAYS * 24 * 60 * 60
-      );
+      const agentPermissionKey =
+        await ownerAgentPermissionServiceFinal.createAgentPermissionKey(
+          serializedPermissions,
+          agentKeyPair.agentPrivateKey,
+          TEST_CONFIG.USER_WALLET,
+          ownerWallet.address,
+          now,
+          now + TEST_CONFIG.DCA_DURATION_DAYS * 24 * 60 * 60,
+        );
 
-      console.log(`✅ Agent Permission Key Created: ${agentPermissionKey.agentAddress}`);
+      console.log(
+        `✅ Agent Permission Key Created: ${agentPermissionKey.agentAddress}`,
+      );
       console.log('✅ Permissions System Test: PASSED');
-      
+
       return true;
     } catch (permError) {
       console.log('❌ Expected failure in permissions system');
@@ -95,7 +107,7 @@ async function testPermissionsSystem(): Promise<boolean> {
       console.log('  - toPermissionValidator: ✅ Available');
       console.log('  - Policy creation: ❌ API complex/undocumented');
       console.log('  - DCA restrictions: ❌ Needs policy objects');
-      
+
       return false;
     }
   } catch (error) {
@@ -162,9 +174,21 @@ function assessDeploymentReadiness(): void {
     { item: 'Agent-created key pairs', status: '✅', description: 'Working' },
     { item: 'Chain abstraction support', status: '✅', description: 'Working' },
     { item: 'Permission policies', status: '❌', description: 'API complex' },
-    { item: 'DCA transaction restrictions', status: '❌', description: 'Needs policies' },
-    { item: 'End-to-end testing', status: '❌', description: 'Blocked by policies' },
-    { item: 'Production security', status: '❌', description: 'Needs restrictions' },
+    {
+      item: 'DCA transaction restrictions',
+      status: '❌',
+      description: 'Needs policies',
+    },
+    {
+      item: 'End-to-end testing',
+      status: '❌',
+      description: 'Blocked by policies',
+    },
+    {
+      item: 'Production security',
+      status: '❌',
+      description: 'Needs restrictions',
+    },
   ];
 
   console.log('📊 Deployment Checklist:');
@@ -172,12 +196,16 @@ function assessDeploymentReadiness(): void {
     console.log(`  ${status} ${item}: ${description}`);
   });
 
-  const readyItems = readinessChecklist.filter(item => item.status === '✅').length;
+  const readyItems = readinessChecklist.filter(
+    (item) => item.status === '✅',
+  ).length;
   const totalItems = readinessChecklist.length;
   const readinessPercentage = Math.round((readyItems / totalItems) * 100);
 
-  console.log(`\n📈 Overall Readiness: ${readinessPercentage}% (${readyItems}/${totalItems})`);
-  
+  console.log(
+    `\n📈 Overall Readiness: ${readinessPercentage}% (${readyItems}/${totalItems})`,
+  );
+
   if (readinessPercentage >= 80) {
     console.log('🎉 Ready for production deployment!');
   } else if (readinessPercentage >= 60) {
@@ -192,7 +220,7 @@ function assessDeploymentReadiness(): void {
  */
 async function runDCAFlowTests(): Promise<void> {
   console.log('🚀 DCA Flow Test Suite - KERNEL_V3_2 + Chain Abstraction');
-  console.log('=' .repeat(80));
+  console.log('='.repeat(80));
 
   const results = {
     core: false,
@@ -218,27 +246,35 @@ async function runDCAFlowTests(): Promise<void> {
   // Summary
   console.log('\n' + '='.repeat(80));
   console.log('📊 TEST SUMMARY:');
-  console.log(`🏗️ Core Infrastructure: ${results.core ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`🔐 Permissions System: ${results.permissions ? '✅ PASSED' : '❌ FAILED'}`);
+  console.log(
+    `🏗️ Core Infrastructure: ${results.core ? '✅ PASSED' : '❌ FAILED'}`,
+  );
+  console.log(
+    `🔐 Permissions System: ${results.permissions ? '✅ PASSED' : '❌ FAILED'}`,
+  );
   console.log(`💰 DCA Execution: ${results.dca ? '✅ PASSED' : '❌ FAILED'}`);
 
   console.log('\n📋 NEXT STEPS:');
   if (!results.permissions) {
     console.log('1. 🔧 Research ZeroDev permissions API for policy creation');
-    console.log('2. 🔧 Implement proper DCA policies (amount limits, token restrictions)');
+    console.log(
+      '2. 🔧 Implement proper DCA policies (amount limits, token restrictions)',
+    );
     console.log('3. 🔧 Create time-based permission expiration');
   }
   if (!results.dca) {
     console.log('4. 🧪 Test DCA execution with funded smart wallet');
     console.log('5. 🧪 Verify swap functionality and token delivery');
   }
-  
+
   console.log('6. 📋 Create production deployment guide');
   console.log('7. 📋 Add monitoring and error handling');
 
   const allPassed = Object.values(results).every(Boolean);
-  console.log(`\n🎯 OVERALL STATUS: ${allPassed ? '✅ FULLY WORKING' : '⚠️ PARTIALLY WORKING'}`);
-  
+  console.log(
+    `\n🎯 OVERALL STATUS: ${allPassed ? '✅ FULLY WORKING' : '⚠️ PARTIALLY WORKING'}`,
+  );
+
   if (allPassed) {
     console.log('🎉 Ready for production DCA orders!');
   } else {

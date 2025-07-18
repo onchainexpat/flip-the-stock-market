@@ -11,14 +11,14 @@ import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
 import dotenv from 'dotenv';
 import {
   http,
-  Chain,
-  Client,
-  Hex,
-  Transport,
+  type Chain,
+  type Client,
+  type Hex,
+  type Transport,
   createPublicClient,
   zeroAddress,
 } from 'viem';
-import { SmartAccount } from 'viem/account-abstraction';
+import type { SmartAccount } from 'viem/account-abstraction';
 import { privateKeyToAccount } from 'viem/accounts';
 import { optimismSepolia, sepolia } from 'viem/chains';
 
@@ -32,7 +32,7 @@ if (
   !process.env.OPTIMISM_SEPOLIA_ZERODEV_RPC
 ) {
   console.error(
-    'Please set PRIVATE_KEY, RPC_URL, OPTIMISM_SEPOLIA_RPC_URL, ZERODEV_RPC, OPTIMISM_SEPOLIA_ZERODEV_RPC'
+    'Please set PRIVATE_KEY, RPC_URL, OPTIMISM_SEPOLIA_RPC_URL, ZERODEV_RPC, OPTIMISM_SEPOLIA_ZERODEV_RPC',
   );
   process.exit(1);
 }
@@ -66,7 +66,7 @@ const main = async () => {
       signer,
       kernelVersion: KERNEL_V3_1,
       multiChainIds: [sepolia.id, optimismSepolia.id],
-    }
+    },
   );
   const optimismSepoliaMultiSigECDSAValidatorPlugin =
     await toMultiChainECDSAValidator(optimismSepoliaPublicClient, {
@@ -92,13 +92,13 @@ const main = async () => {
         sudo: optimismSepoliaMultiSigECDSAValidatorPlugin,
       },
       kernelVersion: KERNEL_V3_1,
-    }
+    },
   );
 
   console.log('sepoliaKernelAccount.address', sepoliaKernelAccount.address);
   console.log(
     'optimismSepoliaKernelAccount.address',
-    optimismSepoliaKernelAccount.address
+    optimismSepoliaKernelAccount.address,
   );
 
   const sepoliaZeroDevPaymasterClient = createZeroDevPaymasterClient({
@@ -157,7 +157,7 @@ const main = async () => {
           },
         ]),
       };
-    })
+    }),
   );
 
   const userOpParams = [
@@ -174,7 +174,7 @@ const main = async () => {
   // prepare and sign user operations with multi-chain ecdsa validator
   const signedUserOps = await prepareAndSignUserOperations(
     clients,
-    userOpParams
+    userOpParams,
   );
   const sepoliaUserOp = signedUserOps[0];
   const optimismSepoliaUserOp = signedUserOps[1];
@@ -191,7 +191,7 @@ const main = async () => {
   console.log('sending optimismSepoliaUserOp');
   const optimismSepoliaUserOpHash =
     await optimismSepoliaZerodevKernelClient.sendUserOperation(
-      optimismSepoliaUserOp
+      optimismSepoliaUserOp,
     );
 
   console.log('optimismSepoliaUserOpHash', optimismSepoliaUserOpHash);

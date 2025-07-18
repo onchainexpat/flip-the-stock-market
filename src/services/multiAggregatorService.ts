@@ -1,4 +1,4 @@
-import { type Address } from 'viem';
+import type { Address } from 'viem';
 import { TOKENS } from '../utils/openOceanApi';
 
 export interface SwapQuote {
@@ -50,13 +50,16 @@ export class MultiAggregatorService {
   private readonly MAX_RETRIES = 2;
   private readonly CIRCUIT_BREAKER_THRESHOLD = 5; // failures
   private readonly CIRCUIT_BREAKER_TIMEOUT = 300000; // 5 minutes
-  
+
   // Circuit breaker state for each aggregator
-  private circuitBreakers = new Map<string, {
-    failures: number;
-    lastFailure: number;
-    isOpen: boolean;
-  }>();
+  private circuitBreakers = new Map<
+    string,
+    {
+      failures: number;
+      lastFailure: number;
+      isOpen: boolean;
+    }
+  >();
 
   /**
    * Get quotes from all supported aggregators with error handling and fallbacks
@@ -65,56 +68,90 @@ export class MultiAggregatorService {
     sellToken: Address,
     buyToken: Address,
     sellAmount: string,
-    userAddress?: Address
+    userAddress?: Address,
   ): Promise<BestQuoteResult> {
     const startTime = Date.now();
-    
+
     console.log('🔍 Starting multi-aggregator quote comparison...');
     console.log(`   Amount: ${sellAmount}`);
     console.log(`   From: ${sellToken} → To: ${buyToken}`);
-    
+
     // Check circuit breakers before making calls
     const availableAggregators = this.getAvailableAggregators();
     console.log(`   Available aggregators: ${availableAggregators.join(', ')}`);
-    
+
     if (availableAggregators.length === 0) {
-      throw new Error('All aggregators are currently unavailable due to circuit breaker protection');
+      throw new Error(
+        'All aggregators are currently unavailable due to circuit breaker protection',
+      );
     }
-    
+
     // Run aggregator calls with retry logic
     const quotePromises = [];
-    
+
     if (availableAggregators.includes('OpenOcean')) {
-      quotePromises.push(this.getQuoteWithRetry('OpenOcean', sellToken, buyToken, sellAmount, userAddress));
+      quotePromises.push(
+        this.getQuoteWithRetry(
+          'OpenOcean',
+          sellToken,
+          buyToken,
+          sellAmount,
+          userAddress,
+        ),
+      );
     }
     if (availableAggregators.includes('1inch')) {
-      quotePromises.push(this.getQuoteWithRetry('1inch', sellToken, buyToken, sellAmount, userAddress));
+      quotePromises.push(
+        this.getQuoteWithRetry(
+          '1inch',
+          sellToken,
+          buyToken,
+          sellAmount,
+          userAddress,
+        ),
+      );
     }
     if (availableAggregators.includes('Paraswap')) {
-      quotePromises.push(this.getQuoteWithRetry('Paraswap', sellToken, buyToken, sellAmount, userAddress));
+      quotePromises.push(
+        this.getQuoteWithRetry(
+          'Paraswap',
+          sellToken,
+          buyToken,
+          sellAmount,
+          userAddress,
+        ),
+      );
     }
 
     const results = await Promise.allSettled(quotePromises);
-    
+
     // Extract successful quotes and update circuit breakers
     const quotes: SwapQuote[] = [];
-    
+
     results.forEach((result, index) => {
       const aggregatorName = availableAggregators[index];
-      
+
       if (result.status === 'fulfilled' && result.value.success) {
         quotes.push(result.value);
         this.recordSuccess(aggregatorName);
-        console.log(`✅ ${aggregatorName}: Success (${result.value.responseTime}ms)`);
+        console.log(
+          `✅ ${aggregatorName}: Success (${result.value.responseTime}ms)`,
+        );
       } else {
-        const error = result.status === 'rejected' ? result.reason : result.value.error;
+        const error =
+          result.status === 'rejected' ? result.reason : result.value.error;
         this.recordFailure(aggregatorName);
         console.warn(`❌ ${aggregatorName}: Failed - ${error}`);
       }
     });
 
     if (quotes.length === 0) {
-      const fallbackQuote = await this.getFallbackQuote(sellToken, buyToken, sellAmount, userAddress);
+      const fallbackQuote = await this.getFallbackQuote(
+        sellToken,
+        buyToken,
+        sellAmount,
+        userAddress,
+      );
       if (fallbackQuote) {
         quotes.push(fallbackQuote);
         console.log('🔄 Using fallback quote mechanism');
@@ -137,19 +174,29 @@ export class MultiAggregatorService {
       return currentAmount < worstAmount ? current : worst;
     });
 
-    const savingsAmount = BigInt(bestQuote.buyAmount) - BigInt(worstQuote.buyAmount);
-    const savingsPercentage = Number(savingsAmount * 100n / BigInt(worstQuote.buyAmount)) / 100;
+    const savingsAmount =
+      BigInt(bestQuote.buyAmount) - BigInt(worstQuote.buyAmount);
+    const savingsPercentage =
+      Number((savingsAmount * 100n) / BigInt(worstQuote.buyAmount)) / 100;
 
     // Calculate metadata
-    const responseTimes = quotes.map(q => q.responseTime || 0);
-    const averageResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
-    const fastestAggregator = quotes.reduce((fastest, current) => 
-      (current.responseTime || Infinity) < (fastest.responseTime || Infinity) ? current : fastest
+    const responseTimes = quotes.map((q) => q.responseTime || 0);
+    const averageResponseTime =
+      responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+    const fastestAggregator = quotes.reduce((fastest, current) =>
+      (current.responseTime || Number.POSITIVE_INFINITY) <
+      (fastest.responseTime || Number.POSITIVE_INFINITY)
+        ? current
+        : fastest,
     ).aggregator;
 
     const totalTime = Date.now() - startTime;
-    console.log(`🏆 Best quote: ${bestQuote.aggregator} - ${bestQuote.buyAmount} tokens`);
-    console.log(`💰 Savings: ${savingsAmount.toString()} tokens (${savingsPercentage.toFixed(4)}%)`);
+    console.log(
+      `🏆 Best quote: ${bestQuote.aggregator} - ${bestQuote.buyAmount} tokens`,
+    );
+    console.log(
+      `💰 Savings: ${savingsAmount.toString()} tokens (${savingsPercentage.toFixed(4)}%)`,
+    );
     console.log(`⏱️  Total comparison time: ${totalTime}ms`);
 
     return {
@@ -157,14 +204,14 @@ export class MultiAggregatorService {
       allQuotes: quotes,
       savingsVsWorst: {
         amount: savingsAmount.toString(),
-        percentage: savingsPercentage.toFixed(4)
+        percentage: savingsPercentage.toFixed(4),
       },
       metadata: {
         quotesReceived: quotes.length,
         averageResponseTime: Math.round(averageResponseTime),
         fastestAggregator,
-        bestAggregator: bestQuote.aggregator
-      }
+        bestAggregator: bestQuote.aggregator,
+      },
     };
   }
 
@@ -177,24 +224,48 @@ export class MultiAggregatorService {
     buyToken: Address,
     sellAmount: string,
     userAddress?: Address,
-    retryCount = 0
+    retryCount = 0,
   ): Promise<SwapQuote> {
     try {
       switch (aggregator) {
         case 'OpenOcean':
-          return await this.getOpenOceanQuote(sellToken, buyToken, sellAmount, userAddress);
+          return await this.getOpenOceanQuote(
+            sellToken,
+            buyToken,
+            sellAmount,
+            userAddress,
+          );
         case '1inch':
-          return await this.get1inchQuote(sellToken, buyToken, sellAmount, userAddress);
+          return await this.get1inchQuote(
+            sellToken,
+            buyToken,
+            sellAmount,
+            userAddress,
+          );
         case 'Paraswap':
-          return await this.getParaswapQuote(sellToken, buyToken, sellAmount, userAddress);
+          return await this.getParaswapQuote(
+            sellToken,
+            buyToken,
+            sellAmount,
+            userAddress,
+          );
         default:
           throw new Error(`Unknown aggregator: ${aggregator}`);
       }
     } catch (error) {
       if (retryCount < this.MAX_RETRIES) {
-        console.log(`🔄 Retrying ${aggregator} (attempt ${retryCount + 1}/${this.MAX_RETRIES})`);
+        console.log(
+          `🔄 Retrying ${aggregator} (attempt ${retryCount + 1}/${this.MAX_RETRIES})`,
+        );
         await this.delay(1000 * (retryCount + 1)); // Exponential backoff
-        return this.getQuoteWithRetry(aggregator, sellToken, buyToken, sellAmount, userAddress, retryCount + 1);
+        return this.getQuoteWithRetry(
+          aggregator,
+          sellToken,
+          buyToken,
+          sellAmount,
+          userAddress,
+          retryCount + 1,
+        );
       }
       throw error;
     }
@@ -207,10 +278,10 @@ export class MultiAggregatorService {
     sellToken: Address,
     buyToken: Address,
     sellAmount: string,
-    userAddress?: Address
+    userAddress?: Address,
   ): Promise<SwapQuote> {
     const startTime = Date.now();
-    
+
     try {
       const params = new URLSearchParams({
         chain: this.BASE_CHAIN_ID.toString(),
@@ -219,7 +290,7 @@ export class MultiAggregatorService {
         amountDecimals: sellAmount,
         account: userAddress || '0x1111111111111111111111111111111111111111',
         slippage: '1.5',
-        gasPrice: '1000000000'
+        gasPrice: '1000000000',
       });
 
       const response = await this.fetchWithTimeout(
@@ -228,9 +299,9 @@ export class MultiAggregatorService {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': 'FlipTheStockMarket/1.0'
-          }
-        }
+            'User-Agent': 'FlipTheStockMarket/1.0',
+          },
+        },
       );
 
       if (!response.ok) {
@@ -260,11 +331,17 @@ export class MultiAggregatorService {
         gasPrice: data.gasPrice || '1000000000',
         sources: data.dexes || [],
         success: true,
-        responseTime
+        responseTime,
       };
     } catch (error) {
       console.error('OpenOcean quote failed:', error);
-      return this.createErrorQuote('OpenOcean', sellToken, buyToken, sellAmount, error);
+      return this.createErrorQuote(
+        'OpenOcean',
+        sellToken,
+        buyToken,
+        sellAmount,
+        error,
+      );
     }
   }
 
@@ -275,17 +352,18 @@ export class MultiAggregatorService {
     sellToken: Address,
     buyToken: Address,
     sellAmount: string,
-    userAddress?: Address
+    userAddress?: Address,
   ): Promise<SwapQuote> {
     const startTime = Date.now();
-    
+
     try {
       const params = new URLSearchParams({
         fromTokenAddress: sellToken,
         toTokenAddress: buyToken,
         amount: sellAmount,
-        fromAddress: userAddress || '0x1111111111111111111111111111111111111111',
-        slippage: '1.5'
+        fromAddress:
+          userAddress || '0x1111111111111111111111111111111111111111',
+        slippage: '1.5',
       });
 
       const response = await this.fetchWithTimeout(
@@ -294,9 +372,9 @@ export class MultiAggregatorService {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer demo' // Demo key for testing
-          }
-        }
+            Authorization: 'Bearer demo', // Demo key for testing
+          },
+        },
       );
 
       if (!response.ok) {
@@ -317,9 +395,13 @@ export class MultiAggregatorService {
         buyToken,
         sellAmount,
         buyAmount: data.toTokenAmount,
-        price: data.toTokenAmount && data.fromTokenAmount 
-          ? (BigInt(data.toTokenAmount) * BigInt('1000000000000000000') / BigInt(data.fromTokenAmount)).toString()
-          : '0',
+        price:
+          data.toTokenAmount && data.fromTokenAmount
+            ? (
+                (BigInt(data.toTokenAmount) * BigInt('1000000000000000000')) /
+                BigInt(data.fromTokenAmount)
+              ).toString()
+            : '0',
         estimatedPriceImpact: '0', // 1inch doesn't provide this in quote
         to: '0x0000000000000000000000000000000000000000', // Quote doesn't include transaction data
         data: '0x',
@@ -328,11 +410,17 @@ export class MultiAggregatorService {
         gasPrice: '1000000000',
         sources: data.protocols || [],
         success: true,
-        responseTime
+        responseTime,
       };
     } catch (error) {
       console.error('1inch quote failed:', error);
-      return this.createErrorQuote('1inch', sellToken, buyToken, sellAmount, error);
+      return this.createErrorQuote(
+        '1inch',
+        sellToken,
+        buyToken,
+        sellAmount,
+        error,
+      );
     }
   }
 
@@ -343,19 +431,20 @@ export class MultiAggregatorService {
     sellToken: Address,
     buyToken: Address,
     sellAmount: string,
-    userAddress?: Address
+    userAddress?: Address,
   ): Promise<SwapQuote> {
     const startTime = Date.now();
-    
+
     try {
       const params = new URLSearchParams({
         srcToken: sellToken,
         destToken: buyToken,
         srcAmount: sellAmount,
-        userAddress: userAddress || '0x1111111111111111111111111111111111111111',
+        userAddress:
+          userAddress || '0x1111111111111111111111111111111111111111',
         side: 'SELL',
         network: this.BASE_CHAIN_ID.toString(),
-        excludeDEXS: 'ParaSwapPool,ParaSwapLimitOrders' // Exclude problematic DEXs
+        excludeDEXS: 'ParaSwapPool,ParaSwapLimitOrders', // Exclude problematic DEXs
       });
 
       const response = await this.fetchWithTimeout(
@@ -363,9 +452,9 @@ export class MultiAggregatorService {
         {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+            'Content-Type': 'application/json',
+          },
+        },
       );
 
       if (!response.ok) {
@@ -395,18 +484,28 @@ export class MultiAggregatorService {
         gasPrice: '1000000000',
         sources: data.priceRoute?.bestRoute || [],
         success: true,
-        responseTime
+        responseTime,
       };
     } catch (error) {
       console.error('Paraswap quote failed:', error);
-      return this.createErrorQuote('Paraswap', sellToken, buyToken, sellAmount, error);
+      return this.createErrorQuote(
+        'Paraswap',
+        sellToken,
+        buyToken,
+        sellAmount,
+        error,
+      );
     }
   }
 
   /**
    * Get SPX6900 price in USDC using multi-aggregator
    */
-  async getSPX6900Price(): Promise<{ price: string; bestAggregator: string; allPrices: any[] }> {
+  async getSPX6900Price(): Promise<{
+    price: string;
+    bestAggregator: string;
+    allPrices: any[];
+  }> {
     try {
       const result = await this.getBestSwapQuote(
         TOKENS.USDC,
@@ -414,17 +513,17 @@ export class MultiAggregatorService {
         '1000000', // 1 USDC
       );
 
-      const allPrices = result.allQuotes.map(quote => ({
+      const allPrices = result.allQuotes.map((quote) => ({
         aggregator: quote.aggregator,
         price: quote.price,
         buyAmount: quote.buyAmount,
-        responseTime: quote.responseTime
+        responseTime: quote.responseTime,
       }));
 
       return {
         price: result.bestQuote.price,
         bestAggregator: result.bestQuote.aggregator,
-        allPrices
+        allPrices,
       };
     } catch (error) {
       console.error('Failed to get SPX6900 price:', error);
@@ -435,14 +534,20 @@ export class MultiAggregatorService {
   /**
    * Fetch with timeout
    */
-  private async fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  private async fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+  ): Promise<Response> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.REQUEST_TIMEOUT);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.REQUEST_TIMEOUT,
+    );
 
     try {
       const response = await fetch(url, {
         ...options,
-        signal: controller.signal
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
       return response;
@@ -460,7 +565,7 @@ export class MultiAggregatorService {
     sellToken: Address,
     buyToken: Address,
     sellAmount: string,
-    error: any
+    error: any,
   ): SwapQuote {
     return {
       aggregator,
@@ -476,7 +581,7 @@ export class MultiAggregatorService {
       gas: '0',
       gasPrice: '0',
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 
@@ -486,11 +591,11 @@ export class MultiAggregatorService {
   private getAvailableAggregators(): string[] {
     const allAggregators = ['OpenOcean', '1inch', 'Paraswap'];
     const now = Date.now();
-    
-    return allAggregators.filter(aggregator => {
+
+    return allAggregators.filter((aggregator) => {
       const breaker = this.circuitBreakers.get(aggregator);
       if (!breaker) return true;
-      
+
       if (breaker.isOpen) {
         // Check if enough time has passed to retry
         if (now - breaker.lastFailure > this.CIRCUIT_BREAKER_TIMEOUT) {
@@ -507,16 +612,22 @@ export class MultiAggregatorService {
    * Record aggregator failure for circuit breaker
    */
   private recordFailure(aggregator: string): void {
-    const breaker = this.circuitBreakers.get(aggregator) || { failures: 0, lastFailure: 0, isOpen: false };
-    
+    const breaker = this.circuitBreakers.get(aggregator) || {
+      failures: 0,
+      lastFailure: 0,
+      isOpen: false,
+    };
+
     breaker.failures += 1;
     breaker.lastFailure = Date.now();
-    
+
     if (breaker.failures >= this.CIRCUIT_BREAKER_THRESHOLD) {
       breaker.isOpen = true;
-      console.warn(`🚨 Circuit breaker OPENED for ${aggregator} (${breaker.failures} failures)`);
+      console.warn(
+        `🚨 Circuit breaker OPENED for ${aggregator} (${breaker.failures} failures)`,
+      );
     }
-    
+
     this.circuitBreakers.set(aggregator, breaker);
   }
 
@@ -540,7 +651,11 @@ export class MultiAggregatorService {
    */
   private resetCircuitBreaker(aggregator: string): void {
     console.log(`✅ Circuit breaker RESET for ${aggregator}`);
-    this.circuitBreakers.set(aggregator, { failures: 0, lastFailure: 0, isOpen: false });
+    this.circuitBreakers.set(aggregator, {
+      failures: 0,
+      lastFailure: 0,
+      isOpen: false,
+    });
   }
 
   /**
@@ -550,23 +665,25 @@ export class MultiAggregatorService {
     sellToken: Address,
     buyToken: Address,
     sellAmount: string,
-    userAddress?: Address
+    userAddress?: Address,
   ): Promise<SwapQuote | null> {
     try {
       console.log('🆘 Attempting fallback quote using CoinGecko price...');
-      
+
       // Use CoinGecko API directly for price discovery as last resort
-      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=spx6900&vs_currencies=usd');
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=spx6900&vs_currencies=usd',
+      );
       if (!response.ok) throw new Error('CoinGecko API failed');
-      
+
       const data = await response.json();
       if (!data.spx6900?.usd) throw new Error('No SPX price available');
-      
+
       // Calculate estimated output based on CoinGecko price
       const usdcAmount = Number(sellAmount) / 1e6; // USDC has 6 decimals
       const spxPrice = data.spx6900.usd;
       const estimatedSpxAmount = Math.floor((usdcAmount / spxPrice) * 1e8); // SPX has 8 decimals
-      
+
       return {
         aggregator: 'CoinGecko-Fallback',
         sellToken,
@@ -581,7 +698,7 @@ export class MultiAggregatorService {
         gas: '300000',
         gasPrice: '1000000000',
         success: true,
-        responseTime: 0
+        responseTime: 0,
       };
     } catch (error) {
       console.error('❌ Fallback quote failed:', error);
@@ -593,7 +710,7 @@ export class MultiAggregatorService {
    * Delay utility for retry logic
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -605,7 +722,9 @@ export class MultiAggregatorService {
       status[aggregator] = {
         isOpen: breaker.isOpen,
         failures: breaker.failures,
-        lastFailure: breaker.lastFailure ? new Date(breaker.lastFailure).toISOString() : null
+        lastFailure: breaker.lastFailure
+          ? new Date(breaker.lastFailure).toISOString()
+          : null,
       };
     });
     return status;
@@ -621,7 +740,7 @@ export class MultiAggregatorService {
 
     const buyAmountFormatted = (Number(quote.buyAmount) / 1e18).toFixed(6);
     const priceImpact = Number(quote.estimatedPriceImpact).toFixed(2);
-    
+
     return `${quote.aggregator}: ${buyAmountFormatted} SPX (${priceImpact}% impact, ${quote.responseTime}ms)`;
   }
 }

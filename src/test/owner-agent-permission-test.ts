@@ -5,9 +5,9 @@
  * This implements the secure agent-created key pair flow with ZeroDev permissions
  */
 
-import { ownerAgentPermissionService } from '../services/ownerAgentPermissionService';
+import type { Address } from 'viem';
 import { generatePrivateKey } from 'viem/accounts';
-import type { Address, Hex } from 'viem';
+import { ownerAgentPermissionService } from '../services/ownerAgentPermissionService';
 
 // Test configuration for Base mainnet (using small amounts for testing)
 const TEST_CONFIG = {
@@ -26,36 +26,38 @@ export async function testOwnerAgentPermissionFlow(): Promise<boolean> {
   try {
     // Generate test keypairs
     const ownerPrivateKey = generatePrivateKey();
-    const userWalletAddress = '0x742f96b3E80A4b3633C7F3Ec5Bd1b5F9b6B0123E' as Address; // Mock user wallet
+    const userWalletAddress =
+      '0x742f96b3E80A4b3633C7F3Ec5Bd1b5F9b6B0123E' as Address; // Mock user wallet
 
     console.log('\n=== STEP 1: Owner creates smart wallet ===');
-    const ownerWallet = await ownerAgentPermissionService.createOwnerSmartWallet(
-      ownerPrivateKey
-    );
+    const ownerWallet =
+      await ownerAgentPermissionService.createOwnerSmartWallet(ownerPrivateKey);
 
     console.log('\n=== STEP 2: Agent creates key pair ===');
     const agentKeyPair = await ownerAgentPermissionService.createAgentKeyPair();
 
     console.log('\n=== STEP 3: Owner authorizes agent permissions ===');
-    const serializedPermissions = await ownerAgentPermissionService.authorizeAgentPermissions(
-      ownerPrivateKey,
-      ownerWallet.address,
-      agentKeyPair.agentAddress,
-      userWalletAddress,
-      TEST_CONFIG.TEST_USDC_AMOUNT * 100n, // Total DCA amount
-      TEST_CONFIG.DCA_DURATION_DAYS
-    );
+    const serializedPermissions =
+      await ownerAgentPermissionService.authorizeAgentPermissions(
+        ownerPrivateKey,
+        ownerWallet.address,
+        agentKeyPair.agentAddress,
+        userWalletAddress,
+        TEST_CONFIG.TEST_USDC_AMOUNT * 100n, // Total DCA amount
+        TEST_CONFIG.DCA_DURATION_DAYS,
+      );
 
     console.log('\n=== STEP 4: Agent creates permission key ===');
     const now = Math.floor(Date.now() / 1000);
-    const agentPermissionKey = await ownerAgentPermissionService.createAgentPermissionKey(
-      serializedPermissions,
-      agentKeyPair.agentPrivateKey,
-      userWalletAddress,
-      ownerWallet.address,
-      now,
-      now + TEST_CONFIG.DCA_DURATION_DAYS * 24 * 60 * 60
-    );
+    const agentPermissionKey =
+      await ownerAgentPermissionService.createAgentPermissionKey(
+        serializedPermissions,
+        agentKeyPair.agentPrivateKey,
+        userWalletAddress,
+        ownerWallet.address,
+        now,
+        now + TEST_CONFIG.DCA_DURATION_DAYS * 24 * 60 * 60,
+      );
 
     console.log('\n✅ Owner/Agent Permission Flow Test PASSED!');
     console.log('📊 Test Results:');
@@ -82,7 +84,9 @@ export async function testAgentExecuteDCASwap(): Promise<boolean> {
     // This test would require actual USDC balance and real environment setup
     // For now, we'll test the function structure without real execution
 
-    console.log('⚠️ DCA execution test requires actual USDC balance and mainnet setup');
+    console.log(
+      '⚠️ DCA execution test requires actual USDC balance and mainnet setup',
+    );
     console.log('✅ Agent DCA Execution Test structure verified');
 
     return true;
@@ -107,7 +111,7 @@ export function validateSecurityFeatures(): boolean {
         console.log('✅ Agent private key generated locally');
         console.log('✅ Private key never transmitted over network');
         return true;
-      }
+      },
     },
     {
       name: 'Permission Scope Validation',
@@ -117,7 +121,7 @@ export function validateSecurityFeatures(): boolean {
         console.log('✅ Target contracts restricted');
         console.log('✅ Transfer destinations limited to user wallet');
         return true;
-      }
+      },
     },
     {
       name: 'Time-based Restrictions',
@@ -126,7 +130,7 @@ export function validateSecurityFeatures(): boolean {
         console.log('✅ Permissions have validity period');
         console.log('✅ Automatic expiration prevents misuse');
         return true;
-      }
+      },
     },
     {
       name: 'KERNEL_V3_2 Chain Abstraction',
@@ -135,7 +139,7 @@ export function validateSecurityFeatures(): boolean {
         console.log('✅ Using KERNEL_V3_2 for chain abstraction');
         console.log('✅ Permissions system instead of session keys');
         return true;
-      }
+      },
     },
   ];
 
@@ -168,7 +172,7 @@ export function validateSecurityFeatures(): boolean {
  */
 async function runAllTests(): Promise<void> {
   console.log('🚀 Starting Owner/Agent Permission Tests with KERNEL_V3_2...');
-  console.log('=' .repeat(80));
+  console.log('='.repeat(80));
 
   const results = {
     permissionFlow: false,
@@ -189,20 +193,29 @@ async function runAllTests(): Promise<void> {
     // Summary
     console.log('\n' + '='.repeat(80));
     console.log('📊 TEST SUMMARY:');
-    console.log(`🏠 Permission Flow: ${results.permissionFlow ? '✅ PASSED' : '❌ FAILED'}`);
-    console.log(`💰 DCA Execution: ${results.dcaExecution ? '✅ PASSED' : '❌ FAILED'}`);
-    console.log(`🔒 Security Validation: ${results.securityValidation ? '✅ PASSED' : '❌ FAILED'}`);
+    console.log(
+      `🏠 Permission Flow: ${results.permissionFlow ? '✅ PASSED' : '❌ FAILED'}`,
+    );
+    console.log(
+      `💰 DCA Execution: ${results.dcaExecution ? '✅ PASSED' : '❌ FAILED'}`,
+    );
+    console.log(
+      `🔒 Security Validation: ${results.securityValidation ? '✅ PASSED' : '❌ FAILED'}`,
+    );
 
     const allPassed = Object.values(results).every(Boolean);
-    console.log(`\n🎯 OVERALL RESULT: ${allPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`);
+    console.log(
+      `\n🎯 OVERALL RESULT: ${allPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`,
+    );
 
     if (allPassed) {
-      console.log('\n🎉 Owner/Agent Permission implementation with KERNEL_V3_2 is working correctly!');
+      console.log(
+        '\n🎉 Owner/Agent Permission implementation with KERNEL_V3_2 is working correctly!',
+      );
       console.log('✅ Ready for production use with proper environment setup');
     } else {
       console.log('\n⚠️ Please review failed tests before deployment');
     }
-
   } catch (error) {
     console.error('\n❌ Test suite failed with error:', error);
     process.exit(1);
@@ -210,9 +223,7 @@ async function runAllTests(): Promise<void> {
 }
 
 // Export functions for individual testing
-export {
-  runAllTests,
-};
+export { runAllTests };
 
 // Run tests if this file is executed directly
 if (import.meta.main) {

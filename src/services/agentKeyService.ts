@@ -1,4 +1,4 @@
-import { type Address, type Hex } from 'viem';
+import type { Address, Hex } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 
 export interface AgentKeyData {
@@ -26,7 +26,7 @@ export class AgentKeyService {
   generateAgentKey(): AgentKeyData {
     const privateKey = generatePrivateKey();
     const account = privateKeyToAccount(privateKey);
-    
+
     return {
       privateKey,
       address: account.address,
@@ -37,19 +37,22 @@ export class AgentKeyService {
   /**
    * Simple encryption using Web Crypto API
    */
-  private async encryptPrivateKey(privateKey: Hex, password: string): Promise<string> {
+  private async encryptPrivateKey(
+    privateKey: Hex,
+    password: string,
+  ): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(privateKey);
-    
+
     // Create a simple key from password (in production, use proper key derivation)
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
       encoder.encode(password),
       { name: 'PBKDF2' },
       false,
-      ['deriveBits', 'deriveKey']
+      ['deriveBits', 'deriveKey'],
     );
-    
+
     const key = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
@@ -60,50 +63,53 @@ export class AgentKeyService {
       keyMaterial,
       { name: 'AES-GCM', length: 256 },
       false,
-      ['encrypt']
+      ['encrypt'],
     );
-    
+
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       key,
-      data
+      data,
     );
-    
+
     // Combine IV and encrypted data
     const combined = new Uint8Array(iv.length + encrypted.byteLength);
     combined.set(iv);
     combined.set(new Uint8Array(encrypted), iv.length);
-    
+
     return btoa(String.fromCharCode(...combined));
   }
 
   /**
    * Simple decryption using Web Crypto API
    */
-  private async decryptPrivateKey(encryptedData: string, password: string): Promise<Hex> {
+  private async decryptPrivateKey(
+    encryptedData: string,
+    password: string,
+  ): Promise<Hex> {
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
-    
+
     // Decode base64
     const combined = new Uint8Array(
       atob(encryptedData)
         .split('')
-        .map(char => char.charCodeAt(0))
+        .map((char) => char.charCodeAt(0)),
     );
-    
+
     const iv = combined.slice(0, 12);
     const encrypted = combined.slice(12);
-    
+
     // Create key from password
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
       encoder.encode(password),
       { name: 'PBKDF2' },
       false,
-      ['deriveBits', 'deriveKey']
+      ['deriveBits', 'deriveKey'],
     );
-    
+
     const key = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
@@ -114,15 +120,15 @@ export class AgentKeyService {
       keyMaterial,
       { name: 'AES-GCM', length: 256 },
       false,
-      ['decrypt']
+      ['decrypt'],
     );
-    
+
     const decrypted = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv },
       key,
-      encrypted
+      encrypted,
     );
-    
+
     return decoder.decode(decrypted) as Hex;
   }
 
@@ -132,13 +138,16 @@ export class AgentKeyService {
   async storeAgentKey(
     keyData: AgentKeyData,
     password: string,
-    smartWalletAddress?: Address
+    smartWalletAddress?: Address,
   ): Promise<string> {
     try {
       const keyId = `agent_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      
-      const encryptedPrivateKey = await this.encryptPrivateKey(keyData.privateKey, password);
-      
+
+      const encryptedPrivateKey = await this.encryptPrivateKey(
+        keyData.privateKey,
+        password,
+      );
+
       const storedConfig: StoredAgentConfig = {
         keyId,
         encryptedPrivateKey,
@@ -146,14 +155,14 @@ export class AgentKeyService {
         smartWalletAddress,
         createdAt: keyData.createdAt,
       };
-      
+
       // Get existing keys
       const existingKeys = this.getStoredKeys();
       existingKeys[keyId] = storedConfig;
-      
+
       // Store in localStorage
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(existingKeys));
-      
+
       return keyId;
     } catch (error) {
       throw new Error(`Failed to store agent key: ${error}`);
@@ -163,17 +172,23 @@ export class AgentKeyService {
   /**
    * Retrieve agent key from storage
    */
-  async retrieveAgentKey(keyId: string, password: string): Promise<AgentKeyData> {
+  async retrieveAgentKey(
+    keyId: string,
+    password: string,
+  ): Promise<AgentKeyData> {
     try {
       const storedKeys = this.getStoredKeys();
       const storedConfig = storedKeys[keyId];
-      
+
       if (!storedConfig) {
         throw new Error('Agent key not found');
       }
-      
-      const privateKey = await this.decryptPrivateKey(storedConfig.encryptedPrivateKey, password);
-      
+
+      const privateKey = await this.decryptPrivateKey(
+        storedConfig.encryptedPrivateKey,
+        password,
+      );
+
       return {
         privateKey,
         address: storedConfig.address,
@@ -195,8 +210,8 @@ export class AgentKeyService {
     createdAt: number;
   }> {
     const storedKeys = this.getStoredKeys();
-    
-    return Object.values(storedKeys).map(config => ({
+
+    return Object.values(storedKeys).map((config) => ({
       keyId: config.keyId,
       address: config.address,
       smartWalletAddress: config.smartWalletAddress,
@@ -210,14 +225,14 @@ export class AgentKeyService {
   deleteAgentKey(keyId: string): boolean {
     try {
       const storedKeys = this.getStoredKeys();
-      
+
       if (!(keyId in storedKeys)) {
         return false;
       }
-      
+
       delete storedKeys[keyId];
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(storedKeys));
-      
+
       return true;
     } catch (error) {
       console.error('Failed to delete agent key:', error);
@@ -228,17 +243,20 @@ export class AgentKeyService {
   /**
    * Update smart wallet address for a stored key
    */
-  updateSmartWalletAddress(keyId: string, smartWalletAddress: Address): boolean {
+  updateSmartWalletAddress(
+    keyId: string,
+    smartWalletAddress: Address,
+  ): boolean {
     try {
       const storedKeys = this.getStoredKeys();
-      
+
       if (!(keyId in storedKeys)) {
         return false;
       }
-      
+
       storedKeys[keyId].smartWalletAddress = smartWalletAddress;
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(storedKeys));
-      
+
       return true;
     } catch (error) {
       console.error('Failed to update smart wallet address:', error);

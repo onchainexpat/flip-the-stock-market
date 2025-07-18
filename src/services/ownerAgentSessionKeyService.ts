@@ -4,7 +4,7 @@ import {
   createKernelAccountClient,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
-import { KERNEL_V3_1, KERNEL_V3_2, getEntryPoint } from '@zerodev/sdk/constants';
+import { KERNEL_V3_2, getEntryPoint } from '@zerodev/sdk/constants';
 import {
   ParamOperator,
   deserializeSessionKeyAccount,
@@ -19,10 +19,7 @@ import {
   createPublicClient,
   parseEther,
 } from 'viem';
-import {
-  generatePrivateKey,
-  privateKeyToAccount,
-} from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';

@@ -1,9 +1,9 @@
 /**
  * Unified DCA Executor
- * 
+ *
  * This service combines our existing server-side DCA execution with Gelato Web3 Functions
  * for maximum reliability and decentralization.
- * 
+ *
  * Features:
  * - Hybrid execution: Server + Gelato backup
  * - Multi-aggregator integration for best rates
@@ -11,18 +11,16 @@
  * - Comprehensive monitoring and analytics
  */
 
-import { type Address } from 'viem';
-import { serverZerodevDCAExecutor } from './serverZerodevDCAExecutor';
-import { aggregatorExecutionService } from './aggregatorExecutionService';
+import type { Address } from 'viem';
 import { gelatoDCAService } from './gelatoDCAService';
-import { serverDcaDatabase } from '../lib/serverDcaDatabase';
+import { serverZerodevDCAExecutor } from './serverZerodevDCAExecutor';
 
 export interface UnifiedDCAOrder {
   id: string;
   userAddress: Address;
   smartWalletAddress: Address;
   agentKeyId: string;
-  
+
   // Order parameters
   sellToken: Address;
   buyToken: Address;
@@ -30,19 +28,19 @@ export interface UnifiedDCAOrder {
   frequency: number; // seconds between executions
   totalExecutions: number;
   executionsCompleted: number;
-  
+
   // Execution settings
   executionMethod: 'server' | 'gelato' | 'hybrid';
   gelatoTaskId?: string;
   maxSlippage: number;
   minOutputAmount?: string;
-  
+
   // Status
   isActive: boolean;
   lastExecutionTime: number;
   nextExecutionTime: number;
   createdAt: number;
-  
+
   // Performance tracking
   totalVolumeExecuted: string;
   totalTokensReceived: string;
@@ -89,8 +87,13 @@ export class UnifiedDCAExecutor {
       totalExecutions: number;
       executionMethod: 'server' | 'gelato' | 'hybrid';
       maxSlippage?: number;
-    }
-  ): Promise<{ success: boolean; orderId?: string; gelatoTaskId?: string; error?: string }> {
+    },
+  ): Promise<{
+    success: boolean;
+    orderId?: string;
+    gelatoTaskId?: string;
+    error?: string;
+  }> {
     try {
       console.log('🎯 Creating unified DCA order...');
       console.log(`   Method: ${params.executionMethod}`);
@@ -121,15 +124,18 @@ export class UnifiedDCAExecutor {
         totalVolumeExecuted: '0',
         totalTokensReceived: '0',
         averageExecutionPrice: '0',
-        executionHistory: []
+        executionHistory: [],
       };
 
       // Create Gelato task if needed
       let gelatoTaskId: string | undefined;
-      
-      if (params.executionMethod === 'gelato' || params.executionMethod === 'hybrid') {
+
+      if (
+        params.executionMethod === 'gelato' ||
+        params.executionMethod === 'hybrid'
+      ) {
         console.log('🚀 Creating Gelato backup task...');
-        
+
         const gelatoResult = await gelatoDCAService.createDCATask(
           `DCA_${orderId}`,
           {
@@ -139,8 +145,8 @@ export class UnifiedDCAExecutor {
             agentKeyId,
             redisUrl: process.env.UPSTASH_REDIS_REST_URL,
             encryptionSecret: process.env.AGENT_KEY_ENCRYPTION_SECRET,
-            zerodevRpcUrl: process.env.NEXT_PUBLIC_ZERODEV_RPC_URL
-          }
+            zerodevRpcUrl: process.env.NEXT_PUBLIC_ZERODEV_RPC_URL,
+          },
         );
 
         if (gelatoResult.success) {
@@ -152,7 +158,7 @@ export class UnifiedDCAExecutor {
           if (params.executionMethod === 'gelato') {
             return {
               success: false,
-              error: `Gelato-only execution requested but task creation failed: ${gelatoResult.error}`
+              error: `Gelato-only execution requested but task creation failed: ${gelatoResult.error}`,
             };
           }
         }
@@ -165,14 +171,13 @@ export class UnifiedDCAExecutor {
       return {
         success: true,
         orderId,
-        gelatoTaskId
+        gelatoTaskId,
       };
-
     } catch (error) {
       console.error('❌ Failed to create unified DCA order:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -182,7 +187,7 @@ export class UnifiedDCAExecutor {
    */
   async executeDCAOrder(orderId: string): Promise<ExecutionResult> {
     const startTime = Date.now();
-    
+
     try {
       console.log(`🔄 Executing DCA order: ${orderId}`);
 
@@ -207,14 +212,23 @@ export class UnifiedDCAExecutor {
 
       // Choose execution method
       let result: ExecutionResult;
-      
-      if (order.executionMethod === 'server' || order.executionMethod === 'hybrid') {
+
+      if (
+        order.executionMethod === 'server' ||
+        order.executionMethod === 'hybrid'
+      ) {
         // Try server execution first
         result = await this.executeViaServer(order);
-        
+
         // If server fails and we have hybrid mode, try Gelato
-        if (!result.success && order.executionMethod === 'hybrid' && order.gelatoTaskId) {
-          console.log('🔄 Server execution failed, triggering Gelato backup...');
+        if (
+          !result.success &&
+          order.executionMethod === 'hybrid' &&
+          order.gelatoTaskId
+        ) {
+          console.log(
+            '🔄 Server execution failed, triggering Gelato backup...',
+          );
           result = await this.executeViaGelato(order);
         }
       } else {
@@ -225,10 +239,12 @@ export class UnifiedDCAExecutor {
       // Update order with execution result
       await this.updateOrderAfterExecution(order, result);
 
-      console.log(`${result.success ? '✅' : '❌'} Order ${orderId} execution complete`);
+      console.log(
+        `${result.success ? '✅' : '❌'} Order ${orderId} execution complete`,
+      );
       console.log(`   Method: ${result.method}`);
       console.log(`   Time: ${Date.now() - startTime}ms`);
-      
+
       if (result.success) {
         console.log(`   Output: ${result.outputAmount} tokens`);
         console.log(`   Aggregator: ${result.aggregatorUsed}`);
@@ -236,14 +252,13 @@ export class UnifiedDCAExecutor {
       }
 
       return result;
-
     } catch (error) {
       console.error(`❌ DCA execution failed for ${orderId}:`, error);
       return {
         success: false,
         method: 'server', // Default
         error: error instanceof Error ? error.message : 'Unknown error',
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       };
     }
   }
@@ -251,7 +266,9 @@ export class UnifiedDCAExecutor {
   /**
    * Execute DCA order via server (existing method)
    */
-  private async executeViaServer(order: UnifiedDCAOrder): Promise<ExecutionResult> {
+  private async executeViaServer(
+    order: UnifiedDCAOrder,
+  ): Promise<ExecutionResult> {
     try {
       console.log('🖥️ Executing via server...');
 
@@ -259,7 +276,7 @@ export class UnifiedDCAExecutor {
         order.agentKeyId,
         order.smartWalletAddress,
         order.userAddress,
-        BigInt(order.amountPerExecution)
+        BigInt(order.amountPerExecution),
       );
 
       return {
@@ -269,16 +286,16 @@ export class UnifiedDCAExecutor {
         outputAmount: result.spxReceived,
         gasUsed: result.gasUsed?.toString(),
         error: result.error,
-        executionTime: Date.now()
+        executionTime: Date.now(),
       };
-
     } catch (error) {
       console.error('❌ Server execution failed:', error);
       return {
         success: false,
         method: 'server',
-        error: error instanceof Error ? error.message : 'Server execution error',
-        executionTime: Date.now()
+        error:
+          error instanceof Error ? error.message : 'Server execution error',
+        executionTime: Date.now(),
       };
     }
   }
@@ -286,7 +303,9 @@ export class UnifiedDCAExecutor {
   /**
    * Execute DCA order via Gelato (trigger execution)
    */
-  private async executeViaGelato(order: UnifiedDCAOrder): Promise<ExecutionResult> {
+  private async executeViaGelato(
+    order: UnifiedDCAOrder,
+  ): Promise<ExecutionResult> {
     try {
       console.log('🤖 Executing via Gelato...');
 
@@ -299,7 +318,7 @@ export class UnifiedDCAExecutor {
       console.log(`🚀 Triggered Gelato task: ${order.gelatoTaskId}`);
 
       // Monitor task execution (simplified)
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
 
       return {
         success: true,
@@ -308,16 +327,16 @@ export class UnifiedDCAExecutor {
         outputAmount: '1000000', // Mock output amount
         aggregatorUsed: 'OpenOcean', // Mock aggregator
         gasUsed: '250000',
-        executionTime: Date.now()
+        executionTime: Date.now(),
       };
-
     } catch (error) {
       console.error('❌ Gelato execution failed:', error);
       return {
         success: false,
         method: 'gelato',
-        error: error instanceof Error ? error.message : 'Gelato execution error',
-        executionTime: Date.now()
+        error:
+          error instanceof Error ? error.message : 'Gelato execution error',
+        executionTime: Date.now(),
       };
     }
   }
@@ -327,7 +346,7 @@ export class UnifiedDCAExecutor {
    */
   async getOrdersReadyForExecution(): Promise<UnifiedDCAOrder[]> {
     const now = Math.floor(Date.now() / 1000);
-    
+
     // This would query your database for orders ready for execution
     // For now, return empty array
     console.log('📋 Checking for orders ready for execution...');
@@ -354,7 +373,7 @@ export class UnifiedDCAExecutor {
       try {
         const result = await this.executeDCAOrder(order.id);
         results.push({ orderId: order.id, result });
-        
+
         if (result.success) {
           successful++;
         } else {
@@ -369,19 +388,21 @@ export class UnifiedDCAExecutor {
             success: false,
             method: 'server',
             error: error instanceof Error ? error.message : 'Processing error',
-            executionTime: Date.now()
-          }
+            executionTime: Date.now(),
+          },
         });
       }
     }
 
-    console.log(`📈 Batch execution complete: ${successful} successful, ${failed} failed`);
-    
+    console.log(
+      `📈 Batch execution complete: ${successful} successful, ${failed} failed`,
+    );
+
     return {
       processed: readyOrders.length,
       successful,
       failed,
-      results
+      results,
     };
   }
 
@@ -406,14 +427,14 @@ export class UnifiedDCAExecutor {
    * Update order after execution
    */
   private async updateOrderAfterExecution(
-    order: UnifiedDCAOrder, 
-    result: ExecutionResult
+    order: UnifiedDCAOrder,
+    result: ExecutionResult,
   ): Promise<void> {
     if (result.success) {
       order.executionsCompleted++;
       order.lastExecutionTime = Math.floor(Date.now() / 1000);
       order.nextExecutionTime = order.lastExecutionTime + order.frequency;
-      
+
       if (order.executionsCompleted >= order.totalExecutions) {
         order.isActive = false;
       }
@@ -427,13 +448,17 @@ export class UnifiedDCAExecutor {
         outputAmount: result.outputAmount || '0',
         txHash: result.txHash || '',
         gasUsed: result.gasUsed || '0',
-        success: true
+        success: true,
       });
 
       // Update totals
       const outputAmount = BigInt(result.outputAmount || '0');
-      order.totalVolumeExecuted = (BigInt(order.totalVolumeExecuted) + BigInt(order.amountPerExecution)).toString();
-      order.totalTokensReceived = (BigInt(order.totalTokensReceived) + outputAmount).toString();
+      order.totalVolumeExecuted = (
+        BigInt(order.totalVolumeExecuted) + BigInt(order.amountPerExecution)
+      ).toString();
+      order.totalTokensReceived = (
+        BigInt(order.totalTokensReceived) + outputAmount
+      ).toString();
     }
 
     // Store updated order
@@ -463,7 +488,7 @@ export class UnifiedDCAExecutor {
       gelatoExecutions: 0,
       successRate: 0,
       totalVolumeProcessed: '0',
-      averageExecutionTime: 0
+      averageExecutionTime: 0,
     };
   }
 }

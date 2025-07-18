@@ -7,7 +7,7 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, zeroAddress } from 'viem';
+import { http, type Hex, createPublicClient, zeroAddress } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -48,7 +48,7 @@ async function main() {
     account,
     chain,
     bundlerTransport: http(
-      process.env.ZERODEV_RPC + '_make_it_fail' + '?provider=PIMLICO'
+      process.env.ZERODEV_RPC + '_make_it_fail' + '?provider=PIMLICO',
     ),
     paymaster: {
       getPaymasterData(userOperation) {

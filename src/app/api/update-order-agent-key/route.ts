@@ -7,41 +7,50 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   try {
     const { orderId, newAgentKeyId } = await request.json();
-    
+
     if (!orderId || !newAgentKeyId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Order ID and new agent key ID required' 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Order ID and new agent key ID required',
+        },
+        { status: 400 },
+      );
     }
 
-    console.log(`🔄 Updating order ${orderId} to use agent key ${newAgentKeyId}`);
+    console.log(
+      `🔄 Updating order ${orderId} to use agent key ${newAgentKeyId}`,
+    );
 
     // Get the current order
     const order = await serverDcaDatabase.getOrder(orderId);
     if (!order) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Order not found' 
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Order not found',
+        },
+        { status: 404 },
+      );
     }
 
     // Parse current session key data
-    const currentSessionData = typeof order.sessionKeyData === 'string' 
-      ? JSON.parse(order.sessionKeyData) 
-      : order.sessionKeyData;
+    const currentSessionData =
+      typeof order.sessionKeyData === 'string'
+        ? JSON.parse(order.sessionKeyData)
+        : order.sessionKeyData;
 
     // Update the session key data with new agent key ID
     const updatedSessionData = {
       ...currentSessionData,
       agentKeyId: newAgentKeyId,
       updatedAt: Date.now(),
-      updatedReason: 'Switched to gasless session key'
+      updatedReason: 'Switched to gasless session key',
     };
 
     // Update the order in the database
     await serverDcaDatabase.updateOrder(orderId, {
-      sessionKeyData: JSON.stringify(updatedSessionData)
+      sessionKeyData: JSON.stringify(updatedSessionData),
     });
 
     console.log('✅ Order updated successfully');
@@ -54,14 +63,16 @@ export async function POST(request: Request) {
       orderId,
       oldAgentKeyId: currentSessionData.agentKeyId,
       newAgentKeyId,
-      sessionData: updatedSessionData
+      sessionData: updatedSessionData,
     });
-
   } catch (error) {
     console.error('❌ Failed to update order agent key:', error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

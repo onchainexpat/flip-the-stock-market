@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
-  ModularSigner,
+  type ModularSigner,
   deserializePermissionAccount,
   serializePermissionAccount,
   toPermissionValidator,
@@ -15,7 +15,13 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Address, Hex, createPublicClient, zeroAddress } from 'viem';
+import {
+  http,
+  type Address,
+  type Hex,
+  createPublicClient,
+  zeroAddress,
+} from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -68,14 +74,14 @@ const getApproval = async (sessionKeyAddress: Address) => {
 
 const useSessionKey = async (
   approval: string,
-  sessionKeySigner: ModularSigner
+  sessionKeySigner: ModularSigner,
 ) => {
   const sessionKeyAccount = await deserializePermissionAccount(
     publicClient,
     entryPoint,
     KERNEL_V3_1,
     approval,
-    sessionKeySigner
+    sessionKeySigner,
   );
 
   const kernelPaymaster = createZeroDevPaymasterClient({

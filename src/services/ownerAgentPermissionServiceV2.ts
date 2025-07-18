@@ -1,10 +1,10 @@
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
+  CALL_POLICY_CONTRACT_V0_0_4,
+  SUDO_POLICY_CONTRACT,
   deserializePermissionAccount,
   serializePermissionAccount,
   toPermissionValidator,
-  CALL_POLICY_CONTRACT_V0_0_4,
-  SUDO_POLICY_CONTRACT,
 } from '@zerodev/permissions';
 import {
   createKernelAccount,
@@ -17,16 +17,10 @@ import {
   type Address,
   type Hex,
   createPublicClient,
-  parseEther,
   encodeFunctionData,
   erc20Abi,
-  encodeAbiParameters,
-  parseAbiParameters,
 } from 'viem';
-import {
-  generatePrivateKey,
-  privateKeyToAccount,
-} from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';
@@ -161,7 +155,7 @@ export class OwnerAgentPermissionServiceV2 {
 
   /**
    * STEP 3: Owner authorizes agent using permissions system (KERNEL_V3_2)
-   * 
+   *
    * This implementation uses a simplified approach with call policies
    * for basic DCA permissions suitable for KERNEL_V3_2
    */
@@ -199,10 +193,10 @@ export class OwnerAgentPermissionServiceV2 {
 
       // Create a basic call policy that allows the agent to:
       // 1. Approve USDC for OpenOcean router
-      // 2. Execute swaps on OpenOcean router  
+      // 2. Execute swaps on OpenOcean router
       // 3. Transfer SPX tokens to user wallet
       // 4. Transfer USDC back to user wallet
-      
+
       // For KERNEL_V3_2, we'll use a simplified approach with basic policies
       // The exact policy format may vary, so we'll use the core permission validator
       const policies: Address[] = [
@@ -211,12 +205,15 @@ export class OwnerAgentPermissionServiceV2 {
       ];
 
       // Create permission validator for the agent
-      const permissionValidator = await toPermissionValidator(this.publicClient, {
-        entryPoint: getEntryPoint('0.7'),
-        kernelVersion: KERNEL_V3_2,
-        signer: emptyAgentSigner,
-        policies: policies,
-      });
+      const permissionValidator = await toPermissionValidator(
+        this.publicClient,
+        {
+          entryPoint: getEntryPoint('0.7'),
+          kernelVersion: KERNEL_V3_2,
+          signer: emptyAgentSigner,
+          policies: policies,
+        },
+      );
 
       // Create kernel account with both sudo and permission validators
       const permissionAccount = await createKernelAccount(this.publicClient, {
@@ -320,7 +317,9 @@ export class OwnerAgentPermissionServiceV2 {
         };
       }
 
-      const agentAccount = privateKeyToAccount(agentPermissionKey.agentPrivateKey);
+      const agentAccount = privateKeyToAccount(
+        agentPermissionKey.agentPrivateKey,
+      );
 
       // Deserialize permission account
       const permissionAccount = await deserializePermissionAccount(
@@ -547,4 +546,5 @@ export class OwnerAgentPermissionServiceV2 {
 }
 
 // Export singleton instance
-export const ownerAgentPermissionServiceV2 = new OwnerAgentPermissionServiceV2();
+export const ownerAgentPermissionServiceV2 =
+  new OwnerAgentPermissionServiceV2();

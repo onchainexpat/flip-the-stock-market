@@ -1,6 +1,6 @@
-import { type Address } from 'viem';
-import { zerodevDCAService, type DCAAgentConfig } from './zerodevDCAService';
+import type { Address } from 'viem';
 import { agentKeyService } from './agentKeyService';
+import { type DCAAgentConfig, zerodevDCAService } from './zerodevDCAService';
 
 export interface SmartWalletConfig {
   walletId: string;
@@ -34,24 +34,23 @@ export class ZeroDevSmartWalletService {
   async createSmartWallet(
     userWalletAddress: Address,
     password: string,
-    walletName?: string
+    walletName?: string,
   ): Promise<WalletCreationResult> {
     try {
       // Generate new agent key
       const agentKeyData = agentKeyService.generateAgentKey();
-      
+
       // Create smart wallet
-      const { smartWalletAddress, agentAddress } = await zerodevDCAService.createSmartWallet(
-        agentKeyData.privateKey
-      );
-      
+      const { smartWalletAddress, agentAddress } =
+        await zerodevDCAService.createSmartWallet(agentKeyData.privateKey);
+
       // Store agent key
       const agentKeyId = await agentKeyService.storeAgentKey(
         agentKeyData,
         password,
-        smartWalletAddress
+        smartWalletAddress,
       );
-      
+
       // Create wallet configuration
       const walletId = `wallet_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
       const walletConfig: SmartWalletConfig = {
@@ -63,10 +62,10 @@ export class ZeroDevSmartWalletService {
         createdAt: Date.now(),
         isActive: true,
       };
-      
+
       // Store wallet configuration
       this.storeWalletConfig(walletConfig);
-      
+
       return {
         success: true,
         walletConfig,
@@ -82,18 +81,21 @@ export class ZeroDevSmartWalletService {
   /**
    * Get DCA agent config for a wallet
    */
-  async getDCAAgentConfig(walletId: string, password: string): Promise<DCAAgentConfig> {
+  async getDCAAgentConfig(
+    walletId: string,
+    password: string,
+  ): Promise<DCAAgentConfig> {
     try {
       const walletConfig = this.getWalletConfig(walletId);
       if (!walletConfig) {
         throw new Error('Wallet not found');
       }
-      
+
       const agentKeyData = await agentKeyService.retrieveAgentKey(
         walletConfig.agentKeyId,
-        password
+        password,
       );
-      
+
       return {
         privateKey: agentKeyData.privateKey,
         smartWalletAddress: walletConfig.smartWalletAddress,
@@ -114,12 +116,13 @@ export class ZeroDevSmartWalletService {
         throw new Error('Wallet not found');
       }
 
-      const [smartWalletUSDC, smartWalletSPX, userWalletUSDC, userWalletSPX] = await Promise.all([
-        zerodevDCAService.getUSDCBalance(walletConfig.smartWalletAddress),
-        zerodevDCAService.getSPXBalance(walletConfig.smartWalletAddress),
-        zerodevDCAService.getUSDCBalance(walletConfig.userWalletAddress),
-        zerodevDCAService.getSPXBalance(walletConfig.userWalletAddress),
-      ]);
+      const [smartWalletUSDC, smartWalletSPX, userWalletUSDC, userWalletSPX] =
+        await Promise.all([
+          zerodevDCAService.getUSDCBalance(walletConfig.smartWalletAddress),
+          zerodevDCAService.getSPXBalance(walletConfig.smartWalletAddress),
+          zerodevDCAService.getUSDCBalance(walletConfig.userWalletAddress),
+          zerodevDCAService.getSPXBalance(walletConfig.userWalletAddress),
+        ]);
 
       return {
         smartWalletUSDC,
@@ -138,7 +141,7 @@ export class ZeroDevSmartWalletService {
   async executeDCASwap(
     walletId: string,
     swapAmount: bigint,
-    password: string
+    password: string,
   ): Promise<{
     success: boolean;
     transactionHash?: string;
@@ -146,9 +149,12 @@ export class ZeroDevSmartWalletService {
   }> {
     try {
       const agentConfig = await this.getDCAAgentConfig(walletId, password);
-      
-      const result = await zerodevDCAService.executeDCASwap(agentConfig, swapAmount);
-      
+
+      const result = await zerodevDCAService.executeDCASwap(
+        agentConfig,
+        swapAmount,
+      );
+
       return {
         success: result.success,
         transactionHash: result.transactionHash,
@@ -167,7 +173,7 @@ export class ZeroDevSmartWalletService {
    */
   listWallets(): SmartWalletConfig[] {
     const storedWallets = this.getStoredWallets();
-    return Object.values(storedWallets).filter(wallet => wallet.isActive);
+    return Object.values(storedWallets).filter((wallet) => wallet.isActive);
   }
 
   /**
@@ -184,14 +190,14 @@ export class ZeroDevSmartWalletService {
   deactivateWallet(walletId: string): boolean {
     try {
       const storedWallets = this.getStoredWallets();
-      
+
       if (!(walletId in storedWallets)) {
         return false;
       }
-      
+
       storedWallets[walletId].isActive = false;
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(storedWallets));
-      
+
       return true;
     } catch (error) {
       console.error('Failed to deactivate wallet:', error);
@@ -202,14 +208,20 @@ export class ZeroDevSmartWalletService {
   /**
    * Validate wallet access
    */
-  async validateWalletAccess(walletId: string, password: string): Promise<boolean> {
+  async validateWalletAccess(
+    walletId: string,
+    password: string,
+  ): Promise<boolean> {
     try {
       const walletConfig = this.getWalletConfig(walletId);
       if (!walletConfig) {
         return false;
       }
-      
-      return await agentKeyService.validateKeyAccess(walletConfig.agentKeyId, password);
+
+      return await agentKeyService.validateKeyAccess(
+        walletConfig.agentKeyId,
+        password,
+      );
     } catch (error) {
       return false;
     }
@@ -218,17 +230,20 @@ export class ZeroDevSmartWalletService {
   /**
    * Update user wallet address
    */
-  updateUserWalletAddress(walletId: string, newUserWalletAddress: Address): boolean {
+  updateUserWalletAddress(
+    walletId: string,
+    newUserWalletAddress: Address,
+  ): boolean {
     try {
       const storedWallets = this.getStoredWallets();
-      
+
       if (!(walletId in storedWallets)) {
         return false;
       }
-      
+
       storedWallets[walletId].userWalletAddress = newUserWalletAddress;
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(storedWallets));
-      
+
       return true;
     } catch (error) {
       console.error('Failed to update user wallet address:', error);
@@ -249,7 +264,7 @@ export class ZeroDevSmartWalletService {
     if (!config) {
       return null;
     }
-    
+
     return {
       smartWalletAddress: config.smartWalletAddress,
       userWalletAddress: config.userWalletAddress,

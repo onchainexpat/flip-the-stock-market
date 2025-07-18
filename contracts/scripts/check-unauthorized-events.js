@@ -1,31 +1,39 @@
-const { ethers } = require("hardhat");
+const { ethers } = require('hardhat');
 
 async function main() {
-  console.log("🔍 Checking for UnauthorizedAttempt events...");
+  console.log('🔍 Checking for UnauthorizedAttempt events...');
 
-  const contractAddress = "0x608AFDa57620855a620313a02D54A2620b01460d";
-  
+  const contractAddress = '0x608AFDa57620855a620313a02D54A2620b01460d';
+
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
-  console.log("📝 Using account:", deployer.address);
+  console.log('📝 Using account:', deployer.address);
 
   // Connect to existing contract
-  const DCAAutomationResolver = await ethers.getContractFactory("DCAAutomationResolver");
+  const DCAAutomationResolver = await ethers.getContractFactory(
+    'DCAAutomationResolver',
+  );
   const resolver = DCAAutomationResolver.attach(contractAddress);
 
   try {
     // Get recent blocks to search
     const currentBlock = await deployer.provider.getBlockNumber();
     const fromBlock = currentBlock - 1000; // Search last 1000 blocks
-    
+
     console.log(`🔍 Searching blocks ${fromBlock} to ${currentBlock}`);
 
     // Query for UnauthorizedAttempt events
     const unauthorizedFilter = resolver.filters.UnauthorizedAttempt();
-    const unauthorizedEvents = await resolver.queryFilter(unauthorizedFilter, fromBlock, currentBlock);
+    const unauthorizedEvents = await resolver.queryFilter(
+      unauthorizedFilter,
+      fromBlock,
+      currentBlock,
+    );
 
-    console.log(`\n🚫 Found ${unauthorizedEvents.length} UnauthorizedAttempt events:`);
-    
+    console.log(
+      `\n🚫 Found ${unauthorizedEvents.length} UnauthorizedAttempt events:`,
+    );
+
     for (const event of unauthorizedEvents) {
       console.log(`   Block: ${event.blockNumber}`);
       console.log(`   Caller: ${event.args.caller}`);
@@ -35,8 +43,12 @@ async function main() {
 
     // Also check for recent OrderCreated events to verify contract is working
     const orderCreatedFilter = resolver.filters.OrderCreated();
-    const orderEvents = await resolver.queryFilter(orderCreatedFilter, fromBlock, currentBlock);
-    
+    const orderEvents = await resolver.queryFilter(
+      orderCreatedFilter,
+      fromBlock,
+      currentBlock,
+    );
+
     console.log(`\n📋 Found ${orderEvents.length} OrderCreated events:`);
     for (const event of orderEvents) {
       console.log(`   Block: ${event.blockNumber}`);
@@ -47,8 +59,12 @@ async function main() {
 
     // Check ExecutorAuthorized events
     const authFilter = resolver.filters.ExecutorAuthorized();
-    const authEvents = await resolver.queryFilter(authFilter, fromBlock, currentBlock);
-    
+    const authEvents = await resolver.queryFilter(
+      authFilter,
+      fromBlock,
+      currentBlock,
+    );
+
     console.log(`\n✅ Found ${authEvents.length} ExecutorAuthorized events:`);
     for (const event of authEvents) {
       console.log(`   Block: ${event.blockNumber}`);
@@ -60,26 +76,27 @@ async function main() {
     const totalOrders = await resolver.getTotalOrders();
     console.log(`\n📊 Contract Status:`);
     console.log(`   Total orders: ${totalOrders}`);
-    
+
     if (totalOrders > 0) {
       const orderId = await resolver.allOrderIds(0);
       const order = await resolver.getOrder(orderId);
       console.log(`   First order user: ${order.user}`);
       console.log(`   First order active: ${order.isActive}`);
-      console.log(`   Executions completed: ${order.executionsCompleted}/${order.totalExecutions}`);
+      console.log(
+        `   Executions completed: ${order.executionsCompleted}/${order.totalExecutions}`,
+      );
     }
-
   } catch (error) {
-    console.error("❌ Failed to check events:", error);
+    console.error('❌ Failed to check events:', error);
   }
 }
 
 main()
   .then(() => {
-    console.log("\n🎯 Event check complete!");
+    console.log('\n🎯 Event check complete!');
     process.exit(0);
   })
   .catch((error) => {
-    console.error("💥 Check failed:", error);
+    console.error('💥 Check failed:', error);
     process.exit(1);
   });

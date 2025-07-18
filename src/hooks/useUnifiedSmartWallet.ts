@@ -9,7 +9,7 @@ import { useAccount } from 'wagmi';
 
 // Import existing services
 import { coinbaseSmartWalletService } from '../lib/coinbaseSmartWalletService';
-import { zerodevSessionKeyService } from '../services/zerodevSessionKeyService';
+import { clientSessionKeyService } from '../services/clientSessionKeyService';
 import {
   createBasePublicClient,
   createZeroDevKernelAccount,
@@ -321,12 +321,16 @@ export function useUnifiedSmartWallet() {
             );
           }
 
-          // Use the proper ZeroDev session key service that includes private key
-          const sessionData = await zerodevSessionKeyService.createSessionKey(
-            state.address, // smartWalletAddress
-            dcaParams.userWalletAddress,
+          // Use the client-side session key service
+          // Get the user's wallet provider
+          const wallet = externalWallet || activeWallet;
+          if (!wallet) {
+            throw new Error('No wallet provider available');
+          }
+
+          const sessionData = await clientSessionKeyService.createSessionKey(
+            wallet.provider,
             dcaParams.totalAmount,
-            dcaParams.orderSizeAmount,
             dcaParams.durationDays,
           );
 

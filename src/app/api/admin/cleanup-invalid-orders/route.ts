@@ -44,8 +44,10 @@ export async function POST(request: NextRequest) {
         // Check if order has agent key
         if (orderData.agentKeyId && orderData.serverManaged) {
           // Check if agent key exists and has sessionKeyApproval
-          const agentKey = await serverAgentKeyService.getAgentKey(orderData.agentKeyId);
-          
+          const agentKey = await serverAgentKeyService.getAgentKey(
+            orderData.agentKeyId,
+          );
+
           if (!agentKey) {
             console.log(`❌ Order ${order.id}: Agent key not found`);
             await serverDcaDatabase.updateOrderStatus(order.id, 'cancelled');
@@ -55,22 +57,25 @@ export async function POST(request: NextRequest) {
               action: 'cancelled',
               reason: 'Agent key not found',
             });
-          } else if (!agentKey.sessionKeyApproval) {
-            console.log(`⏸️ Order ${order.id}: Missing sessionKeyApproval - pausing order`);
-            await serverDcaDatabase.updateOrderStatus(order.id, 'paused');
-            pausedCount++;
-            results.push({
-              orderId: order.id,
-              action: 'paused',
-              reason: 'Missing sessionKeyApproval - requires user to recreate order',
-            });
-          } else {
+          } else if (agentKey.sessionKeyApproval) {
             console.log(`✅ Order ${order.id}: Valid order`);
             validCount++;
             results.push({
               orderId: order.id,
               action: 'none',
               reason: 'Valid order',
+            });
+          } else {
+            console.log(
+              `⏸️ Order ${order.id}: Missing sessionKeyApproval - pausing order`,
+            );
+            await serverDcaDatabase.updateOrderStatus(order.id, 'paused');
+            pausedCount++;
+            results.push({
+              orderId: order.id,
+              action: 'paused',
+              reason:
+                'Missing sessionKeyApproval - requires user to recreate order',
             });
           }
         } else {
@@ -93,7 +98,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`🎉 Cleanup completed: ${validCount} valid, ${pausedCount} paused, ${invalidCount} cancelled`);
+    console.log(
+      `🎉 Cleanup completed: ${validCount} valid, ${pausedCount} paused, ${invalidCount} cancelled`,
+    );
 
     return NextResponse.json({
       success: true,
@@ -111,7 +118,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Cleanup failed',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -120,15 +127,17 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const activeOrders = await serverDcaDatabase.getAllActiveOrders();
-    
+
     let validOrders = 0;
     let invalidOrders = 0;
-    
+
     for (const order of activeOrders) {
       try {
         const orderData = JSON.parse(order.sessionKeyData);
         if (orderData.agentKeyId && orderData.serverManaged) {
-          const agentKey = await serverAgentKeyService.getAgentKey(orderData.agentKeyId);
+          const agentKey = await serverAgentKeyService.getAgentKey(
+            orderData.agentKeyId,
+          );
           if (agentKey && agentKey.sessionKeyApproval) {
             validOrders++;
           } else {
@@ -141,7 +150,7 @@ export async function GET() {
         invalidOrders++;
       }
     }
-    
+
     return NextResponse.json({
       success: true,
       totalActiveOrders: activeOrders.length,
@@ -152,9 +161,12 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to check cleanup status',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to check cleanup status',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

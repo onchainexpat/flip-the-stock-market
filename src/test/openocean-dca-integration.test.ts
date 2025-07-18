@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import axios from 'axios';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { serverDcaDatabase } from '../lib/serverDcaDatabase';
 import { OpenOceanDCAService } from '../services/openOceanDCAService';
 import { openOceanSyncService } from '../services/openOceanSyncService';
-import { serverDcaDatabase } from '../lib/serverDcaDatabase';
-import axios from 'axios';
 
 // Mock all external dependencies
 vi.mock('axios', () => ({
   default: {
     post: vi.fn(),
-    get: vi.fn()
-  }
+    get: vi.fn(),
+  },
 }));
 
 vi.mock('../lib/serverDcaDatabase');
@@ -25,18 +25,20 @@ describe('OpenOcean DCA Integration Tests', () => {
   let mockAxios: any;
 
   const mockUserAddress = '0x1234567890123456789012345678901234567890';
-  const mockOrderHash = '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
-  const mockSignature = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+  const mockOrderHash =
+    '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab';
+  const mockSignature =
+    '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
 
   beforeEach(() => {
     // Setup mocks
     mockProvider = {
       getSigner: vi.fn().mockResolvedValue({
-        getAddress: vi.fn().mockResolvedValue(mockUserAddress)
+        getAddress: vi.fn().mockResolvedValue(mockUserAddress),
       }),
       getFeeData: vi.fn().mockResolvedValue({
-        gasPrice: BigInt('20000000000')
-      })
+        gasPrice: BigInt('20000000000'),
+      }),
     };
 
     mockAxios = vi.mocked(axios);
@@ -64,20 +66,22 @@ describe('OpenOcean DCA Integration Tests', () => {
         takerAsset: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C',
         maker: mockUserAddress,
         makingAmount: '100000000', // 100 USDC
-        takingAmount: '1000000000000000000' // 1 SPX
-      }
+        takingAmount: '1000000000000000000', // 1 SPX
+      },
     };
 
-    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(mockOrderData);
+    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(
+      mockOrderData,
+    );
     mockAxios.post.mockResolvedValue({
-      data: { code: 200, data: { orderHash: mockOrderHash, status: 1 } }
+      data: { code: 200, data: { orderHash: mockOrderHash, status: 1 } },
     });
 
     const dcaParams = {
       provider: mockProvider,
       usdcAmount: 100,
       intervalHours: 24,
-      numberOfBuys: 10
+      numberOfBuys: 10,
     };
 
     const createdOrder = await dcaService.createSPXDCAOrder(dcaParams);
@@ -91,16 +95,18 @@ describe('OpenOcean DCA Integration Tests', () => {
     mockAxios.get.mockResolvedValue({
       data: {
         code: 200,
-        data: [{
-          orderHash: mockOrderHash,
-          makerAmount: '100000000',
-          remainingMakerAmount: '80000000',
-          statuses: 1, // unfilled
-          have_filled: 2,
-          createDateTime: '2024-01-01T00:00:00.000Z',
-          expireTime: '2024-01-11T00:00:00.000Z'
-        }]
-      }
+        data: [
+          {
+            orderHash: mockOrderHash,
+            makerAmount: '100000000',
+            remainingMakerAmount: '80000000',
+            statuses: 1, // unfilled
+            have_filled: 2,
+            createDateTime: '2024-01-01T00:00:00.000Z',
+            expireTime: '2024-01-11T00:00:00.000Z',
+          },
+        ],
+      },
     });
 
     const orders = await dcaService.getOrdersByAddress(mockUserAddress);
@@ -119,10 +125,14 @@ describe('OpenOcean DCA Integration Tests', () => {
 
     // Step 5: Cancel order
     mockAxios.post.mockResolvedValue({
-      data: { code: 200, data: { status: 3 } }
+      data: { code: 200, data: { status: 3 } },
     });
 
-    const cancelResult = await dcaService.cancelOrder(mockProvider, mockOrderHash, mockOrderData.data);
+    const cancelResult = await dcaService.cancelOrder(
+      mockProvider,
+      mockOrderHash,
+      mockOrderData.data,
+    );
     expect(cancelResult).toBeDefined();
     expect(cancelResult.code).toBe(200);
   });
@@ -140,28 +150,32 @@ describe('OpenOcean DCA Integration Tests', () => {
       status: 'active',
       openOceanStatus: 1,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
-    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(mockOrder as any);
+    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(
+      mockOrder as any,
+    );
 
     mockAxios.get.mockResolvedValue({
       data: {
         code: 200,
-        data: [{
-          orderHash: mockOrderHash,
-          makerAmount: '100000000',
-          remainingMakerAmount: '70000000', // More executed
-          statuses: 1,
-          have_filled: 3, // More executions
-          createDateTime: '2024-01-01T00:00:00.000Z',
-          expireTime: '2024-01-11T00:00:00.000Z'
-        }]
-      }
+        data: [
+          {
+            orderHash: mockOrderHash,
+            makerAmount: '100000000',
+            remainingMakerAmount: '70000000', // More executed
+            statuses: 1,
+            have_filled: 3, // More executions
+            createDateTime: '2024-01-01T00:00:00.000Z',
+            expireTime: '2024-01-11T00:00:00.000Z',
+          },
+        ],
+      },
     });
 
     const syncResult = await openOceanSyncService.syncOrder(mockOrderHash);
-    
+
     expect(syncResult).toBeDefined();
     expect(syncResult.success).toBe(true);
     expect(syncResult.orderHash).toBe(mockOrderHash);
@@ -181,28 +195,32 @@ describe('OpenOcean DCA Integration Tests', () => {
       status: 'active',
       openOceanStatus: 1,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
-    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(mockOrder as any);
+    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(
+      mockOrder as any,
+    );
 
     mockAxios.get.mockResolvedValue({
       data: {
         code: 200,
-        data: [{
-          orderHash: mockOrderHash,
-          makerAmount: '100000000',
-          remainingMakerAmount: '0', // Fully executed
-          statuses: 4, // filled
-          have_filled: 10,
-          createDateTime: '2024-01-01T00:00:00.000Z',
-          expireTime: '2024-01-11T00:00:00.000Z'
-        }]
-      }
+        data: [
+          {
+            orderHash: mockOrderHash,
+            makerAmount: '100000000',
+            remainingMakerAmount: '0', // Fully executed
+            statuses: 4, // filled
+            have_filled: 10,
+            createDateTime: '2024-01-01T00:00:00.000Z',
+            expireTime: '2024-01-11T00:00:00.000Z',
+          },
+        ],
+      },
     });
 
     const syncResult = await openOceanSyncService.syncOrder(mockOrderHash);
-    
+
     expect(syncResult).toBeDefined();
     expect(syncResult.success).toBe(true);
     expect(syncResult.newStatus).toBe('completed');
@@ -222,21 +240,23 @@ describe('OpenOcean DCA Integration Tests', () => {
       status: 'active',
       openOceanStatus: 1,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
-    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(mockOrder as any);
+    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(
+      mockOrder as any,
+    );
 
     // Mock order not found in API (expired)
     mockAxios.get.mockResolvedValue({
       data: {
         code: 200,
-        data: [] // Empty array means order not found
-      }
+        data: [], // Empty array means order not found
+      },
     });
 
     const syncResult = await openOceanSyncService.syncOrder(mockOrderHash);
-    
+
     expect(syncResult).toBeDefined();
     expect(syncResult.success).toBe(true);
     expect(syncResult.newStatus).toBe('expired');
@@ -246,7 +266,7 @@ describe('OpenOcean DCA Integration Tests', () => {
     const orderHashes = [
       '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       '0xbcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc',
-      '0xcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd'
+      '0xcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd',
     ];
 
     // Mock database responses
@@ -263,30 +283,32 @@ describe('OpenOcean DCA Integration Tests', () => {
         status: 'active',
         openOceanStatus: 1,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
 
-      vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValueOnce(mockOrder as any);
+      vi.mocked(
+        serverDcaDatabase.getOpenOceanOrderByHash,
+      ).mockResolvedValueOnce(mockOrder as any);
     });
 
     // Mock API responses
     mockAxios.get.mockResolvedValue({
       data: {
         code: 200,
-        data: orderHashes.map(hash => ({
+        data: orderHashes.map((hash) => ({
           orderHash: hash,
           makerAmount: '100000000',
           remainingMakerAmount: '80000000',
           statuses: 1,
           have_filled: 2,
           createDateTime: '2024-01-01T00:00:00.000Z',
-          expireTime: '2024-01-11T00:00:00.000Z'
-        }))
-      }
+          expireTime: '2024-01-11T00:00:00.000Z',
+        })),
+      },
     });
 
     const batchResult = await openOceanSyncService.syncOrdersBatch(orderHashes);
-    
+
     expect(batchResult).toBeDefined();
     expect(batchResult.totalOrders).toBe(3);
     expect(batchResult.syncedOrders).toBe(3);
@@ -295,15 +317,16 @@ describe('OpenOcean DCA Integration Tests', () => {
   });
 
   it('should handle API rate limiting', async () => {
-    const orderHashes = Array.from({ length: 10 }, (_, i) => 
-      `0x${i.toString().padStart(64, '0')}`
+    const orderHashes = Array.from(
+      { length: 10 },
+      (_, i) => `0x${i.toString().padStart(64, '0')}`,
     );
 
     // Mock rate limiting error
     mockAxios.get.mockRejectedValueOnce(new Error('Rate limit exceeded'));
 
     const batchResult = await openOceanSyncService.syncOrdersBatch(orderHashes);
-    
+
     expect(batchResult).toBeDefined();
     expect(batchResult.errorCount).toBeGreaterThan(0);
     expect(batchResult.errors).toHaveLength(10); // All orders should have errors
@@ -322,16 +345,18 @@ describe('OpenOcean DCA Integration Tests', () => {
       status: 'active',
       openOceanStatus: 1,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
-    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(mockOrder as any);
+    vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(
+      mockOrder as any,
+    );
 
     // Mock network error
     mockAxios.get.mockRejectedValue(new Error('Network error'));
 
     const syncResult = await openOceanSyncService.syncOrder(mockOrderHash);
-    
+
     expect(syncResult).toBeDefined();
     expect(syncResult.success).toBe(false);
     expect(syncResult.error).toBe('Network error');
@@ -342,11 +367,11 @@ describe('OpenOcean DCA Integration Tests', () => {
       provider: mockProvider,
       usdcAmount: 1, // Below minimum
       intervalHours: 0.001, // Below minimum
-      numberOfBuys: 0 // Invalid
+      numberOfBuys: 0, // Invalid
     };
 
     const validation = dcaService.validateOrderParams(invalidParams);
-    
+
     expect(validation.valid).toBe(false);
     expect(validation.error).toBe('Minimum order amount is $5 USD');
   });
@@ -354,31 +379,33 @@ describe('OpenOcean DCA Integration Tests', () => {
   it('should handle user order retrieval', async () => {
     const mockOrders = [
       {
-        orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+        orderHash:
+          '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
         makerAmount: '100000000',
         remainingMakerAmount: '80000000',
         statuses: 1,
         have_filled: 2,
         createDateTime: '2024-01-01T00:00:00.000Z',
-        expireTime: '2024-01-11T00:00:00.000Z'
+        expireTime: '2024-01-11T00:00:00.000Z',
       },
       {
-        orderHash: '0xbcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc',
+        orderHash:
+          '0xbcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc',
         makerAmount: '50000000',
         remainingMakerAmount: '0',
         statuses: 4, // completed
         have_filled: 5,
         createDateTime: '2024-01-01T00:00:00.000Z',
-        expireTime: '2024-01-06T00:00:00.000Z'
-      }
+        expireTime: '2024-01-06T00:00:00.000Z',
+      },
     ];
 
     mockAxios.get.mockResolvedValue({
-      data: { code: 200, data: mockOrders }
+      data: { code: 200, data: mockOrders },
     });
 
     const orders = await dcaService.getOrdersByAddress(mockUserAddress);
-    
+
     expect(orders).toBeDefined();
     expect(orders).toHaveLength(2);
     expect(orders[0].orderHash).toBe(mockOrders[0].orderHash);
@@ -388,7 +415,7 @@ describe('OpenOcean DCA Integration Tests', () => {
   it('should handle concurrent order operations', async () => {
     const orderHashes = [
       '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
-      '0xbcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc'
+      '0xbcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc',
     ];
 
     // Mock concurrent operations
@@ -405,31 +432,35 @@ describe('OpenOcean DCA Integration Tests', () => {
         status: 'active',
         openOceanStatus: 1,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
 
-      vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(mockOrder as any);
+      vi.mocked(serverDcaDatabase.getOpenOceanOrderByHash).mockResolvedValue(
+        mockOrder as any,
+      );
 
       mockAxios.get.mockResolvedValue({
         data: {
           code: 200,
-          data: [{
-            orderHash: hash,
-            makerAmount: '100000000',
-            remainingMakerAmount: '80000000',
-            statuses: 1,
-            have_filled: 2,
-            createDateTime: '2024-01-01T00:00:00.000Z',
-            expireTime: '2024-01-11T00:00:00.000Z'
-          }]
-        }
+          data: [
+            {
+              orderHash: hash,
+              makerAmount: '100000000',
+              remainingMakerAmount: '80000000',
+              statuses: 1,
+              have_filled: 2,
+              createDateTime: '2024-01-01T00:00:00.000Z',
+              expireTime: '2024-01-11T00:00:00.000Z',
+            },
+          ],
+        },
       });
 
       return openOceanSyncService.syncOrder(hash);
     });
 
     const results = await Promise.all(promises);
-    
+
     expect(results).toHaveLength(2);
     results.forEach((result, index) => {
       expect(result.success).toBe(true);

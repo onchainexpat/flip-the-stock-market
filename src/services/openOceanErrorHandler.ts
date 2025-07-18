@@ -1,7 +1,6 @@
-import { OpenOceanDCAService } from './openOceanDCAService';
-import { openOceanSyncService } from './openOceanSyncService';
-import { serverDcaDatabase } from '../lib/serverDcaDatabase';
 import type { Address } from 'viem';
+import { serverDcaDatabase } from '../lib/serverDcaDatabase';
+import { openOceanSyncService } from './openOceanSyncService';
 
 export enum ErrorType {
   SIGNATURE_GENERATION = 'SIGNATURE_GENERATION',
@@ -10,7 +9,7 @@ export enum ErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   PROVIDER_ERROR = 'PROVIDER_ERROR',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 export interface ErrorContext {
@@ -47,46 +46,64 @@ export interface FallbackResult {
  */
 export class OpenOceanErrorHandler {
   private retryStrategies: Map<ErrorType, RetryStrategy> = new Map([
-    [ErrorType.SIGNATURE_GENERATION, {
-      maxRetries: 3,
-      baseDelay: 1000,
-      maxDelay: 10000,
-      backoffMultiplier: 2,
-      jitter: true
-    }],
-    [ErrorType.API_RATE_LIMIT, {
-      maxRetries: 5,
-      baseDelay: 2000,
-      maxDelay: 30000,
-      backoffMultiplier: 2,
-      jitter: true
-    }],
-    [ErrorType.ORDER_EXECUTION, {
-      maxRetries: 3,
-      baseDelay: 5000,
-      maxDelay: 60000,
-      backoffMultiplier: 2,
-      jitter: true
-    }],
-    [ErrorType.NETWORK_ERROR, {
-      maxRetries: 4,
-      baseDelay: 1000,
-      maxDelay: 15000,
-      backoffMultiplier: 2,
-      jitter: true
-    }],
-    [ErrorType.PROVIDER_ERROR, {
-      maxRetries: 2,
-      baseDelay: 3000,
-      maxDelay: 10000,
-      backoffMultiplier: 1.5,
-      jitter: true
-    }]
+    [
+      ErrorType.SIGNATURE_GENERATION,
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        maxDelay: 10000,
+        backoffMultiplier: 2,
+        jitter: true,
+      },
+    ],
+    [
+      ErrorType.API_RATE_LIMIT,
+      {
+        maxRetries: 5,
+        baseDelay: 2000,
+        maxDelay: 30000,
+        backoffMultiplier: 2,
+        jitter: true,
+      },
+    ],
+    [
+      ErrorType.ORDER_EXECUTION,
+      {
+        maxRetries: 3,
+        baseDelay: 5000,
+        maxDelay: 60000,
+        backoffMultiplier: 2,
+        jitter: true,
+      },
+    ],
+    [
+      ErrorType.NETWORK_ERROR,
+      {
+        maxRetries: 4,
+        baseDelay: 1000,
+        maxDelay: 15000,
+        backoffMultiplier: 2,
+        jitter: true,
+      },
+    ],
+    [
+      ErrorType.PROVIDER_ERROR,
+      {
+        maxRetries: 2,
+        baseDelay: 3000,
+        maxDelay: 10000,
+        backoffMultiplier: 1.5,
+        jitter: true,
+      },
+    ],
   ]);
 
   private errorLog: ErrorContext[] = [];
   private rateLimitCache: Map<string, number> = new Map();
-  private circuitBreaker: Map<string, { failures: number; lastFailure: number; open: boolean }> = new Map();
+  private circuitBreaker: Map<
+    string,
+    { failures: number; lastFailure: number; open: boolean }
+  > = new Map();
 
   /**
    * Handle signature generation failures with fallback to custom implementation
@@ -94,7 +111,7 @@ export class OpenOceanErrorHandler {
   async handleSignatureGenerationError(
     error: Error,
     orderParams: any,
-    userAddress: Address
+    userAddress: Address,
   ): Promise<FallbackResult> {
     const errorContext: ErrorContext = {
       type: ErrorType.SIGNATURE_GENERATION,
@@ -104,7 +121,7 @@ export class OpenOceanErrorHandler {
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: 3,
-      metadata: { orderParams }
+      metadata: { orderParams },
     };
 
     console.error('Signature generation error:', error);
@@ -113,24 +130,25 @@ export class OpenOceanErrorHandler {
     try {
       // Fallback strategy: Use custom DCA implementation instead
       console.log('Falling back to custom DCA implementation...');
-      
+
       // This would integrate with the existing smart wallet DCA service
       const fallbackMessage = `OpenOcean signature generation failed. Please use Smart Wallet DCA instead, which provides gas-free execution.`;
-      
+
       return {
         success: false,
         error: fallbackMessage,
         fallbackUsed: true,
-        retryCount: 0
+        retryCount: 0,
       };
     } catch (fallbackError) {
       console.error('Fallback to custom DCA also failed:', fallbackError);
-      
+
       return {
         success: false,
-        error: 'Both OpenOcean and Smart Wallet DCA are currently unavailable. Please try again later.',
+        error:
+          'Both OpenOcean and Smart Wallet DCA are currently unavailable. Please try again later.',
         fallbackUsed: true,
-        retryCount: 0
+        retryCount: 0,
       };
     }
   }
@@ -141,7 +159,7 @@ export class OpenOceanErrorHandler {
   async handleRateLimitError(
     error: Error,
     endpoint: string,
-    operation: () => Promise<any>
+    operation: () => Promise<any>,
   ): Promise<FallbackResult> {
     const errorContext: ErrorContext = {
       type: ErrorType.API_RATE_LIMIT,
@@ -150,7 +168,7 @@ export class OpenOceanErrorHandler {
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: 5,
-      metadata: { endpoint }
+      metadata: { endpoint },
     };
 
     console.warn('Rate limit exceeded for endpoint:', endpoint);
@@ -164,42 +182,44 @@ export class OpenOceanErrorHandler {
         success: false,
         error: 'API rate limit exceeded. Please try again in a few minutes.',
         fallbackUsed: false,
-        retryCount: 0
+        retryCount: 0,
       };
     }
 
     const strategy = this.retryStrategies.get(ErrorType.API_RATE_LIMIT)!;
-    
+
     for (let attempt = 0; attempt < strategy.maxRetries; attempt++) {
       try {
         const delay = this.calculateDelay(attempt, strategy);
-        console.log(`Rate limit retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`);
-        
+        console.log(
+          `Rate limit retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`,
+        );
+
         await this.sleep(delay);
-        
+
         const result = await operation();
-        
+
         // Success - clear rate limit cache
         this.rateLimitCache.delete(endpoint);
-        
+
         return {
           success: true,
           data: result,
           fallbackUsed: false,
-          retryCount: attempt + 1
+          retryCount: attempt + 1,
         };
       } catch (retryError) {
         console.error(`Retry ${attempt + 1} failed:`, retryError);
-        
+
         if (attempt === strategy.maxRetries - 1) {
           // Mark rate limit in cache
           this.rateLimitCache.set(endpoint, Date.now());
-          
+
           return {
             success: false,
             error: 'API rate limit exceeded. Service will retry automatically.',
             fallbackUsed: false,
-            retryCount: attempt + 1
+            retryCount: attempt + 1,
           };
         }
       }
@@ -209,7 +229,7 @@ export class OpenOceanErrorHandler {
       success: false,
       error: 'Maximum retries exceeded',
       fallbackUsed: false,
-      retryCount: strategy.maxRetries
+      retryCount: strategy.maxRetries,
     };
   }
 
@@ -220,7 +240,7 @@ export class OpenOceanErrorHandler {
     error: Error,
     orderHash: string,
     userAddress: Address,
-    retryOperation: () => Promise<any>
+    retryOperation: () => Promise<any>,
   ): Promise<FallbackResult> {
     const errorContext: ErrorContext = {
       type: ErrorType.ORDER_EXECUTION,
@@ -231,52 +251,63 @@ export class OpenOceanErrorHandler {
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: 3,
-      metadata: { orderHash }
+      metadata: { orderHash },
     };
 
     console.error('Order execution error:', error);
     this.logError(errorContext);
 
     const strategy = this.retryStrategies.get(ErrorType.ORDER_EXECUTION)!;
-    
+
     for (let attempt = 0; attempt < strategy.maxRetries; attempt++) {
       try {
         const delay = this.calculateDelay(attempt, strategy);
-        console.log(`Order execution retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`);
-        
+        console.log(
+          `Order execution retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`,
+        );
+
         await this.sleep(delay);
-        
+
         // Check if order is still active before retrying
         const orderStatus = await openOceanSyncService.syncOrder(orderHash);
-        if (!orderStatus.success || orderStatus.newStatus === 'cancelled' || orderStatus.newStatus === 'completed') {
+        if (
+          !orderStatus.success ||
+          orderStatus.newStatus === 'cancelled' ||
+          orderStatus.newStatus === 'completed'
+        ) {
           return {
             success: false,
             error: 'Order is no longer active for execution',
             fallbackUsed: false,
-            retryCount: attempt + 1
+            retryCount: attempt + 1,
           };
         }
-        
+
         const result = await retryOperation();
-        
+
         return {
           success: true,
           data: result,
           fallbackUsed: false,
-          retryCount: attempt + 1
+          retryCount: attempt + 1,
         };
       } catch (retryError) {
         console.error(`Execution retry ${attempt + 1} failed:`, retryError);
-        
+
         if (attempt === strategy.maxRetries - 1) {
           // Mark order as needing manual intervention
-          await this.markOrderForManualIntervention(orderHash, userAddress, error);
-          
+          await this.markOrderForManualIntervention(
+            orderHash,
+            userAddress,
+            error,
+          );
+
           return {
             success: false,
-            error: 'Order execution failed after multiple attempts. Manual intervention required.',
+            error:
+              'Order execution failed after multiple attempts. Manual intervention required.',
             fallbackUsed: false,
-            retryCount: attempt + 1
+            retryCount: attempt + 1,
           };
         }
       }
@@ -286,7 +317,7 @@ export class OpenOceanErrorHandler {
       success: false,
       error: 'Maximum retries exceeded',
       fallbackUsed: false,
-      retryCount: strategy.maxRetries
+      retryCount: strategy.maxRetries,
     };
   }
 
@@ -296,7 +327,7 @@ export class OpenOceanErrorHandler {
   async handleNetworkError(
     error: Error,
     serviceKey: string,
-    operation: () => Promise<any>
+    operation: () => Promise<any>,
   ): Promise<FallbackResult> {
     const errorContext: ErrorContext = {
       type: ErrorType.NETWORK_ERROR,
@@ -305,7 +336,7 @@ export class OpenOceanErrorHandler {
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: 4,
-      metadata: { serviceKey }
+      metadata: { serviceKey },
     };
 
     console.error('Network error:', error);
@@ -316,13 +347,13 @@ export class OpenOceanErrorHandler {
     if (breaker?.open) {
       const timeSinceLastFailure = Date.now() - breaker.lastFailure;
       const cooldownPeriod = 60000; // 1 minute
-      
+
       if (timeSinceLastFailure < cooldownPeriod) {
         return {
           success: false,
           error: 'Service temporarily unavailable. Please try again later.',
           fallbackUsed: true,
-          retryCount: 0
+          retryCount: 0,
         };
       } else {
         // Reset circuit breaker
@@ -332,45 +363,55 @@ export class OpenOceanErrorHandler {
     }
 
     const strategy = this.retryStrategies.get(ErrorType.NETWORK_ERROR)!;
-    
+
     for (let attempt = 0; attempt < strategy.maxRetries; attempt++) {
       try {
         const delay = this.calculateDelay(attempt, strategy);
-        console.log(`Network retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`);
-        
+        console.log(
+          `Network retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`,
+        );
+
         await this.sleep(delay);
-        
+
         const result = await operation();
-        
+
         // Success - reset circuit breaker
-        this.circuitBreaker.set(serviceKey, { failures: 0, lastFailure: 0, open: false });
-        
+        this.circuitBreaker.set(serviceKey, {
+          failures: 0,
+          lastFailure: 0,
+          open: false,
+        });
+
         return {
           success: true,
           data: result,
           fallbackUsed: false,
-          retryCount: attempt + 1
+          retryCount: attempt + 1,
         };
       } catch (retryError) {
         console.error(`Network retry ${attempt + 1} failed:`, retryError);
-        
+
         if (attempt === strategy.maxRetries - 1) {
           // Update circuit breaker
-          const currentBreaker = this.circuitBreaker.get(serviceKey) || { failures: 0, lastFailure: 0, open: false };
+          const currentBreaker = this.circuitBreaker.get(serviceKey) || {
+            failures: 0,
+            lastFailure: 0,
+            open: false,
+          };
           currentBreaker.failures++;
           currentBreaker.lastFailure = Date.now();
-          
+
           if (currentBreaker.failures >= 5) {
             currentBreaker.open = true;
           }
-          
+
           this.circuitBreaker.set(serviceKey, currentBreaker);
-          
+
           return {
             success: false,
             error: 'Network service temporarily unavailable',
             fallbackUsed: true,
-            retryCount: attempt + 1
+            retryCount: attempt + 1,
           };
         }
       }
@@ -380,7 +421,7 @@ export class OpenOceanErrorHandler {
       success: false,
       error: 'Network operation failed',
       fallbackUsed: false,
-      retryCount: strategy.maxRetries
+      retryCount: strategy.maxRetries,
     };
   }
 
@@ -390,7 +431,7 @@ export class OpenOceanErrorHandler {
   async handleProviderError(
     error: Error,
     userAddress: Address,
-    operation: () => Promise<any>
+    operation: () => Promise<any>,
   ): Promise<FallbackResult> {
     const errorContext: ErrorContext = {
       type: ErrorType.PROVIDER_ERROR,
@@ -400,48 +441,54 @@ export class OpenOceanErrorHandler {
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: 2,
-      metadata: { userAddress }
+      metadata: { userAddress },
     };
 
     console.error('Provider error:', error);
     this.logError(errorContext);
 
     // Check if it's a user rejection (don't retry)
-    if (error.message.includes('user rejected') || error.message.includes('User denied')) {
+    if (
+      error.message.includes('user rejected') ||
+      error.message.includes('User denied')
+    ) {
       return {
         success: false,
         error: 'Transaction was rejected by user',
         fallbackUsed: false,
-        retryCount: 0
+        retryCount: 0,
       };
     }
 
     const strategy = this.retryStrategies.get(ErrorType.PROVIDER_ERROR)!;
-    
+
     for (let attempt = 0; attempt < strategy.maxRetries; attempt++) {
       try {
         const delay = this.calculateDelay(attempt, strategy);
-        console.log(`Provider retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`);
-        
+        console.log(
+          `Provider retry ${attempt + 1}/${strategy.maxRetries} after ${delay}ms`,
+        );
+
         await this.sleep(delay);
-        
+
         const result = await operation();
-        
+
         return {
           success: true,
           data: result,
           fallbackUsed: false,
-          retryCount: attempt + 1
+          retryCount: attempt + 1,
         };
       } catch (retryError) {
         console.error(`Provider retry ${attempt + 1} failed:`, retryError);
-        
+
         if (attempt === strategy.maxRetries - 1) {
           return {
             success: false,
-            error: 'Provider error persists. Please check your wallet connection.',
+            error:
+              'Provider error persists. Please check your wallet connection.',
             fallbackUsed: false,
-            retryCount: attempt + 1
+            retryCount: attempt + 1,
           };
         }
       }
@@ -451,7 +498,7 @@ export class OpenOceanErrorHandler {
       success: false,
       error: 'Provider operation failed',
       fallbackUsed: false,
-      retryCount: strategy.maxRetries
+      retryCount: strategy.maxRetries,
     };
   }
 
@@ -467,34 +514,57 @@ export class OpenOceanErrorHandler {
       endpoint?: string;
       serviceKey?: string;
       retryOperation?: () => Promise<any>;
-    }
+    },
   ): Promise<FallbackResult> {
     const errorType = this.detectErrorType(error);
-    
-    console.log(`Handling ${errorType} error for operation: ${context.operation}`);
-    
+
+    console.log(
+      `Handling ${errorType} error for operation: ${context.operation}`,
+    );
+
     switch (errorType) {
       case ErrorType.SIGNATURE_GENERATION:
-        return this.handleSignatureGenerationError(error, context, context.userAddress!);
-      
+        return this.handleSignatureGenerationError(
+          error,
+          context,
+          context.userAddress!,
+        );
+
       case ErrorType.API_RATE_LIMIT:
-        return this.handleRateLimitError(error, context.endpoint!, context.retryOperation!);
-      
+        return this.handleRateLimitError(
+          error,
+          context.endpoint!,
+          context.retryOperation!,
+        );
+
       case ErrorType.ORDER_EXECUTION:
-        return this.handleOrderExecutionError(error, context.orderHash!, context.userAddress!, context.retryOperation!);
-      
+        return this.handleOrderExecutionError(
+          error,
+          context.orderHash!,
+          context.userAddress!,
+          context.retryOperation!,
+        );
+
       case ErrorType.NETWORK_ERROR:
-        return this.handleNetworkError(error, context.serviceKey!, context.retryOperation!);
-      
+        return this.handleNetworkError(
+          error,
+          context.serviceKey!,
+          context.retryOperation!,
+        );
+
       case ErrorType.PROVIDER_ERROR:
-        return this.handleProviderError(error, context.userAddress!, context.retryOperation!);
-      
+        return this.handleProviderError(
+          error,
+          context.userAddress!,
+          context.retryOperation!,
+        );
+
       default:
         return {
           success: false,
           error: error.message || 'Unknown error occurred',
           fallbackUsed: false,
-          retryCount: 0
+          retryCount: 0,
         };
     }
   }
@@ -504,31 +574,46 @@ export class OpenOceanErrorHandler {
    */
   private detectErrorType(error: Error): ErrorType {
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('signature') || message.includes('signing')) {
       return ErrorType.SIGNATURE_GENERATION;
     }
-    
-    if (message.includes('rate limit') || message.includes('too many requests')) {
+
+    if (
+      message.includes('rate limit') ||
+      message.includes('too many requests')
+    ) {
       return ErrorType.API_RATE_LIMIT;
     }
-    
-    if (message.includes('execution') || message.includes('order') || message.includes('swap')) {
+
+    if (
+      message.includes('execution') ||
+      message.includes('order') ||
+      message.includes('swap')
+    ) {
       return ErrorType.ORDER_EXECUTION;
     }
-    
-    if (message.includes('network') || message.includes('connection') || message.includes('timeout')) {
+
+    if (
+      message.includes('network') ||
+      message.includes('connection') ||
+      message.includes('timeout')
+    ) {
       return ErrorType.NETWORK_ERROR;
     }
-    
-    if (message.includes('provider') || message.includes('wallet') || message.includes('user rejected')) {
+
+    if (
+      message.includes('provider') ||
+      message.includes('wallet') ||
+      message.includes('user rejected')
+    ) {
       return ErrorType.PROVIDER_ERROR;
     }
-    
+
     if (message.includes('validation') || message.includes('invalid')) {
       return ErrorType.VALIDATION_ERROR;
     }
-    
+
     return ErrorType.UNKNOWN_ERROR;
   }
 
@@ -538,15 +623,15 @@ export class OpenOceanErrorHandler {
   private calculateDelay(attempt: number, strategy: RetryStrategy): number {
     const baseDelay = Math.min(
       strategy.baseDelay * Math.pow(strategy.backoffMultiplier, attempt),
-      strategy.maxDelay
+      strategy.maxDelay,
     );
-    
+
     if (strategy.jitter) {
       // Add random jitter to prevent thundering herd
       const jitter = Math.random() * 0.1 * baseDelay;
       return baseDelay + jitter;
     }
-    
+
     return baseDelay;
   }
 
@@ -554,7 +639,7 @@ export class OpenOceanErrorHandler {
    * Sleep utility for delays
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -562,19 +647,19 @@ export class OpenOceanErrorHandler {
    */
   private logError(errorContext: ErrorContext): void {
     this.errorLog.push(errorContext);
-    
+
     // Keep only last 100 errors
     if (this.errorLog.length > 100) {
       this.errorLog.shift();
     }
-    
+
     // Here you could integrate with external logging services
     console.error('Error logged:', {
       type: errorContext.type,
       message: errorContext.message,
       timestamp: new Date(errorContext.timestamp).toISOString(),
       userAddress: errorContext.userAddress,
-      orderHash: errorContext.orderHash
+      orderHash: errorContext.orderHash,
     });
   }
 
@@ -584,23 +669,26 @@ export class OpenOceanErrorHandler {
   private async markOrderForManualIntervention(
     orderHash: string,
     userAddress: Address,
-    error: Error
+    error: Error,
   ): Promise<void> {
     try {
       await serverDcaDatabase.updateOpenOceanOrderByHash(orderHash, {
         status: 'paused',
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       });
-      
+
       // Here you could send notifications to admins or users
       console.warn('Order marked for manual intervention:', {
         orderHash,
         userAddress,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (updateError) {
-      console.error('Failed to mark order for manual intervention:', updateError);
+      console.error(
+        'Failed to mark order for manual intervention:',
+        updateError,
+      );
     }
   }
 
@@ -613,23 +701,26 @@ export class OpenOceanErrorHandler {
     recentErrors: ErrorContext[];
     circuitBreakerStatus: Record<string, { failures: number; open: boolean }>;
   } {
-    const errorsByType = this.errorLog.reduce((acc, error) => {
-      acc[error.type] = (acc[error.type] || 0) + 1;
-      return acc;
-    }, {} as Record<ErrorType, number>);
+    const errorsByType = this.errorLog.reduce(
+      (acc, error) => {
+        acc[error.type] = (acc[error.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<ErrorType, number>,
+    );
 
     const circuitBreakerStatus = Object.fromEntries(
       Array.from(this.circuitBreaker.entries()).map(([key, value]) => [
         key,
-        { failures: value.failures, open: value.open }
-      ])
+        { failures: value.failures, open: value.open },
+      ]),
     );
 
     return {
       totalErrors: this.errorLog.length,
       errorsByType,
       recentErrors: this.errorLog.slice(-10),
-      circuitBreakerStatus
+      circuitBreakerStatus,
     };
   }
 

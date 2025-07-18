@@ -881,6 +881,170 @@ export class ServerZerodevDCAExecutor {
       throw error;
     }
   }
+
+  /**
+   * Sweep all funds from smart wallet back to user wallet
+   */
+  async sweepFundsToUser(
+    agentKeyId: string,
+    smartWalletAddress: Address,
+    userWalletAddress: Address,
+  ): Promise<{
+    success: boolean;
+    txHash?: string;
+    error?: string;
+    sweptAmounts?: {
+      usdc: string;
+      spx: string;
+      eth: string;
+    };
+  }> {
+    try {
+      console.log(`💰 Sweeping funds from ${smartWalletAddress} to ${userWalletAddress}`);
+
+      // Get the agent key
+      const agentKey = await serverAgentKeyService.getAgentKey(agentKeyId);
+      if (!agentKey.success || !agentKey.sessionKeyApproval) {
+        throw new Error(`Failed to get agent key: ${agentKey.error}`);
+      }
+
+      // Deserialize the session key
+      const sessionAccount = await this.deserializeSessionKey(
+        agentKey.sessionKeyApproval,
+      );
+
+      // Create kernel client
+      const kernelClient = createKernelAccountClient({
+        account: sessionAccount,
+        chain: base,
+        bundlerTransport: http(ZERODEV_RPC_URL),
+        middleware: {
+          sponsorUserOperation: async ({ userOperation }) => {
+            const zeroDevPaymaster = createZeroDevPaymasterClient({
+              chain: base,
+              transport: http(ZERODEV_RPC_URL),
+            });
+            return zeroDevPaymaster.sponsorUserOperation({
+              userOperation,
+              entryPoint: getEntryPoint('0.7'),
+            });
+          },
+        },
+      });
+
+      // Create public client for balance checks
+      const publicClient = createPublicClient({
+        chain: base,
+        transport: http(ZERODEV_RPC_URL),
+      });
+
+      // Check balances
+      const [usdcBalance, spxBalance, ethBalance] = await Promise.all([
+        publicClient.readContract({
+          address: TOKENS.USDC,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [smartWalletAddress],
+        }),
+        publicClient.readContract({
+          address: TOKENS.SPX6900,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [smartWalletAddress],
+        }),
+        publicClient.getBalance({ address: smartWalletAddress }),
+      ]);
+
+      console.log(`💰 Found balances:`, {
+        usdc: (Number(usdcBalance) / 1e6).toFixed(6),
+        spx: (Number(spxBalance) / 1e18).toFixed(6),
+        eth: (Number(ethBalance) / 1e18).toFixed(6),
+      });
+
+      // Prepare transfer transactions for any non-zero balances
+      const transferCalls = [];
+
+      // Transfer USDC if balance > 0
+      if (usdcBalance > 0n) {
+        transferCalls.push({
+          to: TOKENS.USDC,
+          value: BigInt(0),
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'transfer',
+            args: [userWalletAddress, usdcBalance],
+          }),
+        });
+      }
+
+      // Transfer SPX if balance > 0
+      if (spxBalance > 0n) {
+        transferCalls.push({
+          to: TOKENS.SPX6900,
+          value: BigInt(0),
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'transfer',
+            args: [userWalletAddress, spxBalance],
+          }),
+        });
+      }
+
+      // Transfer ETH if balance > gas reserve
+      const gasReserve = BigInt(1e15); // Keep 0.001 ETH for gas
+      if (ethBalance > gasReserve) {
+        const ethToTransfer = ethBalance - gasReserve;
+        transferCalls.push({
+          to: userWalletAddress,
+          value: ethToTransfer,
+          data: '0x' as Hex,
+        });
+      }
+
+      if (transferCalls.length === 0) {
+        return {
+          success: true,
+          sweptAmounts: {
+            usdc: '0',
+            spx: '0',
+            eth: '0',
+          },
+        };
+      }
+
+      console.log(`📦 Batching ${transferCalls.length} transfer transactions`);
+
+      // Execute batched transfers
+      const userOpHash = await kernelClient.sendUserOperation({
+        callData: await sessionAccount.encodeCalls(transferCalls),
+      });
+
+      console.log(`⏳ Waiting for UserOperation ${userOpHash}...`);
+
+      // Wait for transaction receipt
+      const receipt = await kernelClient.waitForUserOperationReceipt({
+        hash: userOpHash,
+      });
+
+      console.log(`✅ Fund sweep completed: ${receipt.receipt.transactionHash}`);
+
+      return {
+        success: true,
+        txHash: receipt.receipt.transactionHash,
+        sweptAmounts: {
+          usdc: (Number(usdcBalance) / 1e6).toFixed(6),
+          spx: (Number(spxBalance) / 1e18).toFixed(6),
+          eth: (Number(ethBalance - gasReserve) / 1e18).toFixed(6),
+        },
+      };
+    } catch (error: any) {
+      console.error('❌ Fund sweep failed:', error);
+      return {
+        success: false,
+        error: error.message || 'Fund sweep failed',
+      };
+    }
+  }
 }
 
 // Export singleton instance

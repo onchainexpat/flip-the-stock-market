@@ -1,6 +1,6 @@
 'use client';
 
-import SmartWalletDeployer from '../../components/SmartWallet/SmartWalletDeployer';
+import ZeroDevDCAComponent from '../../components/DCA/ZeroDevDCAComponent';
 
 export default function TestZeroDevPage() {
   return (
@@ -18,7 +18,12 @@ export default function TestZeroDevPage() {
             </p>
           </div>
 
-          <SmartWalletDeployer />
+          {/* SmartWalletDeployer temporarily disabled */}
+
+          {/* Simplified ZeroDev DCA Component */}
+          <div className="mt-8">
+            <ZeroDevDCAComponent />
+          </div>
 
           <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
             <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">

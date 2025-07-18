@@ -8,16 +8,18 @@ async function testDCAExecution() {
     // Get orders due for execution
     console.log('📋 Checking for orders due for execution...');
     const ordersToExecute = await serverDcaDatabase.getOrdersDueForExecution();
-    
+
     console.log(`Found ${ordersToExecute.length} orders ready for execution\n`);
-    
+
     if (ordersToExecute.length > 0) {
       ordersToExecute.forEach((order, index) => {
         console.log(`📊 Order ${index + 1}:`);
         console.log(`   ID: ${order.id}`);
         console.log(`   User: ${order.userAddress}`);
         console.log(`   Status: ${order.status}`);
-        console.log(`   Executions: ${order.executionsCompleted}/${order.totalExecutions}`);
+        console.log(
+          `   Executions: ${order.executionsCompleted}/${order.totalExecutions}`,
+        );
         console.log(`   Created: ${order.createdAt}`);
         console.log(`   Updated: ${order.updatedAt || 'Never'}`);
         console.log('');
@@ -28,20 +30,23 @@ async function testDCAExecution() {
     console.log('📋 All active orders:');
     const allActiveOrders = await serverDcaDatabase.getAllActiveOrders();
     console.log(`Found ${allActiveOrders.length} total active orders\n`);
-    
+
     allActiveOrders.forEach((order, index) => {
       console.log(`📊 Active Order ${index + 1}:`);
       console.log(`   ID: ${order.id}`);
       console.log(`   User: ${order.userAddress}`);
       console.log(`   Status: ${order.status}`);
-      console.log(`   Executions: ${order.executionsCompleted}/${order.totalExecutions}`);
+      console.log(
+        `   Executions: ${order.executionsCompleted}/${order.totalExecutions}`,
+      );
       console.log(`   Created: ${order.createdAt}`);
       console.log(`   Updated: ${order.updatedAt || 'Never'}`);
-      
+
       try {
-        const orderData = typeof order.sessionKeyData === 'string' 
-          ? JSON.parse(order.sessionKeyData) 
-          : order.sessionKeyData;
+        const orderData =
+          typeof order.sessionKeyData === 'string'
+            ? JSON.parse(order.sessionKeyData)
+            : order.sessionKeyData;
         console.log(`   Frequency: ${orderData.frequency || 'Not set'}`);
         console.log(`   Agent Key: ${orderData.agentKeyId || 'Not set'}`);
       } catch (e) {
@@ -49,7 +54,6 @@ async function testDCAExecution() {
       }
       console.log('');
     });
-
   } catch (error) {
     console.error('❌ Error testing DCA execution:', error);
   }

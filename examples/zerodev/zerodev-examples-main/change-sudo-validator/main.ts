@@ -7,7 +7,7 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient } from 'viem';
+import { http, type Hex, createPublicClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -63,7 +63,7 @@ const main = async () => {
       entryPoint,
       kernelVersion,
       signer,
-    }
+    },
   );
 
   /**
@@ -75,7 +75,7 @@ const main = async () => {
 
   console.log(
     'changeSudoValidatorUserOpHash hash:',
-    changeSudoValidatorUserOpHash
+    changeSudoValidatorUserOpHash,
   );
 
   const _receipt = await kernelClient.waitForUserOperationReceipt({

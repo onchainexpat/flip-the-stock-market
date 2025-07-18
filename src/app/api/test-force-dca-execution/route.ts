@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { serverDcaDatabase } from '../../../lib/serverDcaDatabase';
 import { serverZerodevDCAExecutor } from '../../../services/serverZerodevDCAExecutor';
-import { balanceChecker } from '../../../utils/balanceChecker';
 
 export const runtime = 'nodejs';
 
@@ -58,10 +57,9 @@ export async function GET(request: NextRequest) {
       `Processing DCA order ${order.id} for user ${order.userAddress}`,
     );
     // Calculate amount per order from total amount and total executions
-    const amountPerOrder = order.amountPerOrder || 
-      (order.totalAmount && order.totalExecutions 
-        ? BigInt(order.totalAmount) / BigInt(order.totalExecutions)
-        : BigInt(order.totalAmount || 0));
+    const amountPerOrder = order.totalAmount && order.totalExecutions 
+      ? order.totalAmount / BigInt(order.totalExecutions)
+      : order.totalAmount || BigInt(0);
     
     console.log('Order details:', {
       totalAmount: order.totalAmount?.toString(),
@@ -88,25 +86,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check smart wallet balance
-    const balance = await balanceChecker.checkUserBalance(
-      orderData.smartWalletAddress,
-    );
-
-    console.log('Smart wallet balance:', {
+    console.log('Executing DCA for smart wallet:', {
       smartWallet: orderData.smartWalletAddress,
-      usdc: balance.usdc,
       required: Number(amountPerOrder) / 1e6,
     });
 
-    if (balance.usdc < Number(amountPerOrder) / 1e6) {
-      return NextResponse.json({
-        success: false,
-        error: 'Insufficient balance',
-        balance: balance.usdc,
-        required: Number(amountPerOrder) / 1e6,
-      });
-    }
+    // Skip balance check for now - let the executor handle it
 
     // Execute DCA trade
     console.log('💱 Executing DCA trade...');

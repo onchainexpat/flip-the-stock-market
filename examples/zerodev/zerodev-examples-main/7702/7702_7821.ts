@@ -4,7 +4,7 @@ import {
   KernelVersionToAddressesMap,
   getEntryPoint,
 } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, createWalletClient } from 'viem';
+import { http, type Hex, createPublicClient, createWalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 import { erc7821Actions } from 'viem/experimental';
@@ -69,7 +69,7 @@ const main = async () => {
 
   console.log(
     'tx completed ,',
-    `${chain.blockExplorers.default.url}/tx/${receipt.transactionHash}`
+    `${chain.blockExplorers.default.url}/tx/${receipt.transactionHash}`,
   );
 
   process.exit(0);

@@ -20,7 +20,7 @@ import {
   useSendTransaction,
   useWaitForTransactionReceipt,
 } from 'wagmi';
-import { useClearSigning } from '../../hooks/useClearSigning';
+// import { useClearSigning } from '../../hooks/useClearSigning'; // Disabled
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
 // Removed useSmartWallet - using direct Coinbase Smart Wallet integration
 import { formatTokenAmount } from '../../utils/openOceanApi';
@@ -206,7 +206,7 @@ export default function DCADashboard({ refreshTrigger }: DCADashboardProps) {
     address: smartWalletAddress,
     isReady: smartWalletReady,
   } = useUnifiedSmartWallet();
-  const { signWithClearMessage } = useClearSigning();
+  // const { signWithClearMessage } = useClearSigning(); // Disabled
   const [orders, setOrders] = useState<DCAOrder[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [executions, setExecutions] = useState<Record<string, DCAExecution[]>>(

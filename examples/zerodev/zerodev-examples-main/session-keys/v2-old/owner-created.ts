@@ -15,7 +15,7 @@ import {
 } from '@zerodev/session-key';
 import {
   http,
-  Hex,
+  type Hex,
   createPublicClient,
   encodeFunctionData,
   parseAbi,
@@ -107,7 +107,7 @@ const useSessionKey = async (serializedSessionKey: string) => {
     publicClient,
     entryPoint,
     KERNEL_V2_4,
-    serializedSessionKey
+    serializedSessionKey,
   );
 
   const kernelPaymaster = createZeroDevPaymasterClient({

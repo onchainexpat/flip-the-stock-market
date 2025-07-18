@@ -13,7 +13,7 @@ import { baseSepolia } from 'viem/chains';
 
 export async function createEIP7702KernelAccount(
   account: any,
-  entryPoint: any
+  entryPoint: any,
 ) {
   // Set kernel version and get addresses
   const kernelVersion = KERNEL_V3_1;

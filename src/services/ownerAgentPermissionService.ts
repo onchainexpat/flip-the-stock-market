@@ -17,14 +17,10 @@ import {
   type Address,
   type Hex,
   createPublicClient,
-  parseEther,
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
-import {
-  generatePrivateKey,
-  privateKeyToAccount,
-} from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';
@@ -372,7 +368,9 @@ export class OwnerAgentPermissionService {
         };
       }
 
-      const agentAccount = privateKeyToAccount(agentPermissionKey.agentPrivateKey);
+      const agentAccount = privateKeyToAccount(
+        agentPermissionKey.agentPrivateKey,
+      );
 
       // Deserialize permission account
       const permissionAccount = await deserializePermissionAccount(

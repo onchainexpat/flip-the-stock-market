@@ -23,7 +23,7 @@ export class EIP7702Integration {
   constructor(
     private baseSepoliaPaymasterRpc: string,
     private baseSepoliaBundlerRpc: string,
-    private publicClient: any
+    private publicClient: any,
   ) {}
 
   async initialize(account: any, entryPoint: any) {
@@ -77,7 +77,7 @@ export class EIP7702Integration {
 
   async batchTransfer(
     tokenAddress: string,
-    transfers: Array<{ to: string; amount: bigint }>
+    transfers: Array<{ to: string; amount: bigint }>,
   ) {
     const calls = transfers.map((transfer) => ({
       to: tokenAddress,

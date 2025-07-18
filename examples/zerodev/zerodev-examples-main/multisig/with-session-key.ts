@@ -98,7 +98,7 @@ const useSessionKey = async (serializedSessionKey: string) => {
     publicClient,
     entryPoint,
     KERNEL_V3_1,
-    serializedSessionKey
+    serializedSessionKey,
   );
 
   const kernelPaymaster = createZeroDevPaymasterClient({

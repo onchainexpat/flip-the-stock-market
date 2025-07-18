@@ -5,7 +5,7 @@
   "timeout": 30,
   "userArgs": {
     "redisUrl": "string",
-    "encryptionSecret": "string", 
+    "encryptionSecret": "string",
     "zerodevRpcUrl": "string",
     "adminWalletAddress": "string"
   }

@@ -1,6 +1,6 @@
 import { openoceanLimitOrderSdk } from '@openocean.finance/limitorder-sdk';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ethers } from 'ethers';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OpenOceanDCAService } from '../services/openOceanDCAService';
 
 // Mock ethers for testing
@@ -8,7 +8,9 @@ vi.mock('ethers', () => ({
   ethers: {
     BrowserProvider: vi.fn().mockImplementation(() => ({
       getSigner: vi.fn().mockResolvedValue({
-        getAddress: vi.fn().mockResolvedValue('0x1234567890123456789012345678901234567890'),
+        getAddress: vi
+          .fn()
+          .mockResolvedValue('0x1234567890123456789012345678901234567890'),
       }),
       getFeeData: vi.fn().mockResolvedValue({
         gasPrice: BigInt('20000000000'), // 20 gwei
@@ -67,10 +69,12 @@ describe('OpenOcean SDK Initialization', () => {
       numberOfBuys: 0, // Invalid
     };
 
-    expect(dcaService.validateOrderParams(validParams)).toEqual({ valid: true });
-    expect(dcaService.validateOrderParams(invalidParams)).toEqual({ 
+    expect(dcaService.validateOrderParams(validParams)).toEqual({
+      valid: true,
+    });
+    expect(dcaService.validateOrderParams(invalidParams)).toEqual({
       valid: false,
-      error: 'Minimum order amount is $5 USD'
+      error: 'Minimum order amount is $5 USD',
     });
   });
 
@@ -82,7 +86,7 @@ describe('OpenOcean SDK Initialization', () => {
       account: '0x1234567890123456789012345678901234567890',
       chainId: 8453,
       chainKey: 'base',
-      mode: 'Dca'
+      mode: 'Dca',
     };
 
     expect(walletParams).toBeDefined();
@@ -94,14 +98,14 @@ describe('OpenOcean SDK Initialization', () => {
   it('should handle provider initialization', async () => {
     const signer = await mockProvider.getSigner();
     const address = await signer.getAddress();
-    
+
     expect(address).toBe('0x1234567890123456789012345678901234567890');
     expect(signer).toBeDefined();
   });
 
   it('should handle gas price estimation', async () => {
     const feeData = await mockProvider.getFeeData();
-    
+
     expect(feeData.gasPrice).toBeDefined();
     expect(typeof feeData.gasPrice).toBe('bigint');
   });
@@ -109,14 +113,14 @@ describe('OpenOcean SDK Initialization', () => {
   it('should create proper wallet params for DCA mode', async () => {
     const signer = await mockProvider.getSigner();
     const address = await signer.getAddress();
-    
+
     const walletParams = {
       provider: mockProvider,
       signer,
       account: address,
       chainId: 8453,
       chainKey: 'base',
-      mode: 'Dca'
+      mode: 'Dca',
     };
 
     // Verify all required parameters are present
@@ -132,13 +136,13 @@ describe('OpenOcean SDK Initialization', () => {
     const baseConfig = {
       chainId: 8453,
       chainKey: 'base',
-      mode: 'Dca'
+      mode: 'Dca',
     };
 
     const ethereumConfig = {
       chainId: 1,
       chainKey: 'ethereum',
-      mode: 'Dca'
+      mode: 'Dca',
     };
 
     expect(baseConfig.chainId).toBe(8453);

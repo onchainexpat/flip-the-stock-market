@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
-  ModularSigner,
+  type ModularSigner,
   deserializePermissionAccount,
   serializePermissionAccount,
   toPermissionValidator,
@@ -14,7 +14,7 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, zeroAddress } from 'viem';
+import { http, type Hex, createPublicClient, zeroAddress } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -32,7 +32,7 @@ const signer = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 const entryPoint = getEntryPoint('0.7');
 const createSessionKey = async (
   sessionKeySigner: ModularSigner,
-  sessionPrivateKey: Hex
+  sessionPrivateKey: Hex,
 ) => {
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
     entryPoint,
@@ -78,7 +78,7 @@ const useSessionKey = async (serializedSessionKey: string) => {
     publicClient,
     entryPoint,
     KERNEL_V3_1,
-    serializedSessionKey
+    serializedSessionKey,
   );
 
   const kernelPaymaster = createZeroDevPaymasterClient({
@@ -123,7 +123,7 @@ const main = async () => {
   // The owner creates a session key, serializes it, and shares it with the agent.
   const serializedSessionKey = await createSessionKey(
     sessionKeySigner,
-    sessionPrivateKey
+    sessionPrivateKey,
   );
 
   // The agent reconstructs the session key using the serialized value

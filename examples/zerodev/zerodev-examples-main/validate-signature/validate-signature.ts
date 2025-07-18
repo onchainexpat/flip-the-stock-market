@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { createKernelAccount, verifyEIP6492Signature } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Hex, createPublicClient, hashMessage } from 'viem';
+import { http, type Hex, createPublicClient, hashMessage } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 const entryPoint = getEntryPoint('0.7');
@@ -47,7 +47,7 @@ async function main() {
       hash: hashMessage('hello world'),
       signature: signature,
       client: publicClient,
-    })
+    }),
   );
 }
 

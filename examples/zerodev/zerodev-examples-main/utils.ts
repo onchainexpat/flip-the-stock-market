@@ -2,16 +2,16 @@
 
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
-  KernelSmartAccountV1Implementation,
+  type KernelSmartAccountV1Implementation,
   createKernelAccount,
   createKernelAccountClient,
   createKernelAccountV1,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { getEntryPoint } from '@zerodev/sdk/constants';
-import { GetKernelVersion } from '@zerodev/sdk/types';
-import { http, Hex, createPublicClient } from 'viem';
-import {
+import type { GetKernelVersion } from '@zerodev/sdk/types';
+import { http, type Hex, createPublicClient } from 'viem';
+import type {
   EntryPointVersion,
   PaymasterActions,
   SmartAccount,
@@ -35,7 +35,7 @@ export const getKernelClient = async <
   entryPointVersion extends EntryPointVersion,
 >(
   entryPointVersion_: entryPointVersion,
-  kernelVersion: GetKernelVersion<entryPointVersion>
+  kernelVersion: GetKernelVersion<entryPointVersion>,
 ) => {
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
     signer,

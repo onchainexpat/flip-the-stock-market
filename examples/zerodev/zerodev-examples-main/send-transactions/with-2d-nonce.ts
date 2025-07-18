@@ -9,12 +9,12 @@ async function main() {
 
   const customNonceKey1 = getCustomNonceKeyFromString(
     'Custom Nonce Key Example 1',
-    '0.7'
+    '0.7',
   );
 
   const customNonceKey2 = getCustomNonceKeyFromString(
     'Custom Nonce Key Example 2',
-    '0.7'
+    '0.7',
   );
 
   const nonce1 = await kernelClient.account.getNonce({ key: customNonceKey1 });

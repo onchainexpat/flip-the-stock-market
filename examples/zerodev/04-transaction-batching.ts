@@ -10,7 +10,7 @@ export async function batchTransactions(
   ZERODEV_TOKEN_ADDRESS: string,
   transferAbi: any,
   recipientAddress: string,
-  amount: bigint
+  amount: bigint,
 ) {
   // Execute batched transactions
   const userOpHash = await kernelAccountClient.sendUserOperation({

@@ -40,8 +40,6 @@ export default function PrivyProviders({ children }: Props) {
           createOnLogin: 'users-without-wallets',
           requireUserPasswordOnCreate: false,
           // Force creation on Base network
-          pregen: false,
-          noPromptOnSignature: false, // Allow prompts for proper signing
         },
 
         // Simple external wallet config
@@ -55,13 +53,6 @@ export default function PrivyProviders({ children }: Props) {
         defaultChain: base,
         supportedChains: [base, baseSepolia],
 
-        // Enable smart wallets with ZeroDev paymaster for Base network
-        smartWallets: {
-          enabled: true,
-          // Use ZeroDev bundler and paymaster endpoints
-          bundlerUrl: NEXT_PUBLIC_BASE_BUNDLER_URL,
-          paymasterUrl: NEXT_PUBLIC_BASE_PAYMASTER_URL,
-        },
       }}
     >
       {children}

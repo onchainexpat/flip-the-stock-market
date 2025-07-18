@@ -1,6 +1,5 @@
-import { ErrorType } from './openOceanErrorHandler';
-import { serverDcaDatabase } from '../lib/serverDcaDatabase';
 import type { Address } from 'viem';
+import type { ErrorType } from './openOceanErrorHandler';
 
 export enum NotificationType {
   ORDER_CREATED = 'ORDER_CREATED',
@@ -12,7 +11,7 @@ export enum NotificationType {
   SERVICE_DEGRADED = 'SERVICE_DEGRADED',
   SERVICE_RESTORED = 'SERVICE_RESTORED',
   MANUAL_INTERVENTION = 'MANUAL_INTERVENTION',
-  RATE_LIMIT_WARNING = 'RATE_LIMIT_WARNING'
+  RATE_LIMIT_WARNING = 'RATE_LIMIT_WARNING',
 }
 
 export interface Notification {
@@ -43,7 +42,14 @@ export class OpenOceanNotificationService {
   private notifications: Map<string, Notification> = new Map();
   private userChannels: Map<Address, NotificationChannel[]> = new Map();
   private adminChannels: NotificationChannel[] = [];
-  private notificationTemplates: Map<NotificationType, (data: any) => { title: string; message: string; severity: 'info' | 'warning' | 'error' | 'success' }> = new Map();
+  private notificationTemplates: Map<
+    NotificationType,
+    (data: any) => {
+      title: string;
+      message: string;
+      severity: 'info' | 'warning' | 'error' | 'success';
+    }
+  > = new Map();
 
   constructor() {
     this.setupNotificationTemplates();
@@ -56,19 +62,22 @@ export class OpenOceanNotificationService {
   async sendUserNotification(
     userAddress: Address,
     type: NotificationType,
-    data?: any
+    data?: any,
   ): Promise<void> {
     const notification = this.createNotification(userAddress, type, data);
-    
+
     // Store notification
     this.notifications.set(notification.id, notification);
-    
+
     // Send via configured channels
-    const channels = this.userChannels.get(userAddress) || this.getDefaultChannels();
+    const channels =
+      this.userChannels.get(userAddress) || this.getDefaultChannels();
     await this.sendToChannels(notification, channels);
-    
+
     // Log notification
-    console.log(`User notification sent: ${notification.title} to ${userAddress}`);
+    console.log(
+      `User notification sent: ${notification.title} to ${userAddress}`,
+    );
   }
 
   /**
@@ -76,20 +85,20 @@ export class OpenOceanNotificationService {
    */
   async sendAdminNotification(
     type: NotificationType,
-    data?: any
+    data?: any,
   ): Promise<void> {
     const notification = this.createNotification(
       '0x0000000000000000000000000000000000000000' as Address,
       type,
-      data
+      data,
     );
-    
+
     // Store notification
     this.notifications.set(notification.id, notification);
-    
+
     // Send via admin channels
     await this.sendToChannels(notification, this.adminChannels);
-    
+
     // Log notification
     console.log(`Admin notification sent: ${notification.title}`);
   }
@@ -100,15 +109,19 @@ export class OpenOceanNotificationService {
   async notifyOrderCreated(
     userAddress: Address,
     orderHash: string,
-    orderData: any
+    orderData: any,
   ): Promise<void> {
-    await this.sendUserNotification(userAddress, NotificationType.ORDER_CREATED, {
-      orderHash,
-      orderData,
-      totalAmount: orderData.totalAmount,
-      numberOfBuys: orderData.numberOfBuys,
-      intervalHours: orderData.intervalHours
-    });
+    await this.sendUserNotification(
+      userAddress,
+      NotificationType.ORDER_CREATED,
+      {
+        orderHash,
+        orderData,
+        totalAmount: orderData.totalAmount,
+        numberOfBuys: orderData.numberOfBuys,
+        intervalHours: orderData.intervalHours,
+      },
+    );
   }
 
   /**
@@ -117,15 +130,19 @@ export class OpenOceanNotificationService {
   async notifyOrderExecuted(
     userAddress: Address,
     orderHash: string,
-    executionData: any
+    executionData: any,
   ): Promise<void> {
-    await this.sendUserNotification(userAddress, NotificationType.ORDER_EXECUTED, {
-      orderHash,
-      executionData,
-      executionCount: executionData.executionCount,
-      amountExecuted: executionData.amountExecuted,
-      remainingAmount: executionData.remainingAmount
-    });
+    await this.sendUserNotification(
+      userAddress,
+      NotificationType.ORDER_EXECUTED,
+      {
+        orderHash,
+        executionData,
+        executionCount: executionData.executionCount,
+        amountExecuted: executionData.amountExecuted,
+        remainingAmount: executionData.remainingAmount,
+      },
+    );
   }
 
   /**
@@ -134,13 +151,17 @@ export class OpenOceanNotificationService {
   async notifyOrderCancelled(
     userAddress: Address,
     orderHash: string,
-    reason?: string
+    reason?: string,
   ): Promise<void> {
-    await this.sendUserNotification(userAddress, NotificationType.ORDER_CANCELLED, {
-      orderHash,
-      reason,
-      timestamp: Date.now()
-    });
+    await this.sendUserNotification(
+      userAddress,
+      NotificationType.ORDER_CANCELLED,
+      {
+        orderHash,
+        reason,
+        timestamp: Date.now(),
+      },
+    );
   }
 
   /**
@@ -149,15 +170,19 @@ export class OpenOceanNotificationService {
   async notifyOrderCompleted(
     userAddress: Address,
     orderHash: string,
-    completionData: any
+    completionData: any,
   ): Promise<void> {
-    await this.sendUserNotification(userAddress, NotificationType.ORDER_COMPLETED, {
-      orderHash,
-      completionData,
-      totalExecutions: completionData.totalExecutions,
-      totalAmount: completionData.totalAmount,
-      averagePrice: completionData.averagePrice
-    });
+    await this.sendUserNotification(
+      userAddress,
+      NotificationType.ORDER_COMPLETED,
+      {
+        orderHash,
+        completionData,
+        totalExecutions: completionData.totalExecutions,
+        totalAmount: completionData.totalAmount,
+        averagePrice: completionData.averagePrice,
+      },
+    );
   }
 
   /**
@@ -167,14 +192,18 @@ export class OpenOceanNotificationService {
     userAddress: Address,
     orderHash: string,
     error: Error,
-    retryCount: number
+    retryCount: number,
   ): Promise<void> {
-    await this.sendUserNotification(userAddress, NotificationType.ORDER_FAILED, {
-      orderHash,
-      error: error.message,
-      retryCount,
-      timestamp: Date.now()
-    });
+    await this.sendUserNotification(
+      userAddress,
+      NotificationType.ORDER_FAILED,
+      {
+        orderHash,
+        error: error.message,
+        retryCount,
+        timestamp: Date.now(),
+      },
+    );
   }
 
   /**
@@ -183,21 +212,25 @@ export class OpenOceanNotificationService {
   async notifyManualInterventionRequired(
     userAddress: Address,
     orderHash: string,
-    reason: string
+    reason: string,
   ): Promise<void> {
     // Notify user
-    await this.sendUserNotification(userAddress, NotificationType.MANUAL_INTERVENTION, {
-      orderHash,
-      reason,
-      actionRequired: true
-    });
+    await this.sendUserNotification(
+      userAddress,
+      NotificationType.MANUAL_INTERVENTION,
+      {
+        orderHash,
+        reason,
+        actionRequired: true,
+      },
+    );
 
     // Notify admins
     await this.sendAdminNotification(NotificationType.MANUAL_INTERVENTION, {
       userAddress,
       orderHash,
       reason,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -207,14 +240,14 @@ export class OpenOceanNotificationService {
   async notifyServiceDegraded(
     service: string,
     errorType: ErrorType,
-    errorCount: number
+    errorCount: number,
   ): Promise<void> {
     // Notify admins
     await this.sendAdminNotification(NotificationType.SERVICE_DEGRADED, {
       service,
       errorType,
       errorCount,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // If critical, notify all users
@@ -230,14 +263,14 @@ export class OpenOceanNotificationService {
   async notifyRateLimitWarning(
     endpoint: string,
     currentRate: number,
-    limit: number
+    limit: number,
   ): Promise<void> {
     await this.sendAdminNotification(NotificationType.RATE_LIMIT_WARNING, {
       endpoint,
       currentRate,
       limit,
       usage: (currentRate / limit) * 100,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -246,11 +279,11 @@ export class OpenOceanNotificationService {
    */
   async getUserNotifications(
     userAddress: Address,
-    unreadOnly: boolean = false
+    unreadOnly = false,
   ): Promise<Notification[]> {
     const userNotifications = Array.from(this.notifications.values())
-      .filter(n => n.userAddress === userAddress)
-      .filter(n => !unreadOnly || !n.read)
+      .filter((n) => n.userAddress === userAddress)
+      .filter((n) => !unreadOnly || !n.read)
       .sort((a, b) => b.timestamp - a.timestamp);
 
     return userNotifications;
@@ -272,7 +305,7 @@ export class OpenOceanNotificationService {
    */
   async configureUserChannels(
     userAddress: Address,
-    channels: NotificationChannel[]
+    channels: NotificationChannel[],
   ): Promise<void> {
     this.userChannels.set(userAddress, channels);
   }
@@ -283,7 +316,7 @@ export class OpenOceanNotificationService {
   private createNotification(
     userAddress: Address,
     type: NotificationType,
-    data?: any
+    data?: any,
   ): Notification {
     const template = this.notificationTemplates.get(type);
     if (!template) {
@@ -303,7 +336,7 @@ export class OpenOceanNotificationService {
       timestamp: Date.now(),
       read: false,
       actionRequired: type === NotificationType.MANUAL_INTERVENTION,
-      metadata: data
+      metadata: data,
     };
   }
 
@@ -312,15 +345,18 @@ export class OpenOceanNotificationService {
    */
   private async sendToChannels(
     notification: Notification,
-    channels: NotificationChannel[]
+    channels: NotificationChannel[],
   ): Promise<void> {
-    const enabledChannels = channels.filter(c => c.enabled);
-    
+    const enabledChannels = channels.filter((c) => c.enabled);
+
     for (const channel of enabledChannels) {
       try {
         await this.sendToChannel(notification, channel);
       } catch (error) {
-        console.error(`Failed to send notification via ${channel.type}:`, error);
+        console.error(
+          `Failed to send notification via ${channel.type}:`,
+          error,
+        );
       }
     }
   }
@@ -330,24 +366,26 @@ export class OpenOceanNotificationService {
    */
   private async sendToChannel(
     notification: Notification,
-    channel: NotificationChannel
+    channel: NotificationChannel,
   ): Promise<void> {
     switch (channel.type) {
       case 'toast':
         // This would integrate with a toast notification system
         console.log(`Toast notification: ${notification.title}`);
         break;
-      
+
       case 'email':
         // This would integrate with an email service
-        console.log(`Email notification to ${notification.userAddress}: ${notification.title}`);
+        console.log(
+          `Email notification to ${notification.userAddress}: ${notification.title}`,
+        );
         break;
-      
+
       case 'push':
         // This would integrate with a push notification service
         console.log(`Push notification: ${notification.title}`);
         break;
-      
+
       case 'webhook':
         // This would send to a configured webhook
         if (channel.config?.url) {
@@ -355,7 +393,7 @@ export class OpenOceanNotificationService {
             await fetch(channel.config.url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(notification)
+              body: JSON.stringify(notification),
             });
           } catch (error) {
             console.error('Webhook notification failed:', error);
@@ -372,62 +410,80 @@ export class OpenOceanNotificationService {
     this.notificationTemplates.set(NotificationType.ORDER_CREATED, (data) => ({
       title: 'DCA Order Created',
       message: `Your DCA order has been created successfully. Order hash: ${data.orderHash.slice(0, 8)}... Total: $${data.totalAmount} over ${data.numberOfBuys} buys.`,
-      severity: 'success'
+      severity: 'success',
     }));
 
     this.notificationTemplates.set(NotificationType.ORDER_EXECUTED, (data) => ({
       title: 'DCA Order Executed',
       message: `DCA execution #${data.executionCount} completed. Amount: $${data.amountExecuted}. Remaining: $${data.remainingAmount}.`,
-      severity: 'info'
+      severity: 'info',
     }));
 
-    this.notificationTemplates.set(NotificationType.ORDER_CANCELLED, (data) => ({
-      title: 'DCA Order Cancelled',
-      message: `Your DCA order has been cancelled. ${data.reason ? `Reason: ${data.reason}` : ''}`,
-      severity: 'warning'
-    }));
+    this.notificationTemplates.set(
+      NotificationType.ORDER_CANCELLED,
+      (data) => ({
+        title: 'DCA Order Cancelled',
+        message: `Your DCA order has been cancelled. ${data.reason ? `Reason: ${data.reason}` : ''}`,
+        severity: 'warning',
+      }),
+    );
 
-    this.notificationTemplates.set(NotificationType.ORDER_COMPLETED, (data) => ({
-      title: 'DCA Order Completed',
-      message: `Your DCA order has completed successfully! Total executions: ${data.totalExecutions}. Total amount: $${data.totalAmount}.`,
-      severity: 'success'
-    }));
+    this.notificationTemplates.set(
+      NotificationType.ORDER_COMPLETED,
+      (data) => ({
+        title: 'DCA Order Completed',
+        message: `Your DCA order has completed successfully! Total executions: ${data.totalExecutions}. Total amount: $${data.totalAmount}.`,
+        severity: 'success',
+      }),
+    );
 
     this.notificationTemplates.set(NotificationType.ORDER_FAILED, (data) => ({
       title: 'DCA Order Failed',
       message: `Your DCA order failed to execute. Error: ${data.error}. Retry count: ${data.retryCount}.`,
-      severity: 'error'
+      severity: 'error',
     }));
 
     this.notificationTemplates.set(NotificationType.ORDER_EXPIRED, (data) => ({
       title: 'DCA Order Expired',
       message: `Your DCA order has expired. Order hash: ${data.orderHash.slice(0, 8)}...`,
-      severity: 'warning'
+      severity: 'warning',
     }));
 
-    this.notificationTemplates.set(NotificationType.MANUAL_INTERVENTION, (data) => ({
-      title: 'Manual Intervention Required',
-      message: `Your DCA order requires manual intervention. Reason: ${data.reason}. Please check your dashboard.`,
-      severity: 'error'
-    }));
+    this.notificationTemplates.set(
+      NotificationType.MANUAL_INTERVENTION,
+      (data) => ({
+        title: 'Manual Intervention Required',
+        message: `Your DCA order requires manual intervention. Reason: ${data.reason}. Please check your dashboard.`,
+        severity: 'error',
+      }),
+    );
 
-    this.notificationTemplates.set(NotificationType.SERVICE_DEGRADED, (data) => ({
-      title: 'Service Degraded',
-      message: `Service ${data.service} is experiencing issues. Error type: ${data.errorType}. Error count: ${data.errorCount}.`,
-      severity: 'error'
-    }));
+    this.notificationTemplates.set(
+      NotificationType.SERVICE_DEGRADED,
+      (data) => ({
+        title: 'Service Degraded',
+        message: `Service ${data.service} is experiencing issues. Error type: ${data.errorType}. Error count: ${data.errorCount}.`,
+        severity: 'error',
+      }),
+    );
 
-    this.notificationTemplates.set(NotificationType.SERVICE_RESTORED, (data) => ({
-      title: 'Service Restored',
-      message: `Service ${data.service} has been restored and is operating normally.`,
-      severity: 'success'
-    }));
+    this.notificationTemplates.set(
+      NotificationType.SERVICE_RESTORED,
+      (data) => ({
+        title: 'Service Restored',
+        message: `Service ${data.service} has been restored and is operating normally.`,
+        severity: 'success',
+      }),
+    );
 
-    this.notificationTemplates.set(NotificationType.RATE_LIMIT_WARNING, (data) => ({
-      title: 'Rate Limit Warning',
-      message: `Endpoint ${data.endpoint} is approaching rate limit. Current: ${data.currentRate}/${data.limit} (${data.usage.toFixed(1)}%).`,
-      severity: 'warning'
-    }));
+    this.notificationTemplates.set(
+      NotificationType.RATE_LIMIT_WARNING,
+      (data) => ({
+        title: 'Rate Limit Warning',
+        message: `Endpoint ${data.endpoint} is approaching rate limit. Current: ${data.currentRate}/${data.limit} (${data.usage.toFixed(1)}%).`,
+        severity: 'warning',
+      }),
+    );
   }
 
   /**
@@ -436,7 +492,7 @@ export class OpenOceanNotificationService {
   private setupDefaultChannels(): void {
     this.adminChannels = [
       { type: 'toast', enabled: true },
-      { type: 'webhook', enabled: false, config: { url: '' } }
+      { type: 'webhook', enabled: false, config: { url: '' } },
     ];
   }
 
@@ -446,7 +502,7 @@ export class OpenOceanNotificationService {
   private getDefaultChannels(): NotificationChannel[] {
     return [
       { type: 'toast', enabled: true },
-      { type: 'push', enabled: false }
+      { type: 'push', enabled: false },
     ];
   }
 
@@ -461,18 +517,24 @@ export class OpenOceanNotificationService {
     recentNotifications: Notification[];
   } {
     const notifications = Array.from(this.notifications.values());
-    
-    const notificationsByType = notifications.reduce((acc, notification) => {
-      acc[notification.type] = (acc[notification.type] || 0) + 1;
-      return acc;
-    }, {} as Record<NotificationType, number>);
 
-    const notificationsBySeverity = notifications.reduce((acc, notification) => {
-      acc[notification.severity] = (acc[notification.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const notificationsByType = notifications.reduce(
+      (acc, notification) => {
+        acc[notification.type] = (acc[notification.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<NotificationType, number>,
+    );
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const notificationsBySeverity = notifications.reduce(
+      (acc, notification) => {
+        acc[notification.severity] = (acc[notification.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const unreadCount = notifications.filter((n) => !n.read).length;
     const recentNotifications = notifications
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 10);
@@ -482,7 +544,7 @@ export class OpenOceanNotificationService {
       notificationsByType,
       notificationsBySeverity,
       unreadCount,
-      recentNotifications
+      recentNotifications,
     };
   }
 
@@ -491,7 +553,7 @@ export class OpenOceanNotificationService {
    */
   clearOldNotifications(maxAge: number = 7 * 24 * 60 * 60 * 1000): void {
     const cutoff = Date.now() - maxAge;
-    
+
     for (const [id, notification] of this.notifications.entries()) {
       if (notification.timestamp < cutoff) {
         this.notifications.delete(id);

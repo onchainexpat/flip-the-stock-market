@@ -85,7 +85,7 @@ async function main() {
 
   while (true) {
     console.log(
-      `Please deposit USDC to ${intentClient.account.address} on Arbitrum.`
+      `Please deposit USDC to ${intentClient.account.address} on Arbitrum.`,
     );
     await waitForUserInput();
     const cab = await intentClient.getCAB({
@@ -98,8 +98,8 @@ async function main() {
     console.log(
       `Insufficient USDC balance: ${formatUnits(
         BigInt(cab.tokens[0].amount),
-        6
-      )}. Please deposit at least 0.1 USDC.`
+        6,
+      )}. Please deposit at least 0.1 USDC.`,
     );
   }
 
@@ -135,7 +135,7 @@ async function main() {
     gasToken: 'SPONSORED', // Use sponsored gas - requires valid project ID
   });
   console.log(
-    `succesfully send cab tx, intentId: ${result.outputUiHash.uiHash}`
+    `succesfully send cab tx, intentId: ${result.outputUiHash.uiHash}`,
   );
 
   // wait for the intent to be opened on the input chains
@@ -145,9 +145,9 @@ async function main() {
         uiHash: data.uiHash,
       });
       console.log(
-        `intent open on chain ${openReceipts?.openChainId} txHash: ${openReceipts?.receipt.transactionHash}`
+        `intent open on chain ${openReceipts?.openChainId} txHash: ${openReceipts?.receipt.transactionHash}`,
       );
-    })
+    }),
   );
 
   // wait for the intent to be executed on the destination chain
@@ -155,7 +155,7 @@ async function main() {
     uiHash: result.outputUiHash.uiHash,
   });
   console.log(
-    `intent executed on chain: ${receipt?.executionChainId} txHash: ${receipt?.receipt.transactionHash}`
+    `intent executed on chain: ${receipt?.executionChainId} txHash: ${receipt?.receipt.transactionHash}`,
   );
   process.exit(0);
 }

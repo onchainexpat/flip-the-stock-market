@@ -14,7 +14,7 @@ export async function setupPaymasterClient(
   kernelAccount: any,
   baseSepoliaPaymasterRpc: string,
   baseSepoliaBundlerRpc: string,
-  baseSepoliaPublicClient: any
+  baseSepoliaPublicClient: any,
 ) {
   // Create paymaster client for gas sponsorship
   const paymasterClient = createZeroDevPaymasterClient({

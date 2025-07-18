@@ -19,7 +19,9 @@ async function fixDCAOrders() {
         try {
           orderData = JSON.parse(order.sessionKeyData);
         } catch (e) {
-          console.log(`❌ Order ${order.id}: Invalid session data format - cancelling`);
+          console.log(
+            `❌ Order ${order.id}: Invalid session data format - cancelling`,
+          );
           await serverDcaDatabase.updateOrderStatus(order.id, 'cancelled');
           continue;
         }
@@ -27,18 +29,24 @@ async function fixDCAOrders() {
         // Check if order has agent key
         if (orderData.agentKeyId && orderData.serverManaged) {
           // Check if agent key exists and has sessionKeyApproval
-          const agentKey = await serverAgentKeyService.getAgentKey(orderData.agentKeyId);
-          
+          const agentKey = await serverAgentKeyService.getAgentKey(
+            orderData.agentKeyId,
+          );
+
           if (!agentKey) {
-            console.log(`❌ Order ${order.id}: Agent key not found - cancelling`);
+            console.log(
+              `❌ Order ${order.id}: Agent key not found - cancelling`,
+            );
             await serverDcaDatabase.updateOrderStatus(order.id, 'cancelled');
-          } else if (!agentKey.sessionKeyApproval) {
-            console.log(`⏸️ Order ${order.id}: Missing sessionKeyApproval - pausing`);
-            await serverDcaDatabase.updateOrderStatus(order.id, 'paused');
-            pausedCount++;
-          } else {
+          } else if (agentKey.sessionKeyApproval) {
             console.log(`✅ Order ${order.id}: Valid order`);
             validCount++;
+          } else {
+            console.log(
+              `⏸️ Order ${order.id}: Missing sessionKeyApproval - pausing`,
+            );
+            await serverDcaDatabase.updateOrderStatus(order.id, 'paused');
+            pausedCount++;
           }
         } else {
           console.log(`⚠️ Order ${order.id}: Legacy order - pausing`);
@@ -57,10 +65,12 @@ async function fixDCAOrders() {
 }
 
 // Run the fix
-fixDCAOrders().then(() => {
-  console.log('Script completed');
-  process.exit(0);
-}).catch((error) => {
-  console.error('Script failed:', error);
-  process.exit(1);
-});
+fixDCAOrders()
+  .then(() => {
+    console.log('Script completed');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('Script failed:', error);
+    process.exit(1);
+  });

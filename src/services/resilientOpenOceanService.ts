@@ -1,8 +1,12 @@
-import { OpenOceanDCAService, OpenOceanDCAOrderParams, OpenOceanDCAOrder } from './openOceanDCAService';
-import { openOceanErrorHandler, ErrorType } from './openOceanErrorHandler';
-import { openOceanSyncService } from './openOceanSyncService';
-import { ethers } from 'ethers';
+import type { ethers } from 'ethers';
 import type { Address } from 'viem';
+import {
+  type OpenOceanDCAOrder,
+  type OpenOceanDCAOrderParams,
+  OpenOceanDCAService,
+} from './openOceanDCAService';
+import { openOceanErrorHandler } from './openOceanErrorHandler';
+import { openOceanSyncService } from './openOceanSyncService';
 
 /**
  * Resilient wrapper around OpenOcean DCA service with comprehensive error handling
@@ -10,7 +14,8 @@ import type { Address } from 'viem';
  */
 export class ResilientOpenOceanService {
   private dcaService: OpenOceanDCAService;
-  private healthStatus: Map<string, { isHealthy: boolean; lastCheck: number }> = new Map();
+  private healthStatus: Map<string, { isHealthy: boolean; lastCheck: number }> =
+    new Map();
   private readonly HEALTH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
@@ -35,7 +40,7 @@ export class ResilientOpenOceanService {
           success: false,
           error: validation.error,
           fallbackUsed: false,
-          retryCount: 0
+          retryCount: 0,
         };
       }
 
@@ -44,33 +49,35 @@ export class ResilientOpenOceanService {
       if (!isHealthy) {
         return {
           success: false,
-          error: 'OpenOcean service is currently unavailable. Please try again later.',
+          error:
+            'OpenOcean service is currently unavailable. Please try again later.',
           fallbackUsed: true,
-          retryCount: 0
+          retryCount: 0,
         };
       }
 
       // Attempt order creation
       const order = await this.dcaService.createSPXDCAOrder(params);
-      
+
       return {
         success: true,
         order,
         fallbackUsed: false,
-        retryCount: 0
+        retryCount: 0,
       };
-
     } catch (error) {
       console.error('Error creating DCA order:', error);
 
       // Handle the error through the error handler
       const result = await openOceanErrorHandler.handleError(error as Error, {
         operation: 'createDCAOrder',
-        userAddress: (await params.provider.getSigner().getAddress()) as Address,
+        userAddress: (await params.provider
+          .getSigner()
+          .getAddress()) as Address,
         serviceKey: 'openocean-api',
         retryOperation: async () => {
           return await this.dcaService.createSPXDCAOrder(params);
-        }
+        },
       });
 
       return {
@@ -78,7 +85,7 @@ export class ResilientOpenOceanService {
         order: result.data,
         error: result.error,
         fallbackUsed: result.fallbackUsed,
-        retryCount: result.retryCount
+        retryCount: result.retryCount,
       };
     }
   }
@@ -89,7 +96,7 @@ export class ResilientOpenOceanService {
   async cancelDCAOrder(
     provider: ethers.BrowserProvider,
     orderHash: string,
-    orderData?: any
+    orderData?: any,
   ): Promise<{
     success: boolean;
     data?: any;
@@ -99,7 +106,7 @@ export class ResilientOpenOceanService {
   }> {
     try {
       const userAddress = (await provider.getSigner().getAddress()) as Address;
-      
+
       // Check if order exists and is cancellable
       const orderStatus = await this.dcaService.getOrderStatus(orderHash);
       if (!orderStatus) {
@@ -107,29 +114,33 @@ export class ResilientOpenOceanService {
           success: false,
           error: 'Order not found or already processed',
           fallbackUsed: false,
-          retryCount: 0
+          retryCount: 0,
         };
       }
 
-      if (orderStatus.status === 4) { // Already filled
+      if (orderStatus.status === 4) {
+        // Already filled
         return {
           success: false,
           error: 'Order is already completed and cannot be cancelled',
           fallbackUsed: false,
-          retryCount: 0
+          retryCount: 0,
         };
       }
 
       // Attempt cancellation
-      const result = await this.dcaService.cancelOrder(provider, orderHash, orderData);
-      
+      const result = await this.dcaService.cancelOrder(
+        provider,
+        orderHash,
+        orderData,
+      );
+
       return {
         success: true,
         data: result,
         fallbackUsed: false,
-        retryCount: 0
+        retryCount: 0,
       };
-
     } catch (error) {
       console.error('Error cancelling DCA order:', error);
 
@@ -140,8 +151,12 @@ export class ResilientOpenOceanService {
         orderHash,
         serviceKey: 'openocean-api',
         retryOperation: async () => {
-          return await this.dcaService.cancelOrder(provider, orderHash, orderData);
-        }
+          return await this.dcaService.cancelOrder(
+            provider,
+            orderHash,
+            orderData,
+          );
+        },
       });
 
       return {
@@ -149,7 +164,7 @@ export class ResilientOpenOceanService {
         data: result.data,
         error: result.error,
         fallbackUsed: result.fallbackUsed,
-        retryCount: result.retryCount
+        retryCount: result.retryCount,
       };
     }
   }
@@ -159,8 +174,8 @@ export class ResilientOpenOceanService {
    */
   async getUserOrders(
     userAddress: Address,
-    page: number = 1,
-    limit: number = 10
+    page = 1,
+    limit = 10,
   ): Promise<{
     success: boolean;
     orders?: any[];
@@ -177,23 +192,26 @@ export class ResilientOpenOceanService {
           success: true,
           orders: cached,
           cached: true,
-          retryCount: 0
+          retryCount: 0,
         };
       }
 
       // Fetch from API
-      const orders = await this.dcaService.getOrdersByAddress(userAddress, page, limit);
-      
+      const orders = await this.dcaService.getOrdersByAddress(
+        userAddress,
+        page,
+        limit,
+      );
+
       // Cache the result
       this.setCache(cacheKey, orders, 30000); // Cache for 30 seconds
-      
+
       return {
         success: true,
         orders,
         cached: false,
-        retryCount: 0
+        retryCount: 0,
       };
-
     } catch (error) {
       console.error('Error fetching user orders:', error);
 
@@ -204,8 +222,12 @@ export class ResilientOpenOceanService {
         endpoint: 'dca/address',
         serviceKey: 'openocean-api',
         retryOperation: async () => {
-          return await this.dcaService.getOrdersByAddress(userAddress, page, limit);
-        }
+          return await this.dcaService.getOrdersByAddress(
+            userAddress,
+            page,
+            limit,
+          );
+        },
       });
 
       // If error handling fails, try to return cached data
@@ -218,7 +240,7 @@ export class ResilientOpenOceanService {
             orders: cached,
             cached: true,
             error: 'Using cached data due to API error',
-            retryCount: result.retryCount
+            retryCount: result.retryCount,
           };
         }
       }
@@ -227,7 +249,7 @@ export class ResilientOpenOceanService {
         success: result.success,
         orders: result.data,
         error: result.error,
-        retryCount: result.retryCount
+        retryCount: result.retryCount,
       };
     }
   }
@@ -251,21 +273,20 @@ export class ResilientOpenOceanService {
             status: this.mapInternalToOpenOceanStatus(syncResult.newStatus),
             executionCount: syncResult.newExecutions,
             remainingAmount: '0', // Would need to get from sync result
-            executedAmount: '0'
+            executedAmount: '0',
           },
-          retryCount: 0
+          retryCount: 0,
         };
       }
 
       // Fallback to direct API call
       const status = await this.dcaService.getOrderStatus(orderHash);
-      
+
       return {
         success: true,
         status,
-        retryCount: 0
+        retryCount: 0,
       };
-
     } catch (error) {
       console.error('Error getting order status:', error);
 
@@ -276,14 +297,14 @@ export class ResilientOpenOceanService {
         serviceKey: 'openocean-api',
         retryOperation: async () => {
           return await this.dcaService.getOrderStatus(orderHash);
-        }
+        },
       });
 
       return {
         success: result.success,
         status: result.data,
         error: result.error,
-        retryCount: result.retryCount
+        retryCount: result.retryCount,
       };
     }
   }
@@ -299,13 +320,12 @@ export class ResilientOpenOceanService {
   }> {
     try {
       const syncResult = await openOceanSyncService.syncOrder(orderHash);
-      
+
       return {
         success: syncResult.success,
         syncResult,
-        retryCount: 0
+        retryCount: 0,
       };
-
     } catch (error) {
       console.error('Error syncing order:', error);
 
@@ -316,14 +336,14 @@ export class ResilientOpenOceanService {
         serviceKey: 'openocean-sync',
         retryOperation: async () => {
           return await openOceanSyncService.syncOrder(orderHash);
-        }
+        },
       });
 
       return {
         success: result.success,
         syncResult: result.data,
         error: result.error,
-        retryCount: result.retryCount
+        retryCount: result.retryCount,
       };
     }
   }
@@ -339,13 +359,12 @@ export class ResilientOpenOceanService {
   }> {
     try {
       const results = await openOceanSyncService.syncOrdersBatch(orderHashes);
-      
+
       return {
         success: true,
         results,
-        retryCount: 0
+        retryCount: 0,
       };
-
     } catch (error) {
       console.error('Error batch syncing orders:', error);
 
@@ -355,14 +374,14 @@ export class ResilientOpenOceanService {
         serviceKey: 'openocean-sync',
         retryOperation: async () => {
           return await openOceanSyncService.syncOrdersBatch(orderHashes);
-        }
+        },
       });
 
       return {
         success: result.success,
         results: result.data,
         error: result.error,
-        retryCount: result.retryCount
+        retryCount: result.retryCount,
       };
     }
   }
@@ -380,21 +399,21 @@ export class ResilientOpenOceanService {
       // Simple health check - try to fetch orders for a known address
       const testAddress = '0x0000000000000000000000000000000000000000';
       await this.dcaService.getOrdersByAddress(testAddress, 1, 1);
-      
+
       this.healthStatus.set(serviceKey, {
         isHealthy: true,
-        lastCheck: Date.now()
+        lastCheck: Date.now(),
       });
-      
+
       return true;
     } catch (error) {
       console.warn(`Health check failed for ${serviceKey}:`, error);
-      
+
       this.healthStatus.set(serviceKey, {
         isHealthy: false,
-        lastCheck: Date.now()
+        lastCheck: Date.now(),
       });
-      
+
       return false;
     }
   }
@@ -414,7 +433,7 @@ export class ResilientOpenOceanService {
     return {
       healthStatus,
       errorStats,
-      cacheStats
+      cacheStats,
     };
   }
 
@@ -428,13 +447,14 @@ export class ResilientOpenOceanService {
   }
 
   // Cache implementation
-  private cache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
+  private cache: Map<string, { data: any; timestamp: number; ttl: number }> =
+    new Map();
   private cacheHits = 0;
   private cacheRequests = 0;
 
-  private getFromCache(key: string, allowStale: boolean = false): any {
+  private getFromCache(key: string, allowStale = false): any {
     this.cacheRequests++;
-    
+
     const cached = this.cache.get(key);
     if (!cached) return null;
 
@@ -452,7 +472,7 @@ export class ResilientOpenOceanService {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
 
     // Cleanup old entries
@@ -471,17 +491,17 @@ export class ResilientOpenOceanService {
   private getCacheStats(): { size: number; hitRate: number } {
     return {
       size: this.cache.size,
-      hitRate: this.cacheRequests > 0 ? this.cacheHits / this.cacheRequests : 0
+      hitRate: this.cacheRequests > 0 ? this.cacheHits / this.cacheRequests : 0,
     };
   }
 
   private mapInternalToOpenOceanStatus(status: string): number {
     const statusMap: Record<string, number> = {
-      'active': 1,
-      'cancelled': 3,
-      'completed': 4,
-      'paused': 5,
-      'expired': 7
+      active: 1,
+      cancelled: 3,
+      completed: 4,
+      paused: 5,
+      expired: 7,
     };
     return statusMap[status] || 1;
   }

@@ -27,6 +27,8 @@
     "@coinbase/wallet-sdk": "^4.3.2",
     "@duneanalytics/client-sdk": "^0.2.5",
     "@gelatonetwork/ops-sdk": "^1.0.0",
+    "@gelatonetwork/relay-sdk": "^5.6.0",
+    "@gelatonetwork/smartwallet": "^0.0.20",
     "@gelatonetwork/web3-functions-sdk": "^2.0.0",
     "@openocean.finance/limitorder-sdk": "^1.0.6",
     "@rainbow-me/rainbowkit": "^2.2.4",

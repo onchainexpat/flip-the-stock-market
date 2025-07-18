@@ -13,22 +13,16 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('orderId');
-    
+
     if (!orderId) {
-      return NextResponse.json(
-        { error: 'Missing orderId' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
     }
 
     // Get the order
     const order = await serverDcaDatabase.getOrder(orderId);
-    
+
     if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
     // Parse session key data
@@ -49,12 +43,17 @@ export async function GET(request: NextRequest) {
     let agentKeyStatus = null;
     if (hasAgentKey) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3001'}/api/agent-keys?keyId=${sessionData.agentKeyId}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3001'}/api/agent-keys?keyId=${sessionData.agentKeyId}`,
+        );
         if (response.ok) {
           const data = await response.json();
           agentKeyStatus = data;
         } else {
-          agentKeyStatus = { error: 'Failed to fetch agent key', status: response.status };
+          agentKeyStatus = {
+            error: 'Failed to fetch agent key',
+            status: response.status,
+          };
         }
       } catch (e) {
         agentKeyStatus = { error: 'Failed to check agent key' };
@@ -69,9 +68,8 @@ export async function GET(request: NextRequest) {
       agentKeyId: sessionData.agentKeyId,
       agentKeyStatus,
       orderStatus: order.status,
-      amountPerOrder: order.amountPerOrder?.toString(),
+      amountPerOrder: (order.totalAmount / BigInt(order.totalExecutions)).toString(),
     });
-
   } catch (error) {
     console.error('Failed to check agent key:', error);
     return NextResponse.json(

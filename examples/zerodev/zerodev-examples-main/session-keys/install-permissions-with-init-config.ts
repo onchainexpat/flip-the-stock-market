@@ -89,7 +89,7 @@ const main = async () => {
 
   console.log(
     'User operation receipt:',
-    `${chain.blockExplorers?.default.url}/tx/${userOpReceipt.receipt.transactionHash}`
+    `${chain.blockExplorers?.default.url}/tx/${userOpReceipt.receipt.transactionHash}`,
   );
 
   process.exit(0);

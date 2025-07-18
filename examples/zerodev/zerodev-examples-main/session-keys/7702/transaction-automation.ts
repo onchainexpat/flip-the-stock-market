@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import {
-  ModularSigner,
+  type ModularSigner,
   deserializePermissionAccount,
   serializePermissionAccount,
   toPermissionValidator,
@@ -14,7 +14,13 @@ import {
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_3, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, Address, Hex, createPublicClient, zeroAddress } from 'viem';
+import {
+  http,
+  type Address,
+  type Hex,
+  createPublicClient,
+  zeroAddress,
+} from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
@@ -65,14 +71,14 @@ const getApproval = async (sessionKeyAddress: Address) => {
 
 const useSessionKey = async (
   approval: string,
-  sessionKeySigner: ModularSigner
+  sessionKeySigner: ModularSigner,
 ) => {
   const sessionKeyAccount = await deserializePermissionAccount(
     publicClient,
     entryPoint,
     KERNEL_V3_3,
     approval,
-    sessionKeySigner
+    sessionKeySigner,
   );
   console.log('sessionKeyAccount', sessionKeyAccount.address);
   const kernelPaymaster = createZeroDevPaymasterClient({

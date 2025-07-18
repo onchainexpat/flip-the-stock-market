@@ -1,14 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { OpenOceanDCAService } from '../services/openOceanDCAService';
-import { serverDcaDatabase } from '../lib/serverDcaDatabase';
 import axios from 'axios';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { OpenOceanDCAService } from '../services/openOceanDCAService';
 
 // Mock axios for API calls
 vi.mock('axios', () => ({
   default: {
     post: vi.fn(),
-    get: vi.fn()
-  }
+    get: vi.fn(),
+  },
 }));
 
 // Mock the database
@@ -16,8 +15,8 @@ vi.mock('../lib/serverDcaDatabase', () => ({
   serverDcaDatabase: {
     createOpenOceanOrder: vi.fn(),
     getOpenOceanOrderByHash: vi.fn(),
-    updateOpenOceanOrder: vi.fn()
-  }
+    updateOpenOceanOrder: vi.fn(),
+  },
 }));
 
 // Mock ethers
@@ -25,7 +24,9 @@ vi.mock('ethers', () => ({
   ethers: {
     BrowserProvider: vi.fn().mockImplementation(() => ({
       getSigner: vi.fn().mockResolvedValue({
-        getAddress: vi.fn().mockResolvedValue('0x1234567890123456789012345678901234567890'),
+        getAddress: vi
+          .fn()
+          .mockResolvedValue('0x1234567890123456789012345678901234567890'),
       }),
       getFeeData: vi.fn().mockResolvedValue({
         gasPrice: BigInt('20000000000'), // 20 gwei
@@ -39,8 +40,8 @@ vi.mock('ethers', () => ({
 vi.mock('@openocean.finance/limitorder-sdk', () => ({
   openoceanLimitOrderSdk: {
     createLimitOrder: vi.fn(),
-    cancelLimitOrder: vi.fn()
-  }
+    cancelLimitOrder: vi.fn(),
+  },
 }));
 
 import { openoceanLimitOrderSdk } from '@openocean.finance/limitorder-sdk';
@@ -55,7 +56,7 @@ describe('OpenOcean DCA Order Creation', () => {
     mockProvider = new ethers.BrowserProvider(null as any);
     dcaService = new OpenOceanDCAService();
     mockAxios = vi.mocked(axios);
-    
+
     // Reset all mocks
     vi.clearAllMocks();
   });
@@ -67,8 +68,10 @@ describe('OpenOcean DCA Order Creation', () => {
   it('should create a valid DCA order', async () => {
     // Mock SDK response
     const mockOrderData = {
-      signature: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+      signature:
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      orderHash:
+        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       data: {
         salt: '1234567890123',
         makerAsset: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
@@ -84,34 +87,39 @@ describe('OpenOcean DCA Order Creation', () => {
         getTakerAmount: '0x',
         predicate: '0x',
         permit: '0x',
-        interaction: '0x'
-      }
+        interaction: '0x',
+      },
     };
 
-    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(mockOrderData);
+    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(
+      mockOrderData,
+    );
 
     // Mock OpenOcean API response
     mockAxios.post.mockResolvedValue({
       data: {
         code: 200,
         data: {
-          orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
-          status: 1
-        }
-      }
+          orderHash:
+            '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+          status: 1,
+        },
+      },
     });
 
     const dcaParams = {
       provider: mockProvider,
       usdcAmount: 50,
       intervalHours: 24,
-      numberOfBuys: 5
+      numberOfBuys: 5,
     };
 
     const order = await dcaService.createSPXDCAOrder(dcaParams);
 
     expect(order).toBeDefined();
-    expect(order.orderHash).toBe('0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab');
+    expect(order.orderHash).toBe(
+      '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+    );
     expect(order.totalAmount).toBe(50);
     expect(order.perExecution).toBe(10); // 50 / 5 = 10
     expect(order.intervals).toBe(5);
@@ -124,15 +132,15 @@ describe('OpenOcean DCA Order Creation', () => {
         provider: mockProvider,
         chainId: 8453,
         chainKey: 'base',
-        mode: 'Dca'
+        mode: 'Dca',
       }),
       expect.objectContaining({
         makerTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
         makerTokenDecimals: 6,
         takerTokenAddress: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C',
         takerTokenDecimals: 18,
-        makerAmount: '50000000' // 50 USDC with 6 decimals
-      })
+        makerAmount: '50000000', // 50 USDC with 6 decimals
+      }),
     );
 
     // Verify OpenOcean API was called
@@ -144,32 +152,36 @@ describe('OpenOcean DCA Order Creation', () => {
         time: 86400, // 24 hours in seconds
         times: 5,
         version: 'v2',
-        referrer: "0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7",
-        referrerFee: "1"
+        referrer: '0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7',
+        referrerFee: '1',
       }),
       expect.objectContaining({
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+      }),
     );
   });
 
   it('should handle order creation with price range', async () => {
     const mockOrderData = {
-      signature: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+      signature:
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      orderHash:
+        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       data: {
         salt: '1234567890123',
         makerAsset: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
         takerAsset: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C',
         maker: '0x1234567890123456789012345678901234567890',
         makingAmount: '20000000', // 20 USDC
-        takingAmount: '1000000000000000000' // 1 SPX
-      }
+        takingAmount: '1000000000000000000', // 1 SPX
+      },
     };
 
-    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(mockOrderData);
+    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(
+      mockOrderData,
+    );
     mockAxios.post.mockResolvedValue({
-      data: { code: 200, data: { orderHash: mockOrderData.orderHash } }
+      data: { code: 200, data: { orderHash: mockOrderData.orderHash } },
     });
 
     const dcaParams = {
@@ -178,7 +190,7 @@ describe('OpenOcean DCA Order Creation', () => {
       intervalHours: 12,
       numberOfBuys: 4,
       minPrice: '0.001',
-      maxPrice: '0.005'
+      maxPrice: '0.005',
     };
 
     const order = await dcaService.createSPXDCAOrder(dcaParams);
@@ -191,9 +203,9 @@ describe('OpenOcean DCA Order Creation', () => {
       'https://open-api.openocean.finance/v1/8453/dca/swap',
       expect.objectContaining({
         minPrice: '0.001',
-        maxPrice: '0.005'
+        maxPrice: '0.005',
       }),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -202,7 +214,7 @@ describe('OpenOcean DCA Order Creation', () => {
       provider: mockProvider,
       usdcAmount: 3, // Below minimum of $5
       intervalHours: 24,
-      numberOfBuys: 1
+      numberOfBuys: 1,
     };
 
     const validation = dcaService.validateOrderParams(dcaParams);
@@ -215,7 +227,7 @@ describe('OpenOcean DCA Order Creation', () => {
       provider: mockProvider,
       usdcAmount: 10,
       intervalHours: 0.01, // Below minimum of 1 minute
-      numberOfBuys: 1
+      numberOfBuys: 1,
     };
 
     const validation = dcaService.validateOrderParams(dcaParams);
@@ -228,7 +240,7 @@ describe('OpenOcean DCA Order Creation', () => {
       provider: mockProvider,
       usdcAmount: 10,
       intervalHours: 24,
-      numberOfBuys: 0 // Invalid
+      numberOfBuys: 0, // Invalid
     };
 
     const validation = dcaService.validateOrderParams(dcaParams);
@@ -238,37 +250,41 @@ describe('OpenOcean DCA Order Creation', () => {
 
   it('should handle SDK errors gracefully', async () => {
     vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockRejectedValue(
-      new Error('SDK signature generation failed')
+      new Error('SDK signature generation failed'),
     );
 
     const dcaParams = {
       provider: mockProvider,
       usdcAmount: 10,
       intervalHours: 24,
-      numberOfBuys: 1
+      numberOfBuys: 1,
     };
 
     await expect(dcaService.createSPXDCAOrder(dcaParams)).rejects.toThrow(
-      'SDK signature generation failed'
+      'SDK signature generation failed',
     );
   });
 
   it('should handle OpenOcean API errors', async () => {
     const mockOrderData = {
-      signature: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+      signature:
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      orderHash:
+        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       data: {
         salt: '1234567890123',
         makerAsset: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
         takerAsset: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C',
         maker: '0x1234567890123456789012345678901234567890',
         makingAmount: '10000000',
-        takingAmount: '1000000000000000000'
-      }
+        takingAmount: '1000000000000000000',
+      },
     };
 
-    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(mockOrderData);
-    
+    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(
+      mockOrderData,
+    );
+
     // Mock API error
     mockAxios.post.mockRejectedValue(new Error('OpenOcean API error'));
 
@@ -276,11 +292,11 @@ describe('OpenOcean DCA Order Creation', () => {
       provider: mockProvider,
       usdcAmount: 10,
       intervalHours: 24,
-      numberOfBuys: 1
+      numberOfBuys: 1,
     };
 
     await expect(dcaService.createSPXDCAOrder(dcaParams)).rejects.toThrow(
-      'OpenOcean API error'
+      'OpenOcean API error',
     );
   });
 
@@ -291,40 +307,47 @@ describe('OpenOcean DCA Order Creation', () => {
       { hours: 24, times: 7, expected: '7D' },
       { hours: 24, times: 30, expected: '30D' },
       { hours: 24, times: 90, expected: '3Month' },
-      { hours: 24, times: 180, expected: '6Month' }
+      { hours: 24, times: 180, expected: '6Month' },
     ];
 
     for (const testCase of testCases) {
       const service = new OpenOceanDCAService();
-      const result = (service as any).calculateExpiry(testCase.hours, testCase.times);
+      const result = (service as any).calculateExpiry(
+        testCase.hours,
+        testCase.times,
+      );
       expect(result).toBe(testCase.expected);
     }
   });
 
   it('should handle different token pairs', async () => {
     const mockOrderData = {
-      signature: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+      signature:
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      orderHash:
+        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       data: {
         salt: '1234567890123',
         makerAsset: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
         takerAsset: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C',
         maker: '0x1234567890123456789012345678901234567890',
         makingAmount: '10000000',
-        takingAmount: '1000000000000000000'
-      }
+        takingAmount: '1000000000000000000',
+      },
     };
 
-    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(mockOrderData);
+    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(
+      mockOrderData,
+    );
     mockAxios.post.mockResolvedValue({
-      data: { code: 200, data: { orderHash: mockOrderData.orderHash } }
+      data: { code: 200, data: { orderHash: mockOrderData.orderHash } },
     });
 
     const dcaParams = {
       provider: mockProvider,
       usdcAmount: 10,
       intervalHours: 24,
-      numberOfBuys: 1
+      numberOfBuys: 1,
     };
 
     const order = await dcaService.createSPXDCAOrder(dcaParams);
@@ -339,35 +362,39 @@ describe('OpenOcean DCA Order Creation', () => {
         makerTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC
         takerTokenAddress: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C', // SPX6900
         makerTokenDecimals: 6,
-        takerTokenDecimals: 18
-      })
+        takerTokenDecimals: 18,
+      }),
     );
   });
 
   it('should handle large order amounts', async () => {
     const mockOrderData = {
-      signature: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      orderHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
+      signature:
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      orderHash:
+        '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab',
       data: {
         salt: '1234567890123',
         makerAsset: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
         takerAsset: '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C',
         maker: '0x1234567890123456789012345678901234567890',
         makingAmount: '10000000000', // 10,000 USDC
-        takingAmount: '1000000000000000000'
-      }
+        takingAmount: '1000000000000000000',
+      },
     };
 
-    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(mockOrderData);
+    vi.mocked(openoceanLimitOrderSdk.createLimitOrder).mockResolvedValue(
+      mockOrderData,
+    );
     mockAxios.post.mockResolvedValue({
-      data: { code: 200, data: { orderHash: mockOrderData.orderHash } }
+      data: { code: 200, data: { orderHash: mockOrderData.orderHash } },
     });
 
     const dcaParams = {
       provider: mockProvider,
       usdcAmount: 10000, // Large amount
       intervalHours: 24,
-      numberOfBuys: 100
+      numberOfBuys: 100,
     };
 
     const order = await dcaService.createSPXDCAOrder(dcaParams);
@@ -383,7 +410,7 @@ describe('OpenOcean DCA Order Creation', () => {
       provider: mockProvider,
       usdcAmount: 1000,
       intervalHours: 1,
-      numberOfBuys: 1000 // Maximum allowed
+      numberOfBuys: 1000, // Maximum allowed
     });
 
     expect(validation.valid).toBe(true);
@@ -392,10 +419,12 @@ describe('OpenOcean DCA Order Creation', () => {
       provider: mockProvider,
       usdcAmount: 1000,
       intervalHours: 1,
-      numberOfBuys: 1001 // Above maximum
+      numberOfBuys: 1001, // Above maximum
     });
 
     expect(invalidValidation.valid).toBe(false);
-    expect(invalidValidation.error).toBe('Number of buys must be between 1 and 1000');
+    expect(invalidValidation.error).toBe(
+      'Number of buys must be between 1 and 1000',
+    );
   });
 });

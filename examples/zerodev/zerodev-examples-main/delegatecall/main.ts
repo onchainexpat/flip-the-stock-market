@@ -17,7 +17,7 @@ async function main() {
           data: '0x',
         },
       ],
-      'delegatecall'
+      'delegatecall',
     ),
   });
 
@@ -26,7 +26,7 @@ async function main() {
     hash: userOpHash,
   });
   console.log(
-    `https://sepolia.etherscan.io/tx/${receipt.receipt.transactionHash}`
+    `https://sepolia.etherscan.io/tx/${receipt.receipt.transactionHash}`,
   );
 }
 

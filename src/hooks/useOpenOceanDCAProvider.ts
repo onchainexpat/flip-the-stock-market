@@ -1,10 +1,14 @@
 'use client';
 
+import { ethers } from 'ethers';
 import { useCallback, useMemo } from 'react';
 import { useEthersProvider } from '../lib/ethers';
+import {
+  type OpenOceanDCAOrder,
+  type OpenOceanDCAOrderParams,
+  OpenOceanDCAService,
+} from '../services/openOceanDCAService';
 import { useUnifiedSmartWallet } from './useUnifiedSmartWallet';
-import { OpenOceanDCAService, OpenOceanDCAOrderParams, OpenOceanDCAOrder } from '../services/openOceanDCAService';
-import { ethers } from 'ethers';
 
 export type DCAProviderType = 'openocean' | 'smart_wallet';
 
@@ -30,35 +34,42 @@ export interface DCAProviderRecommendation {
 export function useOpenOceanDCAProvider() {
   const { activeWallet, walletType, isEmbedded } = useUnifiedSmartWallet();
   const ethersProvider = useEthersProvider({ chainId: 8453 });
-  
+
   // Initialize OpenOcean DCA service
   const openOceanService = useMemo(() => new OpenOceanDCAService(), []);
-  
+
   /**
    * Get the appropriate provider for OpenOcean DCA
    */
-  const getOpenOceanProvider = useCallback(async (): Promise<ethers.BrowserProvider | null> => {
-    try {
-      // For OpenOcean DCA, we prefer external wallet providers
-      if (activeWallet && (walletType === 'external_wallet' || walletType === 'zerodev_smart')) {
-        const externalProvider = await activeWallet.getEthereumProvider();
-        if (externalProvider) {
-          return new ethers.BrowserProvider(externalProvider);
+  const getOpenOceanProvider =
+    useCallback(async (): Promise<ethers.BrowserProvider | null> => {
+      try {
+        // For OpenOcean DCA, we prefer external wallet providers
+        if (
+          activeWallet &&
+          (walletType === 'external_wallet' || walletType === 'zerodev_smart')
+        ) {
+          const externalProvider = await activeWallet.getEthereumProvider();
+          if (externalProvider) {
+            return new ethers.BrowserProvider(externalProvider);
+          }
         }
+
+        // Fallback to ethers provider from wagmi
+        return ethersProvider;
+      } catch (error) {
+        console.error('Error getting OpenOcean provider:', error);
+        return ethersProvider;
       }
-      
-      // Fallback to ethers provider from wagmi
-      return ethersProvider;
-    } catch (error) {
-      console.error('Error getting OpenOcean provider:', error);
-      return ethersProvider;
-    }
-  }, [activeWallet, walletType, ethersProvider]);
+    }, [activeWallet, walletType, ethersProvider]);
 
   /**
    * Get DCA provider capabilities for comparison
    */
-  const getDCACapabilities = useCallback((): Record<DCAProviderType, UnifiedDCACapabilities> => {
+  const getDCACapabilities = useCallback((): Record<
+    DCAProviderType,
+    UnifiedDCACapabilities
+  > => {
     return {
       openocean: {
         supportsGasSponsorship: false,
@@ -66,7 +77,7 @@ export function useOpenOceanDCAProvider() {
         supportsAutomatedExecution: true, // OpenOcean handles execution
         requiresUserGasPayment: true,
         minimumOrderAmount: 5, // $5 USD for Base
-        minimumInterval: 60 // 60 seconds
+        minimumInterval: 60, // 60 seconds
       },
       smart_wallet: {
         supportsGasSponsorship: true,
@@ -74,8 +85,8 @@ export function useOpenOceanDCAProvider() {
         supportsAutomatedExecution: true,
         requiresUserGasPayment: false,
         minimumOrderAmount: 1, // No minimum for smart wallet
-        minimumInterval: 3600 // 1 hour for current implementation
-      }
+        minimumInterval: 3600, // 1 hour for current implementation
+      },
     };
   }, []);
 
@@ -84,75 +95,85 @@ export function useOpenOceanDCAProvider() {
    */
   const getRecommendedProvider = useCallback((): DCAProviderRecommendation => {
     const capabilities = getDCACapabilities();
-    
+
     // For embedded wallets, smart wallet DCA is better (gas sponsorship)
-    if (isEmbedded || walletType === 'embedded_privy' || walletType === 'coinbase_smart') {
+    if (
+      isEmbedded ||
+      walletType === 'embedded_privy' ||
+      walletType === 'coinbase_smart'
+    ) {
       return {
         recommended: 'smart_wallet',
         reason: 'Gas-free execution with embedded wallet',
-        capabilities
+        capabilities,
       };
     }
-    
+
     // For external wallets, OpenOcean DCA is simpler (no smart wallet deployment needed)
     if (walletType === 'external_wallet') {
       return {
         recommended: 'openocean',
         reason: 'Simplified setup without smart wallet deployment',
-        capabilities
+        capabilities,
       };
     }
-    
+
     // For ZeroDev smart wallets, both are viable - default to OpenOcean for simplicity
     return {
       recommended: 'openocean',
       reason: 'Simplified order management with OpenOcean infrastructure',
-      capabilities
+      capabilities,
     };
   }, [walletType, isEmbedded, getDCACapabilities]);
 
   /**
    * Create OpenOcean DCA order with proper provider
    */
-  const createOpenOceanOrder = useCallback(async (params: OpenOceanDCAOrderParams): Promise<OpenOceanDCAOrder> => {
-    const provider = await getOpenOceanProvider();
-    if (!provider) {
-      throw new Error('No suitable provider available for OpenOcean DCA');
-    }
+  const createOpenOceanOrder = useCallback(
+    async (params: OpenOceanDCAOrderParams): Promise<OpenOceanDCAOrder> => {
+      const provider = await getOpenOceanProvider();
+      if (!provider) {
+        throw new Error('No suitable provider available for OpenOcean DCA');
+      }
 
-    // Update params to use the resolved provider
-    const enhancedParams = {
-      ...params,
-      provider
-    };
+      // Update params to use the resolved provider
+      const enhancedParams = {
+        ...params,
+        provider,
+      };
 
-    // Validate parameters
-    const validation = openOceanService.validateOrderParams(enhancedParams);
-    if (!validation.valid) {
-      throw new Error(validation.error);
-    }
+      // Validate parameters
+      const validation = openOceanService.validateOrderParams(enhancedParams);
+      if (!validation.valid) {
+        throw new Error(validation.error);
+      }
 
-    return openOceanService.createSPXDCAOrder(enhancedParams);
-  }, [getOpenOceanProvider, openOceanService]);
+      return openOceanService.createSPXDCAOrder(enhancedParams);
+    },
+    [getOpenOceanProvider, openOceanService],
+  );
 
   /**
    * Cancel OpenOcean DCA order
    */
-  const cancelOpenOceanOrder = useCallback(async (orderHash: string, orderData?: any) => {
-    const provider = await getOpenOceanProvider();
-    if (!provider) {
-      throw new Error('No suitable provider available for OpenOcean DCA');
-    }
+  const cancelOpenOceanOrder = useCallback(
+    async (orderHash: string, orderData?: any) => {
+      const provider = await getOpenOceanProvider();
+      if (!provider) {
+        throw new Error('No suitable provider available for OpenOcean DCA');
+      }
 
-    return openOceanService.cancelOrder(provider, orderHash, orderData);
-  }, [getOpenOceanProvider, openOceanService]);
+      return openOceanService.cancelOrder(provider, orderHash, orderData);
+    },
+    [getOpenOceanProvider, openOceanService],
+  );
 
   /**
    * Get orders by current wallet address
    */
   const getMyOrders = useCallback(async () => {
     if (!activeWallet) return [];
-    
+
     const address = activeWallet.address;
     return openOceanService.getOrdersByAddress(address);
   }, [activeWallet, openOceanService]);
@@ -160,9 +181,12 @@ export function useOpenOceanDCAProvider() {
   /**
    * Get order status by hash
    */
-  const getOrderStatus = useCallback(async (orderHash: string) => {
-    return openOceanService.getOrderStatus(orderHash);
-  }, [openOceanService]);
+  const getOrderStatus = useCallback(
+    async (orderHash: string) => {
+      return openOceanService.getOrderStatus(orderHash);
+    },
+    [openOceanService],
+  );
 
   /**
    * Check if OpenOcean DCA is supported for current wallet
@@ -176,14 +200,14 @@ export function useOpenOceanDCAProvider() {
    */
   const getWalletStatus = useCallback(() => {
     if (!activeWallet) return 'No wallet connected';
-    
+
     const statusMap = {
-      'zerodev_smart': 'Smart Wallet (ZeroDev)',
-      'coinbase_smart': 'Coinbase Smart Wallet',
-      'embedded_privy': 'Embedded Wallet',
-      'external_wallet': 'External Wallet'
+      zerodev_smart: 'Smart Wallet (ZeroDev)',
+      coinbase_smart: 'Coinbase Smart Wallet',
+      embedded_privy: 'Embedded Wallet',
+      external_wallet: 'External Wallet',
     };
-    
+
     return statusMap[walletType] || 'Unknown Wallet';
   }, [activeWallet, walletType]);
 
@@ -193,19 +217,19 @@ export function useOpenOceanDCAProvider() {
     cancelOpenOceanOrder,
     getMyOrders,
     getOrderStatus,
-    
+
     // Provider information
     isSupported,
     walletType,
     walletStatus: getWalletStatus(),
-    
+
     // Capabilities and recommendations
     getRecommendedProvider,
     getDCACapabilities,
-    
+
     // Direct service access for advanced use cases
     openOceanService,
-    getOpenOceanProvider
+    getOpenOceanProvider,
   };
 }
 
@@ -216,28 +240,36 @@ export function useOpenOceanDCAProvider() {
 export function useUnifiedDCAProvider() {
   const openOceanDCA = useOpenOceanDCAProvider();
   const recommendation = openOceanDCA.getRecommendedProvider();
-  
+
   return {
     ...openOceanDCA,
     recommendation,
-    
+
     // Unified interface methods
     createDCAOrder: async (providerType: DCAProviderType, params: any) => {
       if (providerType === 'openocean') {
         return openOceanDCA.createOpenOceanOrder(params);
       } else {
         // This would integrate with the existing smart wallet DCA service
-        throw new Error('Smart wallet DCA integration not yet implemented in unified interface');
+        throw new Error(
+          'Smart wallet DCA integration not yet implemented in unified interface',
+        );
       }
     },
-    
-    cancelDCAOrder: async (providerType: DCAProviderType, orderHash: string, orderData?: any) => {
+
+    cancelDCAOrder: async (
+      providerType: DCAProviderType,
+      orderHash: string,
+      orderData?: any,
+    ) => {
       if (providerType === 'openocean') {
         return openOceanDCA.cancelOpenOceanOrder(orderHash, orderData);
       } else {
         // This would integrate with the existing smart wallet DCA service
-        throw new Error('Smart wallet DCA cancellation not yet implemented in unified interface');
+        throw new Error(
+          'Smart wallet DCA cancellation not yet implemented in unified interface',
+        );
       }
-    }
+    },
   };
 }

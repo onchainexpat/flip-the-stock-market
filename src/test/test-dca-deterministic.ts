@@ -5,11 +5,7 @@
  */
 
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-import {
-  createKernelAccount,
-  createKernelAccountClient,
-  createZeroDevPaymasterClient,
-} from '@zerodev/sdk';
+import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { KERNEL_V3_2, getEntryPoint } from '@zerodev/sdk/constants';
 import {
   http,
@@ -30,12 +26,14 @@ const ZERODEV_RPC_URL =
   `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`;
 
 // OpenOcean router
-const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+const OPENOCEAN_ROUTER =
+  '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
 // Test configuration
 const TEST_CONFIG = {
   // Use a deterministic private key for testing (DO NOT USE IN PRODUCTION!)
-  AGENT_PRIVATE_KEY: '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' as Hex,
+  AGENT_PRIVATE_KEY:
+    '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' as Hex,
   USER_WALLET: '0x742f96b3e80a4b3633c7f3ec5bd1b5f9b6b0123e' as Address,
   TEST_AMOUNT: 10000n, // 0.01 USDC
 };
@@ -87,7 +85,11 @@ async function checkBalance(publicClient: any, address: Address) {
   return balance;
 }
 
-async function executeDCASwap(publicClient: any, smartWallet: any, agentAccount: any) {
+async function executeDCASwap(
+  publicClient: any,
+  smartWallet: any,
+  agentAccount: any,
+) {
   console.log('🚀 Executing DCA swap...');
 
   // Create kernel client
@@ -171,13 +173,16 @@ async function getOpenOceanSwapQuote(
     maxHops: 2,
   };
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/openocean-swap`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/openocean-swap`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
     },
-    body: JSON.stringify(requestBody),
-  });
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -204,7 +209,8 @@ async function main() {
 
   try {
     // Setup wallet
-    const { publicClient, smartWallet, agentAccount } = await setupDeterministicWallet();
+    const { publicClient, smartWallet, agentAccount } =
+      await setupDeterministicWallet();
 
     // Check balance
     const balance = await checkBalance(publicClient, smartWallet.address);
@@ -219,7 +225,11 @@ async function main() {
     console.log('\n✅ Sufficient balance found. Proceeding with DCA swap...\n');
 
     // Execute swap
-    const txHash = await executeDCASwap(publicClient, smartWallet, agentAccount);
+    const txHash = await executeDCASwap(
+      publicClient,
+      smartWallet,
+      agentAccount,
+    );
 
     console.log('\n📊 Transaction Details:');
     console.log(`   Network: Base`);
@@ -228,15 +238,21 @@ async function main() {
 
     // Wait and check results
     console.log('\n⏳ Waiting for transaction confirmation...');
-    await new Promise(resolve => setTimeout(resolve, 15000));
+    await new Promise((resolve) => setTimeout(resolve, 15000));
 
     const finalBalance = await checkBalance(publicClient, smartWallet.address);
-    console.log(`\n💰 Final USDC Balance: ${(Number(finalBalance) / 1e6).toFixed(6)} USDC`);
-    console.log(`📉 USDC Spent: ${(Number(balance - finalBalance) / 1e6).toFixed(6)} USDC`);
+    console.log(
+      `\n💰 Final USDC Balance: ${(Number(finalBalance) / 1e6).toFixed(6)} USDC`,
+    );
+    console.log(
+      `📉 USDC Spent: ${(Number(balance - finalBalance) / 1e6).toFixed(6)} USDC`,
+    );
 
     console.log('\n✅ DCA swap completed successfully!');
-    console.log('📤 SPX tokens should now be in the user wallet:', TEST_CONFIG.USER_WALLET);
-
+    console.log(
+      '📤 SPX tokens should now be in the user wallet:',
+      TEST_CONFIG.USER_WALLET,
+    );
   } catch (error) {
     console.error('\n❌ Test failed:', error);
   }

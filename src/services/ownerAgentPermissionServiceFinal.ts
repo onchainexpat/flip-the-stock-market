@@ -1,9 +1,9 @@
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
+  SUDO_POLICY_CONTRACT,
   deserializePermissionAccount,
   serializePermissionAccount,
   toPermissionValidator,
-  SUDO_POLICY_CONTRACT,
 } from '@zerodev/permissions';
 import {
   createKernelAccount,
@@ -19,10 +19,7 @@ import {
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
-import {
-  generatePrivateKey,
-  privateKeyToAccount,
-} from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';
@@ -139,11 +136,11 @@ export class OwnerAgentPermissionServiceFinal {
 
   /**
    * STEP 3: Owner authorizes agent using permissions system (KERNEL_V3_2)
-   * 
+   *
    * This implementation creates a simplified permissions validator that allows
    * the agent to execute transactions on behalf of the smart wallet with
    * basic sudo policy (for now, to get the system working).
-   * 
+   *
    * Future: Add specific call policies for DCA permissions
    */
   async authorizeAgentPermissions(
@@ -174,7 +171,7 @@ export class OwnerAgentPermissionServiceFinal {
 
       // Create agent account for the permission system
       const agentAccount = privateKeyToAccount(generatePrivateKey()); // Temporary key for setup
-      
+
       // Note: The key insight from the examples is that we need to use an actual account
       // for the agent, not an empty account. The agent will later use their real private key
       // when deserializing the permission account.
@@ -183,12 +180,15 @@ export class OwnerAgentPermissionServiceFinal {
       // For now, use sudo policy to enable basic functionality
       const policies = [SUDO_POLICY_CONTRACT]; // Basic policy that allows most operations
 
-      const permissionValidator = await toPermissionValidator(this.publicClient, {
-        entryPoint: getEntryPoint('0.7'),
-        kernelVersion: KERNEL_V3_2,
-        signer: agentAccount, // Use temporary account for setup
-        policies: policies,
-      });
+      const permissionValidator = await toPermissionValidator(
+        this.publicClient,
+        {
+          entryPoint: getEntryPoint('0.7'),
+          kernelVersion: KERNEL_V3_2,
+          signer: agentAccount, // Use temporary account for setup
+          policies: policies,
+        },
+      );
 
       // Create kernel account with both sudo and permission validators
       const permissionAccount = await createKernelAccount(this.publicClient, {
@@ -292,7 +292,9 @@ export class OwnerAgentPermissionServiceFinal {
         };
       }
 
-      const agentAccount = privateKeyToAccount(agentPermissionKey.agentPrivateKey);
+      const agentAccount = privateKeyToAccount(
+        agentPermissionKey.agentPrivateKey,
+      );
 
       // Deserialize permission account
       const permissionAccount = await deserializePermissionAccount(
@@ -340,7 +342,8 @@ export class OwnerAgentPermissionServiceFinal {
       }
 
       // OpenOcean router on Base
-      const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+      const OPENOCEAN_ROUTER =
+        '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
       // Build transactions
       const approveData = encodeFunctionData({
@@ -466,4 +469,5 @@ export class OwnerAgentPermissionServiceFinal {
 }
 
 // Export singleton instance
-export const ownerAgentPermissionServiceFinal = new OwnerAgentPermissionServiceFinal();
+export const ownerAgentPermissionServiceFinal =
+  new OwnerAgentPermissionServiceFinal();
