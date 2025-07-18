@@ -88,33 +88,46 @@ export class ClientSessionKeyService {
         transport: custom(userWalletProvider),
       });
 
-      // Get user's account
+      // Get user's account and create proper account object
       const [userAddress] = await walletClient.getAddresses();
       console.log('User address:', userAddress);
 
-      // Create ECDSA validator for user's wallet
-      const ecdsaValidator = await signerToEcdsaValidator(this.publicClient, {
-        signer: {
-          address: userAddress,
-          signMessage: async ({ message }) => {
-            return await walletClient.signMessage({
-              account: userAddress,
-              message,
-            });
-          },
-          signTransaction: async (transaction) => {
-            return await walletClient.signTransaction({
-              account: userAddress,
-              ...transaction,
-            });
-          },
-          signTypedData: async (typedData) => {
-            return await walletClient.signTypedData({
-              account: userAddress,
-              ...typedData,
-            });
-          },
+      // ✅ Validate address exists
+      if (!userAddress) {
+        throw new Error('No wallet address found');
+      }
+
+      // Create a proper account object that viem expects
+      const account = {
+        address: userAddress as Address,
+        type: 'local' as const,
+        source: 'custom' as const,
+        signMessage: async ({ message }: { message: any }) => {
+          return await walletClient.signMessage({
+            account: userAddress,
+            message,
+          });
         },
+        signTransaction: async (transaction: any) => {
+          return await walletClient.signTransaction({
+            account: userAddress,
+            ...transaction,
+          });
+        },
+        signTypedData: async (typedData: any) => {
+          return await walletClient.signTypedData({
+            account: userAddress,
+            ...typedData,
+          });
+        },
+      };
+
+      console.log('🔍 Account object address:', account.address);
+      console.log('🔍 Entry point:', this.entryPoint);
+      console.log('🔍 KERNEL_V3_1:', KERNEL_V3_1);
+      
+      const ecdsaValidator = await signerToEcdsaValidator(this.publicClient, {
+        signer: account,
         entryPoint: this.entryPoint,
         kernelVersion: KERNEL_V3_1,
       });

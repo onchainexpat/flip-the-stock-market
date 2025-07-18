@@ -128,7 +128,7 @@ export interface DCAExecution {
   blockNumber: number;
 
   // Status
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'failed' | 'partial';
   errorMessage?: string;
 }
 
@@ -267,27 +267,6 @@ class ServerDCADatabase {
     return orders;
   }
 
-  async getOrdersDueForExecution(): Promise<DCAOrder[]> {
-    const now = Date.now();
-    const dueOrders: DCAOrder[] = [];
-
-    // Get all order IDs
-    const allOrderIds = await redis.smembers(REDIS_KEYS.ALL_ORDERS);
-
-    for (const orderId of allOrderIds) {
-      const order = await this.getOrder(orderId);
-      if (
-        order &&
-        order.status === 'active' &&
-        order.nextExecutionAt <= now &&
-        order.executionsCount < order.totalExecutions
-      ) {
-        dueOrders.push(order);
-      }
-    }
-
-    return dueOrders;
-  }
 
   async updateOrder(
     id: string,
@@ -296,7 +275,15 @@ class ServerDCADatabase {
     const order = await this.getOrder(id);
     if (!order) return null;
 
+    // Preserve sessionKeyData to prevent corruption
+    const preservedSessionKeyData = order.sessionKeyData;
     const updatedOrder = { ...order, ...updates, updatedAt: Date.now() };
+    
+    // Ensure sessionKeyData remains as string if it was already a string
+    if (typeof preservedSessionKeyData === 'string') {
+      updatedOrder.sessionKeyData = preservedSessionKeyData;
+    }
+
     await redis.set(
       REDIS_KEYS.ORDER(id),
       JSON.stringify(this.serializeOrder(updatedOrder)),
@@ -413,20 +400,6 @@ class ServerDCADatabase {
     return ordersReady;
   }
 
-  private getFrequencyInMs(frequency: string): number {
-    switch (frequency.toLowerCase()) {
-      case 'hourly':
-        return 60 * 60 * 1000;
-      case 'daily':
-        return 24 * 60 * 60 * 1000;
-      case 'weekly':
-        return 7 * 24 * 60 * 60 * 1000;
-      case 'monthly':
-        return 30 * 24 * 60 * 60 * 1000;
-      default:
-        return 24 * 60 * 60 * 1000; // Default to daily
-    }
-  }
 
   // OpenOcean DCA Orders
   async createOpenOceanOrder(

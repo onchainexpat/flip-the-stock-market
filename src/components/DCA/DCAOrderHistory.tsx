@@ -289,7 +289,14 @@ export default function DCAOrderHistory({
       const result = await response.json();
 
       if (result.success) {
-        toast.success('DCA order execution triggered!');
+        // Show SPX amount received if available
+        const spxReceived = result.result?.spxReceived;
+        if (spxReceived && spxReceived !== '0') {
+          const spxAmount = (Number(spxReceived) / 1e8).toFixed(8);
+          toast.success(`✅ DCA executed! Received ${spxAmount} SPX`);
+        } else {
+          toast.success('✅ DCA order execution triggered!');
+        }
         // Wait a moment then refresh orders
         setTimeout(() => {
           fetchOrders(currentPage);

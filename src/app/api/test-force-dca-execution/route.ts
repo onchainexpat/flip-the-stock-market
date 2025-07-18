@@ -72,9 +72,10 @@ export async function GET(request: NextRequest) {
     // Parse order data to check if it has agent key
     let orderData: any;
     try {
-      orderData = typeof order.sessionKeyData === 'string' 
-        ? JSON.parse(order.sessionKeyData) 
-        : order.sessionKeyData;
+      orderData =
+        typeof order.sessionKeyData === 'string'
+          ? JSON.parse(order.sessionKeyData)
+          : order.sessionKeyData;
     } catch (e) {
       console.error('❌ Failed to parse order sessionKeyData:', e);
       console.error('Raw sessionKeyData:', order.sessionKeyData);
@@ -114,13 +115,35 @@ export async function GET(request: NextRequest) {
       amountPerOrder: amountPerOrder.toString(),
       amountInUSDC: Number(amountPerOrder) / 1e6,
     });
-    
+
     const result = await serverZerodevDCAExecutor.executeDCAWithAgentKey(
       orderData.agentKeyId,
       orderData.smartWalletAddress,
       order.userAddress,
       amountPerOrder,
     );
+
+    // If execution was successful, record it in the database
+    if (result.success && result.txHash) {
+      console.log('📝 Recording successful execution in database...');
+      try {
+        await serverDcaDatabase.recordExecution({
+          orderId: order.id,
+          txHash: result.txHash,
+          amountIn: BigInt(amountPerOrder),
+          amountOut: BigInt(result.spxReceived || '0'),
+          gasUsed: BigInt(0), // Gas is sponsored
+          gasPrice: BigInt(0), // Gas is sponsored
+          blockNumber: 0, // Will be filled in later
+          status: 'completed',
+          executedAt: Date.now(),
+        });
+        console.log('✅ Execution recorded successfully');
+      } catch (dbError) {
+        console.error('❌ Failed to record execution:', dbError);
+        // Don't fail the whole request if DB update fails
+      }
+    }
 
     // Convert any BigInt values to strings for JSON serialization
     const safeResult = {

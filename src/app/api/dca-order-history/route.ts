@@ -65,75 +65,88 @@ export async function GET(request: NextRequest) {
       paginatedOrders.map(async (order) => {
         try {
           // Get execution history for this order
-          const executions = await serverDcaDatabase.getOrderExecutions(order.id);
+          const executions = await serverDcaDatabase.getOrderExecutions(
+            order.id,
+          );
 
-        // Calculate next execution time
-        const lastExecutionTime =
-          executions.length > 0
-            ? Math.max(...executions.map((e) => e.executedAt))
-            : order.createdAt;
+          // Calculate next execution time
+          const lastExecutionTime =
+            executions.length > 0
+              ? Math.max(...executions.map((e) => e.executedAt))
+              : order.createdAt;
 
-        const executionsRemaining =
-          order.totalExecutions - order.executionsCount;
-        const intervalSeconds = getIntervalSeconds(order.frequency);
-        const nextExecutionAt =
-          executionsRemaining > 0 && order.status === 'active'
-            ? lastExecutionTime + intervalSeconds
-            : null;
+          const executionsRemaining =
+            order.totalExecutions - order.executionsCount;
+          const intervalSeconds = getIntervalSeconds(order.frequency);
+          const nextExecutionAt =
+            executionsRemaining > 0 && order.status === 'active'
+              ? lastExecutionTime + intervalSeconds
+              : null;
 
-        // Parse session key data for additional details
-        let orderDetails: any = {};
-        try {
-          // Check if sessionKeyData is already an object or needs parsing
-          if (typeof order.sessionKeyData === 'string') {
-            // Handle case where sessionKeyData might be "[object Object]" string
-            if (order.sessionKeyData === '[object Object]') {
-              console.warn(`Order ${order.id} has corrupted sessionKeyData: "[object Object]"`);
-              orderDetails = {};
+          // Parse session key data for additional details
+          let orderDetails: any = {};
+          try {
+            // Check if sessionKeyData is already an object or needs parsing
+            if (typeof order.sessionKeyData === 'string') {
+              // Handle case where sessionKeyData might be "[object Object]" string
+              if (order.sessionKeyData === '[object Object]') {
+                console.warn(
+                  `Order ${order.id} has corrupted sessionKeyData: "[object Object]"`,
+                );
+                orderDetails = {};
+              } else {
+                orderDetails = JSON.parse(order.sessionKeyData);
+              }
+            } else if (
+              typeof order.sessionKeyData === 'object' &&
+              order.sessionKeyData !== null
+            ) {
+              orderDetails = order.sessionKeyData;
             } else {
-              orderDetails = JSON.parse(order.sessionKeyData);
+              console.warn(
+                `Order ${order.id} has invalid sessionKeyData type:`,
+                typeof order.sessionKeyData,
+              );
+              orderDetails = {};
             }
-          } else if (typeof order.sessionKeyData === 'object' && order.sessionKeyData !== null) {
-            orderDetails = order.sessionKeyData;
-          } else {
-            console.warn(`Order ${order.id} has invalid sessionKeyData type:`, typeof order.sessionKeyData);
+          } catch (e) {
+            console.error(
+              `Failed to parse sessionKeyData for order ${order.id}:`,
+              e,
+            );
+            console.error(`Raw sessionKeyData:`, order.sessionKeyData);
+            // Handle legacy format or corrupted data
             orderDetails = {};
           }
-        } catch (e) {
-          console.error(`Failed to parse sessionKeyData for order ${order.id}:`, e);
-          console.error(`Raw sessionKeyData:`, order.sessionKeyData);
-          // Handle legacy format or corrupted data
-          orderDetails = {};
-        }
 
-        return {
-          id: order.id,
-          userAddress: order.userAddress,
-          smartWalletAddress: orderDetails.smartWalletAddress || 'Unknown',
-          totalAmount: order.totalAmount.toString(),
-          amountPerExecution: (
-            order.totalAmount / BigInt(order.totalExecutions)
-          ).toString(),
-          totalExecutions: order.totalExecutions,
-          executionsCompleted: executions.length,
-          executionsRemaining,
-          intervalSeconds,
-          nextExecutionAt,
-          expiresAt: order.expiresAt,
-          createdAt: order.createdAt,
-          status:
-            executionsRemaining > 0 && order.status === 'active'
-              ? 'active'
-              : order.status,
-          agentKeyId: orderDetails.agentKeyId,
-          lastExecutionHash:
-            executions.length > 0
-              ? executions[executions.length - 1].txHash
-              : null,
-          totalSpxReceived: executions
-            .reduce((sum, e) => sum + BigInt(e.amountOut || 0), 0n)
-            .toString(),
-        };
+          return {
+            id: order.id,
+            userAddress: order.userAddress,
+            smartWalletAddress: orderDetails.smartWalletAddress || 'Unknown',
+            totalAmount: order.totalAmount.toString(),
+            amountPerExecution: (
+              order.totalAmount / BigInt(order.totalExecutions)
+            ).toString(),
+            totalExecutions: order.totalExecutions,
+            executionsCompleted: order.executionsCount,
+            executionsRemaining,
+            intervalSeconds,
+            nextExecutionAt,
+            expiresAt: order.expiresAt,
+            createdAt: order.createdAt,
+            status:
+              executionsRemaining > 0 && order.status === 'active'
+                ? 'active'
+                : order.status,
+            agentKeyId: orderDetails.agentKeyId,
+            lastExecutionHash:
+              executions.length > 0
+                ? executions[executions.length - 1].txHash
+                : null,
+            totalSpxReceived: executions
+              .reduce((sum, e) => sum + BigInt(e.amountOut || 0), 0n)
+              .toString(),
+          };
         } catch (orderError) {
           console.error(`Error processing order ${order.id}:`, orderError);
           // Return a safe fallback order object
@@ -142,7 +155,9 @@ export async function GET(request: NextRequest) {
             userAddress: order.userAddress,
             smartWalletAddress: 'Unknown',
             totalAmount: order.totalAmount.toString(),
-            amountPerExecution: (order.totalAmount / BigInt(order.totalExecutions)).toString(),
+            amountPerExecution: (
+              order.totalAmount / BigInt(order.totalExecutions)
+            ).toString(),
             totalExecutions: order.totalExecutions,
             executionsCompleted: 0,
             executionsRemaining: order.totalExecutions,
@@ -185,7 +200,7 @@ export async function GET(request: NextRequest) {
     } catch (jsonError) {
       console.error('JSON serialization error:', jsonError);
       console.error('Response object:', response);
-      
+
       // Return a safe fallback response
       return NextResponse.json({
         success: false,

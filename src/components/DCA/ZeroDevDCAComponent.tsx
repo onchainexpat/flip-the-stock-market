@@ -1,5 +1,6 @@
 'use client';
 
+import { useWallets } from '@privy-io/react-auth';
 import {
   ArrowRight,
   Calendar,
@@ -15,6 +16,7 @@ import { toast } from 'react-hot-toast';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
 import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
+import { clientSessionKeyService } from '../../services/clientSessionKeyService';
 import { zerodevSmartWalletService } from '../../services/zerodevSmartWalletService';
 import { TOKENS } from '../../utils/openOceanApi';
 import DCAOrderHistory from './DCAOrderHistory';
@@ -38,6 +40,7 @@ export default function ZeroDevDCAComponent({
 }: ZeroDevDCAComponentProps) {
   const { address: userWalletAddress, isConnected } = useAccount();
   const { address: unifiedSmartWalletAddress } = useUnifiedSmartWallet();
+  const { wallets } = useWallets();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -55,39 +58,50 @@ export default function ZeroDevDCAComponent({
   const [spxBalance, setSPXBalance] = useState<bigint>(0n);
 
   // Direct balance reading from blockchain using unified smart wallet
-  const { data: directBalances, refetch: refetchDirectBalances } = useReadContracts({
-    contracts: [
-      {
-        address: TOKENS.USDC,
-        abi: erc20Abi,
-        functionName: 'balanceOf',
-        args: [unifiedSmartWalletAddress as `0x${string}`],
-        chainId: 8453,
+  const { data: directBalances, refetch: refetchDirectBalances } =
+    useReadContracts({
+      contracts: [
+        {
+          address: TOKENS.USDC,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [unifiedSmartWalletAddress as `0x${string}`],
+          chainId: 8453,
+        },
+        {
+          address: TOKENS.SPX6900,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [unifiedSmartWalletAddress as `0x${string}`],
+          chainId: 8453,
+        },
+      ],
+      query: {
+        enabled: !!unifiedSmartWalletAddress,
+        refetchInterval: 10000, // Refresh every 10s
       },
-      {
-        address: TOKENS.SPX6900,
-        abi: erc20Abi,
-        functionName: 'balanceOf',
-        args: [unifiedSmartWalletAddress as `0x${string}`],
-        chainId: 8453,
-      },
-    ],
-    query: {
-      enabled: !!unifiedSmartWalletAddress,
-      refetchInterval: 10000, // Refresh every 10s
-    },
-  });
+    });
 
   // Update balances when direct reads complete
   useEffect(() => {
     if (directBalances && unifiedSmartWalletAddress) {
       const [usdcResult, spxResult] = directBalances;
       if (usdcResult.status === 'success' && usdcResult.result !== undefined) {
-        console.log('Direct USDC balance for', unifiedSmartWalletAddress, ':', Number(usdcResult.result) / 1e6);
+        console.log(
+          'Direct USDC balance for',
+          unifiedSmartWalletAddress,
+          ':',
+          Number(usdcResult.result) / 1e6,
+        );
         setUSDCBalance(usdcResult.result as bigint);
       }
       if (spxResult.status === 'success' && spxResult.result !== undefined) {
-        console.log('Direct SPX balance for', unifiedSmartWalletAddress, ':', Number(spxResult.result) / 1e8);
+        console.log(
+          'Direct SPX balance for',
+          unifiedSmartWalletAddress,
+          ':',
+          Number(spxResult.result) / 1e8,
+        );
         setSPXBalance(spxResult.result as bigint);
       }
     }
@@ -163,7 +177,9 @@ export default function ZeroDevDCAComponent({
     }
 
     if (!unifiedSmartWalletAddress) {
-      toast.error('Smart wallet not available. Please ensure you have a smart wallet connected.');
+      toast.error(
+        'Smart wallet not available. Please ensure you have a smart wallet connected.',
+      );
       return;
     }
 
@@ -179,11 +195,39 @@ export default function ZeroDevDCAComponent({
       setCurrentStep('setup');
       updateStepStatus('setup', 'completed');
 
-      // Step 2: Server will handle agent key creation
+      // Step 2: Create session key for automation
       setCurrentStep('session');
       updateStepStatus('session', 'in_progress');
 
-      // Step 3: Create DCA order (server handles all agent key creation)
+      console.log('🔑 Creating session key for automated DCA execution...');
+      
+      // Get user's wallet provider from Privy
+      const activeWallet = wallets.find(w => w.walletClientType === 'privy') || wallets[0];
+      if (!activeWallet) {
+        throw new Error('No wallet connected');
+      }
+
+      const userProvider = await activeWallet.getEthereumProvider();
+      if (!userProvider) {
+        throw new Error('Unable to get wallet provider');
+      }
+
+      // Create session key using the fixed client session key service
+      console.log('🔑 Creating session key for automated DCA execution...');
+      
+      // Convert amount to USDC units (6 decimals)
+      const amountInUSDCUnits = BigInt(Math.floor(Number(formData.amount) * 1e6));
+      
+      const sessionKeyData = await clientSessionKeyService.createSessionKey(
+        userProvider,
+        amountInUSDCUnits,
+        Math.ceil(Number.parseInt(formData.duration) / 24) || 1, // Convert executions to approximate days
+      );
+
+      console.log('✅ Session key created:', sessionKeyData.sessionAddress);
+      updateStepStatus('session', 'completed');
+
+      // Step 3: Create DCA order with session key approval
       setCurrentStep('order');
       updateStepStatus('order', 'in_progress');
 
@@ -196,6 +240,7 @@ export default function ZeroDevDCAComponent({
           totalAmount: formData.amount,
           frequency: formData.frequency,
           duration: Number.parseInt(formData.duration) || 1,
+          sessionKeyApproval: sessionKeyData.serializedSessionKey,
         }),
       });
 
@@ -228,10 +273,21 @@ export default function ZeroDevDCAComponent({
           executeResult.result.txHash,
         );
 
-        toast.success(
-          `🎉 DCA order created! First execution completed: ${(Number(formData.amount) / (Number.parseInt(formData.duration) || 1) / 1e6).toFixed(6)} USDC → SPX`,
-          { duration: 8000 },
-        );
+        // Show SPX amount received if available
+        const spxReceived = executeResult.result?.spxReceived;
+        if (spxReceived && spxReceived !== '0') {
+          const spxAmount = (Number(spxReceived) / 1e8).toFixed(8);
+          const usdcAmount = (Number(formData.amount) / (Number.parseInt(formData.duration) || 1)).toFixed(6);
+          toast.success(
+            `🎉 DCA order created! First execution: ${usdcAmount} USDC → ${spxAmount} SPX`,
+            { duration: 8000 },
+          );
+        } else {
+          toast.success(
+            `🎉 DCA order created! First execution completed: ${(Number(formData.amount) / (Number.parseInt(formData.duration) || 1) / 1e6).toFixed(6)} USDC → SPX`,
+            { duration: 8000 },
+          );
+        }
 
         // Show order details
         toast.success(
@@ -373,25 +429,34 @@ export default function ZeroDevDCAComponent({
             <div className="mt-2">
               <p className="text-red-400 text-sm">
                 Insufficient balance. You need {formData.amount} USDC but only
-                have {usdcBalanceFormatted.toFixed(6)} USDC in your smart wallet.
+                have {usdcBalanceFormatted.toFixed(6)} USDC in your smart
+                wallet.
               </p>
               {unifiedSmartWalletAddress && (
                 <div className="mt-2 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
                   <p className="text-yellow-400 text-sm mb-2">
-                    💡 Deposit {Math.max(0, Number(formData.amount) - usdcBalanceFormatted).toFixed(6)} USDC to continue
+                    💡 Deposit{' '}
+                    {Math.max(
+                      0,
+                      Number(formData.amount) - usdcBalanceFormatted,
+                    ).toFixed(6)}{' '}
+                    USDC to continue
                   </p>
                   <button
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(unifiedSmartWalletAddress);
-                      toast.success('Smart wallet address copied to clipboard!');
+                      toast.success(
+                        'Smart wallet address copied to clipboard!',
+                      );
                     }}
                     className="text-xs bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
                   >
                     Copy Smart Wallet Address
                   </button>
                   <p className="text-xs text-gray-400 mt-2">
-                    Smart Wallet: {unifiedSmartWalletAddress.slice(0, 6)}...{unifiedSmartWalletAddress.slice(-4)}
+                    Smart Wallet: {unifiedSmartWalletAddress.slice(0, 6)}...
+                    {unifiedSmartWalletAddress.slice(-4)}
                   </p>
                 </div>
               )}
@@ -443,7 +508,6 @@ export default function ZeroDevDCAComponent({
             />
           </div>
         </div>
-
       </div>
 
       {/* Progress Steps */}
@@ -535,7 +599,11 @@ export default function ZeroDevDCAComponent({
           <div>Total Amount: {formData.amount} USDC</div>
           <div>
             Per Execution:{' '}
-            {(Number(formData.amount) / (Number.parseInt(formData.duration) || 1)).toFixed(6)} USDC
+            {(
+              Number(formData.amount) /
+              (Number.parseInt(formData.duration) || 1)
+            ).toFixed(6)}{' '}
+            USDC
           </div>
           <div>Frequency: {formData.frequency}</div>
           <div>Total Executions: {Number.parseInt(formData.duration) || 1}</div>

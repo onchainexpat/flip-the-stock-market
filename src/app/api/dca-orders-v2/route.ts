@@ -132,15 +132,12 @@ export async function POST(request: NextRequest) {
         );
         console.log('✅ Agent key created with session approval only');
       } else {
-        // Fallback: generate new key (for backward compatibility)
-        console.log('🔑 Generating fallback agent key...');
-        agentKey = await serverAgentKeyService.generateAgentKey(
-          userAddress as Address,
+        // Session key approval is required for automated execution
+        console.error('❌ No session key approval provided');
+        console.log('💡 DCA orders require session key approval for automated execution');
+        throw new Error(
+          'Session key approval required. Please ensure your smart wallet is properly configured with session key permissions.',
         );
-        await serverAgentKeyService.updateAgentKey(agentKey.keyId, {
-          smartWalletAddress: smartWalletAddress as Address,
-        });
-        console.log('✅ Fallback agent key created');
       }
     } catch (error) {
       console.error('❌ Failed to handle agent key:', error);

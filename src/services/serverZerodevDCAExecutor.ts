@@ -17,8 +17,8 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { TOKENS } from '../utils/openOceanApi';
-import { serverAgentKeyService } from './serverAgentKeyService';
 import { aggregatorExecutionService } from './aggregatorExecutionService';
+import { serverAgentKeyService } from './serverAgentKeyService';
 
 // ZeroDev configuration
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
@@ -42,6 +42,9 @@ export interface ServerDCAExecutionResult {
     swap?: string;
     transfer?: string;
   };
+  transferSuccess?: boolean;
+  transferError?: string;
+  note?: string;
 }
 
 export interface SwapQuoteResult {
@@ -66,61 +69,6 @@ export class ServerZerodevDCAExecutor {
     });
   }
 
-  /**
-   * Execute DCA without session key approval (fallback method)
-   */
-  private async executeDirectDCA(
-    agentKeyData: any,
-    smartWalletAddress: Address,
-    userWalletAddress: Address,
-    swapAmount: bigint,
-  ): Promise<ServerDCAExecutionResult> {
-    console.log('🔄 Executing direct DCA without session key approval...');
-    console.log('💡 Using alternative execution method...');
-    
-    try {
-      // Get the agent private key
-      const privateKey = await serverAgentKeyService.getPrivateKey(agentKeyData.keyId);
-      if (!privateKey) {
-        throw new Error('Agent private key not found');
-      }
-
-      // Create agent account
-      const agentAccount = privateKeyToAccount(privateKey);
-      console.log('🤖 Agent account created:', agentAccount.address);
-
-      // Check if agent has any ETH for gas
-      const agentBalance = await this.publicClient.getBalance({
-        address: agentAccount.address,
-      });
-      
-      console.log('⚡ Agent ETH balance:', Number(agentBalance) / 1e18, 'ETH');
-
-      if (agentBalance === 0n) {
-        return {
-          success: false,
-          error: 'Agent account has no ETH for gas fees. Direct execution requires gas sponsorship or funded agent.',
-        };
-      }
-
-      // For now, return a success message indicating the setup is working
-      // The actual swap execution would require more complex setup
-      return {
-        success: false,
-        error: 'Direct execution setup validated. Full implementation requires gas sponsorship setup.',
-        swapAmount: swapAmount.toString(),
-        spxReceived: '0',
-        gasUsed: 0n,
-        transactions: {},
-      };
-    } catch (error) {
-      console.error('❌ Direct DCA execution failed:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Direct execution failed',
-      };
-    }
-  }
 
   /**
    * Execute DCA swap using server-stored agent key
@@ -168,11 +116,14 @@ export class ServerZerodevDCAExecutor {
       }
 
       if (!agentKeyData.sessionKeyApproval) {
-        console.warn('⚠️  sessionKeyApproval is missing from agent key data');
-        console.log('🔄 Attempting direct execution without session key approval...');
+        console.error('❌ sessionKeyApproval is missing from agent key data');
+        console.log('💡 Agent keys can only execute transactions with valid session key approval');
+        console.log('💡 The user needs to regenerate their agent key with proper session key setup');
         
-        // For fallback agent keys, we'll use direct execution without session key approval
-        return this.executeDirectDCA(agentKeyData, smartWalletAddress, userWalletAddress, swapAmount);
+        return {
+          success: false,
+          error: 'Session key approval required. Please regenerate your agent key from the DCA dashboard.',
+        };
       }
 
       console.log('✅ Agent key data retrieved with sessionKeyApproval');
@@ -304,6 +255,9 @@ export class ServerZerodevDCAExecutor {
 
       console.log('📊 Expected SPX output:', swapQuote.expectedOutput);
 
+      // Initialize transactions object to track all transaction hashes
+      const transactions: any = {};
+
       // Create paymaster for gas sponsorship (using working pattern)
       console.log('💰 Setting up gas sponsorship...');
       const paymasterClient = createZeroDevPaymasterClient({
@@ -354,8 +308,7 @@ export class ServerZerodevDCAExecutor {
         args: [routerAddress, swapAmount],
       });
 
-      // Declare transactions outside try block so it's accessible in catch
-      const transactions: any = {};
+      // transactions object already declared above
 
       // Test: Try a simple operation first to check permissions
       console.log('🧪 Testing session key with simple operation...');
@@ -383,9 +336,13 @@ export class ServerZerodevDCAExecutor {
           kernelClient.waitForUserOperationReceipt({
             hash: testUserOpHash,
           }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Test operation timeout after 30 seconds')), 30000)
-          )
+          new Promise((_, reject) =>
+            setTimeout(
+              () =>
+                reject(new Error('Test operation timeout after 60 seconds')),
+              60000,
+            ),
+          ),
         ]);
 
         console.log('✅ Test tx mined:', testReceipt.receipt.transactionHash);
@@ -405,14 +362,17 @@ export class ServerZerodevDCAExecutor {
 
         console.log('✅ Approval UserOp hash:', approveUserOpHash);
 
-        // Wait for approval to be mined (with timeout)
+        // Wait for approval to be mined (with enhanced timeout)
+        console.log('⏳ Waiting for approval to be mined...');
         const approveReceipt = await Promise.race([
           kernelClient.waitForUserOperationReceipt({
             hash: approveUserOpHash,
           }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Approval timeout after 30 seconds')), 30000)
-          )
+          new Promise((_, reject) =>
+            setTimeout(() => {
+              reject(new Error(`Approval timeout after 60 seconds. UserOp hash: ${approveUserOpHash}. Check transaction status on Base network.`));
+            }, 60000), // Increased from 30s to 60s
+          ),
         ]);
 
         transactions.approve = approveReceipt.receipt.transactionHash;
@@ -436,16 +396,44 @@ export class ServerZerodevDCAExecutor {
 
       console.log('✅ Swap UserOp hash:', swapUserOpHash);
 
-      // Wait for swap to be mined (with timeout)
+      // Wait for swap to be mined (with enhanced timeout and progress logging)
       console.log('⏳ Waiting for swap to be mined...');
+      console.log(`🔍 UserOp Hash: ${swapUserOpHash}`);
+      
+      let progressInterval: NodeJS.Timeout;
+      let timeoutCount = 0;
+      
       const swapReceipt = await Promise.race([
         kernelClient.waitForUserOperationReceipt({
           hash: swapUserOpHash,
         }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Swap timeout after 120 seconds')), 120000)
-        )
+        new Promise((_, reject) => {
+          // Progress logging every 15 seconds
+          progressInterval = setInterval(() => {
+            timeoutCount += 15;
+            console.log(`⏳ Still waiting for swap... (${timeoutCount}s elapsed)`);
+            console.log(`🔍 UserOp: ${swapUserOpHash}`);
+            
+            if (timeoutCount >= 90) {
+              console.warn('⚠️  Transaction taking longer than expected. This may indicate:');
+              console.warn('   - Network congestion');
+              console.warn('   - Insufficient gas');
+              console.warn('   - Failed transaction simulation');
+            }
+          }, 15000);
+          
+          // Main timeout after 120 seconds
+          setTimeout(() => {
+            clearInterval(progressInterval);
+            reject(new Error(`Swap timeout after 120 seconds. UserOp hash: ${swapUserOpHash}. Check transaction status on Base network.`));
+          }, 120000);
+        }),
       ]);
+      
+      // Clean up interval if transaction succeeds
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
 
       transactions.swap = swapReceipt.receipt.transactionHash;
       console.log('✅ Swap tx mined:', transactions.swap);
@@ -490,9 +478,12 @@ export class ServerZerodevDCAExecutor {
           kernelClient.waitForUserOperationReceipt({
             hash: transferUserOpHash,
           }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transfer timeout after 60 seconds')), 60000)
-          )
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Transfer timeout after 60 seconds')),
+              60000,
+            ),
+          ),
         ]);
 
         transactions.transfer = transferReceipt.receipt.transactionHash;
@@ -502,9 +493,14 @@ export class ServerZerodevDCAExecutor {
         // Wait for transfer
         await new Promise((resolve) => setTimeout(resolve, 10000));
       } catch (transferErr) {
-        transferError = transferErr instanceof Error ? transferErr.message : 'Transfer failed';
+        transferError =
+          transferErr instanceof Error
+            ? transferErr.message
+            : 'Transfer failed';
         console.warn('⚠️ Transfer failed but swap succeeded:', transferError);
-        console.log('💰 SPX tokens remain in smart wallet and can be swept later');
+        console.log(
+          '💰 SPX tokens remain in smart wallet and can be swept later',
+        );
       }
 
       return {
@@ -516,15 +512,19 @@ export class ServerZerodevDCAExecutor {
         transactions,
         transferSuccess,
         transferError: transferSuccess ? undefined : transferError,
-        note: transferSuccess ? undefined : 'SPX tokens in smart wallet - transfer failed',
+        note: transferSuccess
+          ? undefined
+          : 'SPX tokens in smart wallet - transfer failed',
       };
     } catch (error) {
       console.error('❌ DCA execution failed:', error);
-      
+
       // Check if we at least got to the swap stage
       if (transactions.swap) {
-        console.log('🔄 Swap succeeded but later step failed - marking as partial success');
-        
+        console.log(
+          '🔄 Swap succeeded but later step failed - marking as partial success',
+        );
+
         // Try to get SPX balance to see if swap worked
         try {
           const spxBalance = await this.getSPXBalance(smartWallet.address);
@@ -537,7 +537,8 @@ export class ServerZerodevDCAExecutor {
               gasUsed: BigInt(0),
               transactions,
               transferSuccess: false,
-              transferError: error instanceof Error ? error.message : 'Transfer failed',
+              transferError:
+                error instanceof Error ? error.message : 'Transfer failed',
               note: 'Swap succeeded, transfer failed - SPX tokens in smart wallet',
             };
           }
@@ -585,6 +586,54 @@ export class ServerZerodevDCAExecutor {
       return balance;
     } catch (error) {
       throw new Error(`Failed to get SPX balance: ${error}`);
+    }
+  }
+
+  /**
+   * Check UserOperation status on the blockchain
+   */
+  private async checkUserOpStatus(userOpHash: string): Promise<{
+    found: boolean;
+    mined: boolean;
+    txHash?: string;
+    error?: string;
+  }> {
+    try {
+      console.log(`🔍 Checking UserOp status: ${userOpHash}`);
+      
+      // Try to get the receipt using the kernel client
+      const kernelClient = createKernelAccountClient({
+        account: {} as any, // Minimal account for status checking
+        chain: base,
+        bundlerTransport: http(ZERODEV_RPC_URL),
+      });
+
+      try {
+        const receipt = await kernelClient.waitForUserOperationReceipt({
+          hash: userOpHash as `0x${string}`,
+          timeout: 1000, // Very short timeout, just checking if it exists
+        });
+        
+        return {
+          found: true,
+          mined: true,
+          txHash: receipt.receipt.transactionHash,
+        };
+      } catch (error) {
+        // UserOp might be pending or not found
+        return {
+          found: false,
+          mined: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    } catch (error) {
+      console.error('❌ Failed to check UserOp status:', error);
+      return {
+        found: false,
+        mined: false,
+        error: error instanceof Error ? error.message : 'Status check failed',
+      };
     }
   }
 
