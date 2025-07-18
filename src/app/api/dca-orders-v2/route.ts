@@ -41,16 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate that we have either a pre-created agent key or session key approval
-    if (!agentKeyId && !sessionKeyApproval) {
-      return NextResponse.json(
-        {
-          error:
-            'Either agentKeyId (for gasless) or sessionKeyApproval (legacy) is required for automated DCA orders',
-        },
-        { status: 400 },
-      );
-    }
+    // Note: agentKeyId and sessionKeyApproval are optional - fallback will generate new key if needed
 
     const totalAmountWei = BigInt(
       Math.floor(Number.parseFloat(totalAmount) * 1e6),
