@@ -27,8 +27,8 @@ export default function ZeroDevDCAPage() {
             Simplified ZeroDev DCA
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Test the simplified ZeroDev DCA system based on working examples with KERNEL_V3_1,
-            simple sudo policy, and built-in paymaster
+            Test the simplified ZeroDev DCA system based on working examples
+            with KERNEL_V3_1, simple sudo policy, and built-in paymaster
           </p>
         </div>
 
@@ -43,12 +43,14 @@ export default function ZeroDevDCAPage() {
             },
             {
               title: 'Built-in Paymaster',
-              description: 'ZeroDev\'s proven paymaster approach for gas sponsorship',
+              description:
+                "ZeroDev's proven paymaster approach for gas sponsorship",
               icon: '⚡',
             },
             {
               title: 'Simple Sudo Policy',
-              description: 'toSudoPolicy({}) - simple and reliable like examples',
+              description:
+                'toSudoPolicy({}) - simple and reliable like examples',
               icon: '🔗',
             },
             {
@@ -111,10 +113,15 @@ export default function ZeroDevDCAPage() {
             </h4>
             <ul className="space-y-1 text-blue-200 text-sm">
               <li>
-                • Smart wallet deployed using KERNEL_V3_1 (like working examples)
+                • Smart wallet deployed using KERNEL_V3_1 (like working
+                examples)
               </li>
-              <li>• Session key created with simple sudo policy (toSudoPolicy({}))</li>
-              <li>• All transactions sponsored by ZeroDev's built-in paymaster</li>
+              <li>
+                • Session key created with simple sudo policy (toSudoPolicy({}))
+              </li>
+              <li>
+                • All transactions sponsored by ZeroDev's built-in paymaster
+              </li>
               <li>
                 • Follows the exact patterns from 1-click-trading.ts example
               </li>
@@ -127,9 +134,10 @@ export default function ZeroDevDCAPage() {
               ⚠️ Test Environment
             </h4>
             <p className="text-yellow-200 text-sm">
-              This is the simplified ZeroDev DCA implementation based on working examples.
-              Use small amounts (0.01-0.1 USDC) for testing. The system uses KERNEL_V3_1
-              consistently, simple sudo policy, and ZeroDev's built-in paymaster for reliable operation.
+              This is the simplified ZeroDev DCA implementation based on working
+              examples. Use small amounts (0.01-0.1 USDC) for testing. The
+              system uses KERNEL_V3_1 consistently, simple sudo policy, and
+              ZeroDev's built-in paymaster for reliable operation.
             </p>
           </div>
         </div>

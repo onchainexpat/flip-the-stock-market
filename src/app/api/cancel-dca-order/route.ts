@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (!orderId || !userAddress) {
       return NextResponse.json(
         { success: false, error: 'Order ID and user address are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,24 +24,35 @@ export async function POST(request: NextRequest) {
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Verify the order belongs to the user
     if (order.userAddress.toLowerCase() !== userAddress.toLowerCase()) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Order does not belong to user' },
-        { status: 403 }
+        {
+          success: false,
+          error: 'Unauthorized: Order does not belong to user',
+        },
+        { status: 403 },
       );
     }
 
     // Check if order is already completed
     const executionsRemaining = order.totalExecutions - order.executionsCount;
-    if (executionsRemaining <= 0 || order.status === 'completed' || order.status === 'cancelled') {
+    if (
+      executionsRemaining <= 0 ||
+      order.status === 'completed' ||
+      order.status === 'cancelled'
+    ) {
       return NextResponse.json(
-        { success: false, error: 'Order is already completed or cancelled and cannot be canceled' },
-        { status: 400 }
+        {
+          success: false,
+          error:
+            'Order is already completed or cancelled and cannot be canceled',
+        },
+        { status: 400 },
       );
     }
 
@@ -52,7 +63,7 @@ export async function POST(request: NextRequest) {
     } catch (e) {
       return NextResponse.json(
         { success: false, error: 'Invalid order data format' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,8 +72,11 @@ export async function POST(request: NextRequest) {
 
     if (!agentKeyId || !smartWalletAddress) {
       return NextResponse.json(
-        { success: false, error: 'Missing agent key or smart wallet information' },
-        { status: 400 }
+        {
+          success: false,
+          error: 'Missing agent key or smart wallet information',
+        },
+        { status: 400 },
       );
     }
 
@@ -71,13 +85,13 @@ export async function POST(request: NextRequest) {
     // Sweep funds if requested
     if (sweepFunds) {
       console.log('💰 Sweeping funds from smart wallet to user wallet...');
-      
+
       try {
         // Use the DCA executor to sweep funds
         sweepResult = await serverZerodevDCAExecutor.sweepFundsToUser(
           agentKeyId,
           smartWalletAddress,
-          userAddress
+          userAddress,
         );
 
         if (!sweepResult.success) {
@@ -116,7 +130,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

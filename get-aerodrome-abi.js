@@ -16,7 +16,7 @@ const functions = [
 
 console.log('Searching for function with selector 0x24856bc3...\n');
 
-functions.forEach(func => {
+functions.forEach((func) => {
   const hash = keccak256(toBytes(func));
   const selector = hash.slice(0, 10);
   console.log(`${selector}: ${func}`);
@@ -31,7 +31,8 @@ console.log('Selector: 0x24856bc3');
 console.log('This might be a custom Aerodrome function or multicall');
 
 // The transaction data shows this is likely swapExactTokensForTokensSimple
-const testFunc = 'swapExactTokensForTokensSimple(uint256,uint256,address,address,bool,address,uint256)';
+const testFunc =
+  'swapExactTokensForTokensSimple(uint256,uint256,address,address,bool,address,uint256)';
 const testHash = keccak256(toBytes(testFunc));
 console.log(`\nTesting: ${testFunc}`);
 console.log(`Selector: ${testHash.slice(0, 10)}`);
@@ -49,7 +50,8 @@ console.log(`\nTesting: ${batchFunc}`);
 console.log(`Selector: ${batchHash.slice(0, 10)}`);
 
 // Maybe it's Router02 style
-const router02Func = 'swapExactTokensForTokens(uint256,uint256,address[],address,uint256)';
+const router02Func =
+  'swapExactTokensForTokens(uint256,uint256,address[],address,uint256)';
 const router02Hash = keccak256(toBytes(router02Func));
 console.log(`\nRouter02 style: ${router02Func}`);
 console.log(`Selector: ${router02Hash.slice(0, 10)}`);

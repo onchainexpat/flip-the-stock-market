@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  http,
-  type Address,
-  createPublicClient,
-} from 'viem';
+import { http, type Address, createPublicClient } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { serverDcaDatabase } from '../../../lib/serverDcaDatabase';

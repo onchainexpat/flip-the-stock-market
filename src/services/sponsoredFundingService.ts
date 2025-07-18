@@ -1,4 +1,11 @@
-import { createPublicClient, createWalletClient, http, type Address, type Hex, encodeFunctionData, erc20Abi } from 'viem';
+import {
+  http,
+  type Address,
+  type Hex,
+  createPublicClient,
+  createWalletClient,
+  erc20Abi,
+} from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { TOKENS } from '../utils/openOceanApi';
@@ -31,7 +38,7 @@ export class SponsoredFundingService {
   static async fundAutomationWallet(
     automationWalletAddress: Address,
     requiredAmount: bigint,
-    userAddress: Address
+    userAddress: Address,
   ): Promise<{ success: boolean; txHash?: string; error?: string }> {
     try {
       if (!this.sponsorWallet) {
@@ -39,7 +46,7 @@ export class SponsoredFundingService {
         if (!initialized) {
           return {
             success: false,
-            error: 'Sponsor wallet not configured. Manual funding required.'
+            error: 'Sponsor wallet not configured. Manual funding required.',
           };
         }
       }
@@ -47,7 +54,11 @@ export class SponsoredFundingService {
       console.log('💰 Sponsoring automation wallet funding...');
       console.log('   Sponsor wallet:', this.sponsorWallet.address);
       console.log('   Automation wallet:', automationWalletAddress);
-      console.log('   Amount:', (Number(requiredAmount) / 1e6).toFixed(6), 'USDC');
+      console.log(
+        '   Amount:',
+        (Number(requiredAmount) / 1e6).toFixed(6),
+        'USDC',
+      );
       console.log('   For user:', userAddress);
 
       const publicClient = createPublicClient({
@@ -56,19 +67,23 @@ export class SponsoredFundingService {
       });
 
       // Check sponsor wallet USDC balance
-      const sponsorBalance = await publicClient.readContract({
+      const sponsorBalance = (await publicClient.readContract({
         address: TOKENS.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [this.sponsorWallet.address],
-      }) as bigint;
+      })) as bigint;
 
-      console.log('💰 Sponsor USDC balance:', (Number(sponsorBalance) / 1e6).toFixed(6), 'USDC');
+      console.log(
+        '💰 Sponsor USDC balance:',
+        (Number(sponsorBalance) / 1e6).toFixed(6),
+        'USDC',
+      );
 
       if (sponsorBalance < requiredAmount) {
         return {
           success: false,
-          error: `Sponsor wallet has insufficient USDC. Has ${(Number(sponsorBalance) / 1e6).toFixed(6)}, needs ${(Number(requiredAmount) / 1e6).toFixed(6)}`
+          error: `Sponsor wallet has insufficient USDC. Has ${(Number(sponsorBalance) / 1e6).toFixed(6)}, needs ${(Number(requiredAmount) / 1e6).toFixed(6)}`,
         };
       }
 
@@ -111,7 +126,6 @@ export class SponsoredFundingService {
           error: 'Transfer transaction failed',
         };
       }
-
     } catch (error) {
       console.error('❌ Sponsored funding failed:', error);
       return {
@@ -140,19 +154,18 @@ export class SponsoredFundingService {
         transport: http(),
       });
 
-      const balance = await publicClient.readContract({
+      const balance = (await publicClient.readContract({
         address: TOKENS.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [this.sponsorWallet.address],
-      }) as bigint;
+      })) as bigint;
 
       return {
         available: balance > 0n,
         sponsorAddress: this.sponsorWallet.address,
         sponsorBalance: (Number(balance) / 1e6).toFixed(6),
       };
-
     } catch (error) {
       console.error('❌ Failed to check sponsor availability:', error);
       return { available: false };
@@ -166,7 +179,7 @@ export class SponsoredFundingService {
     // Fund with at least 10x the requested amount for multiple executions
     const minimumBuffer = requestedAmount * 10n;
     const absoluteMinimum = BigInt(10 * 1e6); // 10 USDC minimum
-    
+
     return minimumBuffer > absoluteMinimum ? minimumBuffer : absoluteMinimum;
   }
 }

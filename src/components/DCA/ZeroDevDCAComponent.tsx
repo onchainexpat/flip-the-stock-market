@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
+import { useUnifiedSmartWallet } from '../../hooks/useUnifiedSmartWallet';
 import { zerodevSmartWalletService } from '../../services/zerodevSmartWalletService';
 import { TOKENS } from '../../utils/openOceanApi';
 import DCAOrderHistory from './DCAOrderHistory';
@@ -36,6 +37,7 @@ export default function ZeroDevDCAComponent({
   onOrderCreated,
 }: ZeroDevDCAComponentProps) {
   const { address: userWalletAddress, isConnected } = useAccount();
+  const { address: unifiedSmartWalletAddress } = useUnifiedSmartWallet();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -53,44 +55,44 @@ export default function ZeroDevDCAComponent({
   const [usdcBalance, setUSDCBalance] = useState<bigint>(0n);
   const [spxBalance, setSPXBalance] = useState<bigint>(0n);
 
-  // Direct balance reading from blockchain
+  // Direct balance reading from blockchain using unified smart wallet
   const { data: directBalances, refetch: refetchDirectBalances } = useReadContracts({
     contracts: [
       {
         address: TOKENS.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
-        args: [smartWalletAddress as `0x${string}`],
+        args: [unifiedSmartWalletAddress as `0x${string}`],
         chainId: 8453,
       },
       {
         address: TOKENS.SPX6900,
         abi: erc20Abi,
         functionName: 'balanceOf',
-        args: [smartWalletAddress as `0x${string}`],
+        args: [unifiedSmartWalletAddress as `0x${string}`],
         chainId: 8453,
       },
     ],
     query: {
-      enabled: !!smartWalletAddress,
+      enabled: !!unifiedSmartWalletAddress,
       refetchInterval: 10000, // Refresh every 10s
     },
   });
 
   // Update balances when direct reads complete
   useEffect(() => {
-    if (directBalances && smartWalletAddress) {
+    if (directBalances && unifiedSmartWalletAddress) {
       const [usdcResult, spxResult] = directBalances;
       if (usdcResult.status === 'success' && usdcResult.result !== undefined) {
-        console.log('Direct USDC balance for', smartWalletAddress, ':', Number(usdcResult.result) / 1e6);
+        console.log('Direct USDC balance for', unifiedSmartWalletAddress, ':', Number(usdcResult.result) / 1e6);
         setUSDCBalance(usdcResult.result as bigint);
       }
       if (spxResult.status === 'success' && spxResult.result !== undefined) {
-        console.log('Direct SPX balance for', smartWalletAddress, ':', Number(spxResult.result) / 1e8);
+        console.log('Direct SPX balance for', unifiedSmartWalletAddress, ':', Number(spxResult.result) / 1e8);
         setSPXBalance(spxResult.result as bigint);
       }
     }
-  }, [directBalances, smartWalletAddress]);
+  }, [directBalances, unifiedSmartWalletAddress]);
 
   // Process state
   const [isExecuting, setIsExecuting] = useState(false);
@@ -233,12 +235,15 @@ export default function ZeroDevDCAComponent({
       setCurrentStep('order');
       updateStepStatus('order', 'in_progress');
 
+      // Use unified smart wallet address for order creation
+      const smartWalletAddressForOrder = unifiedSmartWalletAddress || walletConfig.smartWalletAddress;
+
       const createOrderResponse = await fetch('/api/dca-orders-v2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userAddress: userWalletAddress,
-          smartWalletAddress: walletConfig.smartWalletAddress,
+          smartWalletAddress: smartWalletAddressForOrder,
           totalAmount: formData.amount,
           frequency: formData.frequency,
           duration: formData.duration,
@@ -364,7 +369,7 @@ export default function ZeroDevDCAComponent({
       </div>
 
       {/* Wallet Status */}
-      {smartWalletAddress && (
+      {unifiedSmartWalletAddress && (
         <div className="mb-6 p-4 bg-gray-800 rounded-lg">
           <h4 className="text-sm font-medium text-gray-300 mb-3">
             Smart Wallet
@@ -373,8 +378,8 @@ export default function ZeroDevDCAComponent({
             <div className="flex justify-between">
               <span className="text-gray-400">Address:</span>
               <span className="text-white font-mono text-xs">
-                {smartWalletAddress.slice(0, 6)}...
-                {smartWalletAddress.slice(-4)}
+                {unifiedSmartWalletAddress.slice(0, 6)}...
+                {unifiedSmartWalletAddress.slice(-4)}
               </span>
             </div>
             <div className="flex justify-between">
@@ -423,7 +428,7 @@ export default function ZeroDevDCAComponent({
                 Insufficient balance. You need {formData.amount} USDC but only
                 have {usdcBalanceFormatted.toFixed(6)} USDC in your smart wallet.
               </p>
-              {smartWalletAddress && (
+              {unifiedSmartWalletAddress && (
                 <div className="mt-2 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
                   <p className="text-yellow-400 text-sm mb-2">
                     💡 Deposit {Math.max(0, Number(formData.amount) - usdcBalanceFormatted).toFixed(6)} USDC to continue
@@ -431,7 +436,7 @@ export default function ZeroDevDCAComponent({
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(smartWalletAddress);
+                      navigator.clipboard.writeText(unifiedSmartWalletAddress);
                       toast.success('Smart wallet address copied to clipboard!');
                     }}
                     className="text-xs bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
@@ -439,7 +444,7 @@ export default function ZeroDevDCAComponent({
                     Copy Smart Wallet Address
                   </button>
                   <p className="text-xs text-gray-400 mt-2">
-                    Smart Wallet: {smartWalletAddress.slice(0, 6)}...{smartWalletAddress.slice(-4)}
+                    Smart Wallet: {unifiedSmartWalletAddress.slice(0, 6)}...{unifiedSmartWalletAddress.slice(-4)}
                   </p>
                 </div>
               )}

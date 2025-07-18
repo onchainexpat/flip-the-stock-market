@@ -1,30 +1,26 @@
 'use client';
 
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import {
+  deserializePermissionAccount,
+  serializePermissionAccount,
+  toPermissionValidator,
+} from '@zerodev/permissions';
+import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
 import {
   createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
-  addressToEmptyAccount,
-  deserializePermissionAccount,
-  serializePermissionAccount,
-  toPermissionValidator,
-} from '@zerodev/permissions';
-import {
-  toSudoPolicy,
-} from '@zerodev/permissions/policies';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import {
-  createPublicClient,
-  createWalletClient,
-  custom,
   http,
   type Address,
   type Hex,
-  encodeFunctionData,
+  createPublicClient,
+  createWalletClient,
+  custom,
   erc20Abi,
 } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
@@ -55,7 +51,11 @@ export class SimplifiedZeroDevDCAService {
    */
   static async deploySmartWallet(
     walletClient: any, // Connected wallet client from Wagmi/Privy
-  ): Promise<{ smartWalletAddress: Address; success: boolean; error?: string }> {
+  ): Promise<{
+    smartWalletAddress: Address;
+    success: boolean;
+    error?: string;
+  }> {
     try {
       console.log('🚀 Deploying ZeroDev smart wallet (KERNEL_V3_1)...');
       console.log('   Wallet client type:', typeof walletClient);
@@ -68,23 +68,36 @@ export class SimplifiedZeroDevDCAService {
 
       // Extract the provider from the wallet client
       console.log('🔍 Transport details:', walletClient.transport);
-      console.log('🔍 Transport keys:', Object.keys(walletClient.transport || {}));
+      console.log(
+        '🔍 Transport keys:',
+        Object.keys(walletClient.transport || {}),
+      );
       console.log('🔍 Transport type:', walletClient.transport?.type);
       console.log('🔍 Transport config:', walletClient.transport?.config);
-      
+
       // For Wagmi wallet clients, the provider is usually in the transport
       let provider;
       if (walletClient.transport && walletClient.transport.provider) {
         provider = walletClient.transport.provider;
       } else if (walletClient.provider) {
         provider = walletClient.provider;
-      } else if (walletClient.transport && walletClient.transport.config && walletClient.transport.config.provider) {
+      } else if (
+        walletClient.transport &&
+        walletClient.transport.config &&
+        walletClient.transport.config.provider
+      ) {
         provider = walletClient.transport.config.provider;
-      } else if (walletClient.transport && walletClient.transport.value && walletClient.transport.value.provider) {
+      } else if (
+        walletClient.transport &&
+        walletClient.transport.value &&
+        walletClient.transport.value.provider
+      ) {
         provider = walletClient.transport.value.provider;
       } else {
         // Try to use the wallet client directly as it has signing methods
-        console.log('⚠️ No provider found, trying to use wallet client directly...');
+        console.log(
+          '⚠️ No provider found, trying to use wallet client directly...',
+        );
         provider = {
           request: async (args: any) => {
             if (args.method === 'personal_sign') {
@@ -130,7 +143,7 @@ export class SimplifiedZeroDevDCAService {
       // The actual signing will be handled by the wallet client
       const tempPrivateKey = generatePrivateKey();
       const tempAccount = privateKeyToAccount(tempPrivateKey);
-      
+
       // Override the account's signing methods to use the wallet client
       const walletAccount = {
         ...tempAccount,
@@ -208,23 +221,36 @@ export class SimplifiedZeroDevDCAService {
 
       // Extract the provider from the wallet client
       console.log('🔍 Transport details:', walletClient.transport);
-      console.log('🔍 Transport keys:', Object.keys(walletClient.transport || {}));
+      console.log(
+        '🔍 Transport keys:',
+        Object.keys(walletClient.transport || {}),
+      );
       console.log('🔍 Transport type:', walletClient.transport?.type);
       console.log('🔍 Transport config:', walletClient.transport?.config);
-      
+
       // For Wagmi wallet clients, the provider is usually in the transport
       let provider;
       if (walletClient.transport && walletClient.transport.provider) {
         provider = walletClient.transport.provider;
       } else if (walletClient.provider) {
         provider = walletClient.provider;
-      } else if (walletClient.transport && walletClient.transport.config && walletClient.transport.config.provider) {
+      } else if (
+        walletClient.transport &&
+        walletClient.transport.config &&
+        walletClient.transport.config.provider
+      ) {
         provider = walletClient.transport.config.provider;
-      } else if (walletClient.transport && walletClient.transport.value && walletClient.transport.value.provider) {
+      } else if (
+        walletClient.transport &&
+        walletClient.transport.value &&
+        walletClient.transport.value.provider
+      ) {
         provider = walletClient.transport.value.provider;
       } else {
         // Try to use the wallet client directly as it has signing methods
-        console.log('⚠️ No provider found, trying to use wallet client directly...');
+        console.log(
+          '⚠️ No provider found, trying to use wallet client directly...',
+        );
         provider = {
           request: async (args: any) => {
             if (args.method === 'personal_sign') {
@@ -270,7 +296,7 @@ export class SimplifiedZeroDevDCAService {
       // The actual signing will be handled by the wallet client
       const tempPrivateKey = generatePrivateKey();
       const tempAccount = privateKeyToAccount(tempPrivateKey);
-      
+
       // Override the account's signing methods to use the wallet client
       const walletAccount = {
         ...tempAccount,
@@ -342,7 +368,10 @@ export class SimplifiedZeroDevDCAService {
         kernelVersion: KERNEL_V3_1,
       });
 
-      console.log('🔑 Session key kernel account:', sessionKeyKernelAccount.address);
+      console.log(
+        '🔑 Session key kernel account:',
+        sessionKeyKernelAccount.address,
+      );
 
       // Create paymaster (using ZeroDev's built-in approach)
       const kernelPaymaster = createZeroDevPaymasterClient({
@@ -411,7 +440,10 @@ export class SimplifiedZeroDevDCAService {
         serializedSessionKey,
       );
 
-      console.log('🔑 Deserialized session key account:', sessionKeyAccount.address);
+      console.log(
+        '🔑 Deserialized session key account:',
+        sessionKeyAccount.address,
+      );
 
       // Create paymaster
       const kernelPaymaster = createZeroDevPaymasterClient({
@@ -432,12 +464,12 @@ export class SimplifiedZeroDevDCAService {
       });
 
       // Check USDC allowance
-      const currentAllowance = await publicClient.readContract({
+      const currentAllowance = (await publicClient.readContract({
         address: TOKENS.USDC,
         abi: erc20Abi,
         functionName: 'allowance',
         args: [sessionKeyAccount.address, swapTarget],
-      }) as bigint;
+      })) as bigint;
 
       console.log('💰 Current USDC allowance:', currentAllowance.toString());
       console.log('💰 Required amount:', amountUSDC.toString());
@@ -447,9 +479,11 @@ export class SimplifiedZeroDevDCAService {
       if (currentAllowance < amountUSDC) {
         // Need approval first
         console.log('📝 Setting USDC allowance...');
-        
-        const maxUint256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-        
+
+        const maxUint256 = BigInt(
+          '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+        );
+
         const approveHash = await kernelClient.writeContract({
           address: TOKENS.USDC,
           abi: erc20Abi,
@@ -464,7 +498,10 @@ export class SimplifiedZeroDevDCAService {
           hash: approveHash,
         });
 
-        console.log('✅ Approval confirmed:', approveReceipt.receipt.transactionHash);
+        console.log(
+          '✅ Approval confirmed:',
+          approveReceipt.receipt.transactionHash,
+        );
       }
 
       // Execute swap

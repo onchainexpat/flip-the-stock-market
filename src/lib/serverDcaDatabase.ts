@@ -317,7 +317,7 @@ class ServerDCADatabase {
       return null;
     }
 
-    // Update order to canceled status 
+    // Update order to canceled status
     const canceledOrder = {
       ...order,
       status: 'cancelled' as const,

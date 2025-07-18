@@ -1,5 +1,5 @@
 import type { Address } from 'viem';
-import { openOceanApi, TOKENS } from '../utils/openOceanApi';
+import { TOKENS, openOceanApi } from '../utils/openOceanApi';
 import { GelatoNativeSmartWalletService } from './gelatoNativeSmartWalletService';
 import { serverAgentKeyService } from './serverAgentKeyService';
 
@@ -75,12 +75,13 @@ export class GelatoNativeDCAExecutor {
       console.log('   Batch: USDC approval + swap execution');
       console.log('   Gas sponsorship: Gelato Native (EIP-7702)');
 
-      const executionResult = await GelatoNativeSmartWalletService.executeDCASwap(
-        agentKeyId,
-        swapData.data as `0x${string}`,
-        swapData.to as Address,
-        amountUSDC,
-      );
+      const executionResult =
+        await GelatoNativeSmartWalletService.executeDCASwap(
+          agentKeyId,
+          swapData.data as `0x${string}`,
+          swapData.to as Address,
+          amountUSDC,
+        );
 
       if (!executionResult.success) {
         throw new Error(`Gasless execution failed: ${executionResult.error}`);
@@ -127,12 +128,12 @@ export class GelatoNativeDCAExecutor {
         transport: http(),
       });
 
-      const currentBalance = await publicClient.readContract({
+      const currentBalance = (await publicClient.readContract({
         address: TOKENS.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [smartWalletAddress],
-      }) as bigint;
+      })) as bigint;
 
       return {
         sufficient: currentBalance >= requiredAmount,
@@ -155,8 +156,9 @@ export class GelatoNativeDCAExecutor {
     gasCost: string;
     sponsored: boolean;
   }> {
-    const estimation = await GelatoNativeSmartWalletService.getEstimatedGasCost();
-    
+    const estimation =
+      await GelatoNativeSmartWalletService.getEstimatedGasCost();
+
     return {
       gasEstimate: '0',
       gasCost: estimation.gasCost,

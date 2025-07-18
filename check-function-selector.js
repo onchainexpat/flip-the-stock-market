@@ -1,8 +1,10 @@
 const { keccak256, toBytes } = require('viem');
 
 // Check the function selector for swapExactTokensForTokens
-const func1 = 'swapExactTokensForTokens(uint256,uint256,(address,address,bool,address)[],address,uint256)';
-const func2 = 'swapExactTokensForTokens(uint256,uint256,address[],address,uint256)';
+const func1 =
+  'swapExactTokensForTokens(uint256,uint256,(address,address,bool,address)[],address,uint256)';
+const func2 =
+  'swapExactTokensForTokens(uint256,uint256,address[],address,uint256)';
 
 const hash1 = keccak256(toBytes(func1));
 const hash2 = keccak256(toBytes(func2));

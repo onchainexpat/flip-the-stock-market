@@ -3,7 +3,7 @@ const { createPublicClient, http, parseAbi } = require('viem');
 const { base } = require('viem/chains');
 
 const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-const SPX_ADDRESS = '0x50da645f148798F68EF2d7dB7C1CB22A6819bb2C';
+const SPX_ADDRESS = '0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C';
 
 // Your smart wallet address (from the UI)
 const SMART_WALLET = '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE';

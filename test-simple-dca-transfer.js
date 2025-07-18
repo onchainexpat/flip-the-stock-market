@@ -1,5 +1,5 @@
 // Test DCA with simple USDC transfer instead of swap to verify the flow works
-import { http, createPublicClient, encodeFunctionData, erc20Abi } from 'viem';
+import { http, createPublicClient, erc20Abi } from 'viem';
 import { base } from 'viem/chains';
 
 // Use our mainnet configuration

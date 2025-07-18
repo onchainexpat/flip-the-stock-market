@@ -3,17 +3,22 @@ const BASE_URL = 'http://localhost:3000';
 
 async function testManualExecution() {
   console.log('🧪 Testing manual DCA execution with explicit parameters...');
-  
+
   const orderId = 'order_1752716497028_g4p9bcx2c';
   const smartWallet = '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE';
-  
+
   try {
     // Check current balance
     console.log('1️⃣ Checking smart wallet balance...');
-    const balanceResponse = await fetch(`${BASE_URL}/api/check-wallet-balance?address=${smartWallet}`);
+    const balanceResponse = await fetch(
+      `${BASE_URL}/api/check-wallet-balance?address=${smartWallet}`,
+    );
     const balanceData = await balanceResponse.json();
-    console.log('   USDC Balance:', balanceData.balances?.usdc?.formatted || 'N/A');
-    
+    console.log(
+      '   USDC Balance:',
+      balanceData.balances?.usdc?.formatted || 'N/A',
+    );
+
     // Test Aerodrome swap quote
     console.log('2️⃣ Testing Aerodrome swap quote...');
     const aerodromeResponse = await fetch(`${BASE_URL}/api/aerodrome-swap`, {
@@ -26,7 +31,7 @@ async function testManualExecution() {
         takerAddress: smartWallet,
       }),
     });
-    
+
     if (aerodromeResponse.ok) {
       const aerodromeData = await aerodromeResponse.json();
       console.log('   ✅ Aerodrome quote successful');
@@ -36,7 +41,7 @@ async function testManualExecution() {
     } else {
       console.log('   ❌ Aerodrome quote failed:', aerodromeResponse.status);
     }
-    
+
     // Try a simple test execution endpoint
     console.log('3️⃣ Testing DCA execution...');
     const testResponse = await fetch(`${BASE_URL}/api/test-dca-execution`, {
@@ -48,13 +53,20 @@ async function testManualExecution() {
         debug: true,
       }),
     });
-    
+
     const testResult = await testResponse.json();
-    console.log('   Execution result:', testResult.success ? '✅ SUCCESS' : '❌ FAILED');
-    
-    if (!testResult.success) {
+    console.log(
+      '   Execution result:',
+      testResult.success ? '✅ SUCCESS' : '❌ FAILED',
+    );
+
+    if (testResult.success) {
+      console.log('   TX Hash:', testResult.txHash);
+      console.log('   Gas Used:', testResult.gasUsed);
+      console.log('   SPX Received:', testResult.spxReceived);
+    } else {
       console.log('   Error:', testResult.error);
-      
+
       if (testResult.error?.includes('UserOperation reverted')) {
         console.log('   🔧 Diagnosis: UserOperation simulation issue');
         console.log('   💡 Likely causes:');
@@ -63,12 +75,7 @@ async function testManualExecution() {
         console.log('      - Paymaster middleware not working correctly');
         console.log('      - Smart wallet permission issue');
       }
-    } else {
-      console.log('   TX Hash:', testResult.txHash);
-      console.log('   Gas Used:', testResult.gasUsed);
-      console.log('   SPX Received:', testResult.spxReceived);
     }
-    
   } catch (error) {
     console.error('❌ Test failed:', error.message);
   }

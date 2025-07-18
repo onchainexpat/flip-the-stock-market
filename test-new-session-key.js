@@ -3,13 +3,13 @@ const BASE_URL = 'http://localhost:3000';
 
 async function createNewSessionKey() {
   console.log('🔑 Creating new session key with corrected serialization...');
-  
+
   try {
     // Create a new DCA order with corrected session key serialization
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     console.log('📝 Creating new order with corrected session key:', orderId);
-    
+
     const response = await fetch(`${BASE_URL}/api/dca-orders-v2`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,30 +25,30 @@ async function createNewSessionKey() {
         // We'll let the API create the session key with corrected serialization
       }),
     });
-    
+
     const result = await response.json();
-    
+
     if (result.success) {
       console.log('✅ New order created successfully');
       console.log('   Order ID:', result.orderId);
       console.log('   Agent Key ID:', result.agentKeyId);
       console.log('   Smart Wallet:', result.smartWalletAddress);
-      
+
       // Test execution immediately
       console.log('\\n🧪 Testing execution with new session key...');
-      const testResponse = await fetch(`${BASE_URL}/api/test-force-dca-execution?orderId=${result.orderId}`);
-      
+      const testResponse = await fetch(
+        `${BASE_URL}/api/test-force-dca-execution?orderId=${result.orderId}`,
+      );
+
       if (testResponse.ok) {
         const testResult = await testResponse.text();
         console.log('✅ Execution test result:', testResult.substring(0, 1000));
       } else {
         console.log('❌ Execution test failed:', testResponse.status);
       }
-      
     } else {
       console.log('❌ Failed to create new order:', result.error);
     }
-    
   } catch (error) {
     console.error('❌ New session key creation failed:', error.message);
   }

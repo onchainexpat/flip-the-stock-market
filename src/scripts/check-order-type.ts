@@ -9,20 +9,20 @@ const redis = new Redis({
 async function checkOrderType() {
   const orderId = 'order_1752453977603_oyfasf8af';
   const orderKey = `dca:order:${orderId}`;
-  
+
   console.log(`Checking order: ${orderId}\n`);
 
   try {
     // Check key type
     const keyType = await redis.type(orderKey);
     console.log(`Key type: ${keyType}`);
-    
+
     // Based on type, get the value
     if (keyType === 'string') {
       const value = await redis.get(orderKey);
       console.log('\nString value:');
       console.log(value);
-      
+
       // Try to parse as JSON
       if (typeof value === 'string') {
         try {
@@ -40,7 +40,6 @@ async function checkOrderType() {
     } else {
       console.log(`Unexpected key type: ${keyType}`);
     }
-
   } catch (error) {
     console.error('Error:', error);
   }

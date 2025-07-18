@@ -13,13 +13,13 @@ async function listAllOrders() {
     // Scan for all DCA order keys
     let cursor = 0;
     const allKeys: string[] = [];
-    
+
     do {
       const [newCursor, keys] = await redis.scan(cursor, {
         match: 'dca:order_*',
-        count: 100
+        count: 100,
       });
-      cursor = parseInt(newCursor);
+      cursor = Number.parseInt(newCursor);
       allKeys.push(...keys);
     } while (cursor !== 0);
 
@@ -32,26 +32,32 @@ async function listAllOrders() {
         console.log(`📦 Order: ${key.replace('dca:', '')}`);
         console.log(`  Status: ${orderData.status}`);
         console.log(`  User: ${orderData.userAddress}`);
-        console.log(`  Executions: ${orderData.executionCount || 0}/${orderData.totalExecutions || 0}`);
-        console.log(`  Created: ${orderData.createdAt ? new Date(parseInt(orderData.createdAt)).toISOString() : 'N/A'}`);
+        console.log(
+          `  Executions: ${orderData.executionCount || 0}/${orderData.totalExecutions || 0}`,
+        );
+        console.log(
+          `  Created: ${orderData.createdAt ? new Date(Number.parseInt(orderData.createdAt)).toISOString() : 'N/A'}`,
+        );
         console.log('');
       }
     }
 
     // Also check for execution logs
     console.log('\n📋 Recent Execution Logs:');
-    for (const key of allKeys.slice(0, 5)) { // Check first 5 orders
+    for (const key of allKeys.slice(0, 5)) {
+      // Check first 5 orders
       const orderId = key.replace('dca:', '');
       const logs = await redis.lrange(`dca:${orderId}:executions`, 0, 2);
       if (logs && logs.length > 0) {
         console.log(`\n  ${orderId}:`);
         logs.forEach((log: any) => {
           const logData = typeof log === 'string' ? JSON.parse(log) : log;
-          console.log(`    - ${new Date(logData.timestamp).toISOString()} - ${logData.status}`);
+          console.log(
+            `    - ${new Date(logData.timestamp).toISOString()} - ${logData.status}`,
+          );
         });
       }
     }
-
   } catch (error) {
     console.error('Error listing orders:', error);
   }

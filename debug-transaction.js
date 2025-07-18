@@ -1,12 +1,13 @@
-import { createPublicClient, http } from 'viem';
+import { http, createPublicClient } from 'viem';
 import { base } from 'viem/chains';
 
-const txHash = '0x14a66ce8f07a43787d5185ef8db91585e5a0b87815b211a694f80ea515872a97';
+const txHash =
+  '0x14a66ce8f07a43787d5185ef8db91585e5a0b87815b211a694f80ea515872a97';
 
 async function debugTransaction() {
   try {
     console.log('🔍 Debugging transaction:', txHash);
-    
+
     const publicClient = createPublicClient({
       chain: base,
       transport: http(),
@@ -26,11 +27,14 @@ async function debugTransaction() {
     // Get transaction receipt
     const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
     console.log('\n📃 Transaction Receipt:');
-    console.log('   Status:', receipt.status === 'success' ? '✅ SUCCESS' : '❌ FAILED');
+    console.log(
+      '   Status:',
+      receipt.status === 'success' ? '✅ SUCCESS' : '❌ FAILED',
+    );
     console.log('   Gas Used:', receipt.gasUsed.toString());
     console.log('   Block Number:', receipt.blockNumber.toString());
     console.log('   Logs count:', receipt.logs.length);
-    
+
     if (receipt.logs.length > 0) {
       console.log('\n📝 Event Logs:');
       receipt.logs.forEach((log, index) => {
@@ -46,17 +50,18 @@ async function debugTransaction() {
     if (tx.input.startsWith(approveSelector)) {
       console.log('\n✅ This is an approve() transaction');
       console.log('   Target contract:', tx.to);
-      
+
       // Parse approval data (simplified)
       const spender = '0x' + tx.input.slice(34, 74);
       const amount = '0x' + tx.input.slice(74);
       console.log('   Spender:', spender);
       console.log('   Amount:', BigInt(amount).toString());
     } else {
-      console.log('\n⚠️ This does not appear to be a standard approve() transaction');
+      console.log(
+        '\n⚠️ This does not appear to be a standard approve() transaction',
+      );
       console.log('   Function selector:', tx.input.slice(0, 10));
     }
-
   } catch (error) {
     console.error('❌ Error debugging transaction:', error);
   }

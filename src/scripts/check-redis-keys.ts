@@ -14,19 +14,19 @@ async function checkRedisKeys() {
     let cursor = 0;
     const allKeys: string[] = [];
     const keyPatterns: { [key: string]: number } = {};
-    
+
     do {
       const [newCursor, keys] = await redis.scan(cursor, {
-        count: 100
+        count: 100,
       });
-      cursor = parseInt(newCursor);
+      cursor = Number.parseInt(newCursor);
       allKeys.push(...keys);
     } while (cursor !== 0);
 
     console.log(`Total keys found: ${allKeys.length}\n`);
 
     // Categorize keys by pattern
-    allKeys.forEach(key => {
+    allKeys.forEach((key) => {
       const pattern = key.split(':')[0];
       keyPatterns[pattern] = (keyPatterns[pattern] || 0) + 1;
     });
@@ -38,17 +38,18 @@ async function checkRedisKeys() {
 
     // Show some sample keys
     console.log('\nSample keys:');
-    allKeys.slice(0, 10).forEach(key => {
+    allKeys.slice(0, 10).forEach((key) => {
       console.log(`  - ${key}`);
     });
 
     // Check for DCA-related keys
-    const dcaKeys = allKeys.filter(key => key.includes('dca') || key.includes('order'));
+    const dcaKeys = allKeys.filter(
+      (key) => key.includes('dca') || key.includes('order'),
+    );
     console.log(`\nDCA-related keys: ${dcaKeys.length}`);
-    dcaKeys.forEach(key => {
+    dcaKeys.forEach((key) => {
       console.log(`  - ${key}`);
     });
-
   } catch (error) {
     console.error('Error scanning Redis:', error);
   }

@@ -38,5 +38,18 @@
     ".next/types/**/*.ts",
     "src/app/page.tsx"
   ],
-  "exclude": ["node_modules", "examples", "contracts", "web3-functions", "scripts", "src/gelato", "*.js", "test-*.js", "debug-*.ts", "check-*.js", "check-*.ts", "src/app/api/create-gasless-session-key/**/*"]
+  "exclude": [
+    "node_modules",
+    "examples",
+    "contracts",
+    "web3-functions",
+    "scripts",
+    "src/gelato",
+    "*.js",
+    "test-*.js",
+    "debug-*.ts",
+    "check-*.js",
+    "check-*.ts",
+    "src/app/api/create-gasless-session-key/**/*"
+  ]
 }

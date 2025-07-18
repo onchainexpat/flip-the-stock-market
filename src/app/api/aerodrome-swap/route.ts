@@ -72,11 +72,12 @@ export async function POST(request: NextRequest) {
     let routes;
     let estimatedAmountOut;
 
-    if (sellToken.toLowerCase() === TOKENS.USDC.toLowerCase() && 
-        buyToken.toLowerCase() === TOKENS.SPX6900.toLowerCase()) {
-      
+    if (
+      sellToken.toLowerCase() === TOKENS.USDC.toLowerCase() &&
+      buyToken.toLowerCase() === TOKENS.SPX6900.toLowerCase()
+    ) {
       console.log('📍 USDC → SPX6900 route (via WETH)');
-      
+
       // Based on the actual transaction, this goes USDC → WETH → SPX6900
       routes = [
         {
@@ -96,8 +97,9 @@ export async function POST(request: NextRequest) {
       // Rough estimation based on the actual swap we analyzed
       // 0.1 USDC → 0.06013026 SPX6900 means rate ≈ 0.6 SPX per USDC
       const estimatedRate = 0.6; // SPX per USDC
-      estimatedAmountOut = Math.floor(Number(sellAmount) / 1e6 * estimatedRate * 1e8); // Convert to SPX decimals
-      
+      estimatedAmountOut = Math.floor(
+        (Number(sellAmount) / 1e6) * estimatedRate * 1e8,
+      ); // Convert to SPX decimals
     } else {
       return NextResponse.json(
         {
@@ -108,7 +110,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate minimum amount out with slippage protection
-    const minAmountOut = Math.floor(estimatedAmountOut * (1 - slippagePercentage));
+    const minAmountOut = Math.floor(
+      estimatedAmountOut * (1 - slippagePercentage),
+    );
 
     // Build the swap transaction
     const swapData = encodeFunctionData({
@@ -145,7 +149,8 @@ export async function POST(request: NextRequest) {
         provider: 'Aerodrome DEX',
         router: AERODROME_ROUTER,
         noExternalAPI: true,
-        basedOnActualSwap: '0x33fd4041490253388e92be7154beabbf238ede0872a7d9ca49c0235df468cf95',
+        basedOnActualSwap:
+          '0x33fd4041490253388e92be7154beabbf238ede0872a7d9ca49c0235df468cf95',
       },
     });
   } catch (error) {

@@ -2,7 +2,9 @@
 const { createPublicClient, http } = require('viem');
 const { base } = require('viem/chains');
 
-const ZERODEV_RPC_URL = process.env.NEXT_PUBLIC_ZERODEV_RPC_URL || 'https://rpc.zerodev.app/api/v3/4dcfe8c1-3f73-4977-b000-a736e7514079/chain/8453';
+const ZERODEV_RPC_URL =
+  process.env.NEXT_PUBLIC_ZERODEV_RPC_URL ||
+  'https://rpc.zerodev.app/api/v3/4dcfe8c1-3f73-4977-b000-a736e7514079/chain/8453';
 
 async function testZeroDevConnection() {
   console.log('🧪 Testing ZeroDev RPC connection...');
@@ -30,15 +32,14 @@ async function testZeroDevConnection() {
     // Test balance check
     console.log('3️⃣ Testing balance check...');
     const balance = await publicClient.getBalance({
-      address: '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE'
+      address: '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE',
     });
     console.log('   ✅ ETH balance:', balance.toString());
 
     console.log('✅ ZeroDev RPC connection is working!');
-    
   } catch (error) {
     console.error('❌ ZeroDev RPC test failed:', error.message);
-    
+
     // Test alternative RPC
     console.log('🔄 Testing standard Base RPC...');
     try {
@@ -48,11 +49,10 @@ async function testZeroDevConnection() {
           timeout: 5000,
         }),
       });
-      
+
       const altBlock = await altClient.getBlockNumber();
       console.log('   ✅ Standard RPC works, block:', altBlock.toString());
       console.log('   💡 Issue is likely with ZeroDev RPC endpoint');
-      
     } catch (altError) {
       console.error('   ❌ Standard RPC also failed:', altError.message);
       console.log('   💡 Network connectivity issue');

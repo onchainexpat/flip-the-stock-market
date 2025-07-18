@@ -1,6 +1,6 @@
 /**
  * Complete DCA Flow Test
- * 
+ *
  * This test demonstrates the complete DCA flow:
  * 1. Transfer ETH from EOA to smart wallet
  * 2. Create session key for automated swaps
@@ -8,35 +8,33 @@
  * 4. Demonstrate full automation
  */
 
-import { 
-  createPublicClient, 
-  createWalletClient,
-  http, 
-  parseEther, 
-  formatEther, 
-  encodeFunctionData,
-  formatUnits,
-  getContract,
-} from 'viem';
-import { baseSepolia } from 'viem/chains';
-import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import {
+  deserializePermissionAccount,
+  serializePermissionAccount,
+  toPermissionValidator,
+} from '@zerodev/permissions';
+import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
 import {
   createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-import {
-  serializePermissionAccount,
-  deserializePermissionAccount,
-  toPermissionValidator,
-} from '@zerodev/permissions';
-import {
-  toSudoPolicy,
-} from '@zerodev/permissions/policies';
-import { toECDSASigner } from '@zerodev/permissions/signers';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
+import {
+  http,
+  createPublicClient,
+  createWalletClient,
+  encodeFunctionData,
+  formatEther,
+  formatUnits,
+  getContract,
+  parseEther,
+} from 'viem';
 import { erc20Abi } from 'viem';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { baseSepolia } from 'viem/chains';
 
 // Base Sepolia addresses
 const ADDRESSES = {
@@ -74,42 +72,55 @@ const UNISWAP_ROUTER_ABI = [
 const TEST_CONFIG = {
   chain: baseSepolia,
   projectId: process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '',
-  bundlerUrl: process.env.NEXT_PUBLIC_ZERODEV_TESTNET_RPC_URL || `https://rpc.zerodev.app/api/v3/${process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID}/chain/84532`,
-  paymasterUrl: process.env.NEXT_PUBLIC_ZERODEV_TESTNET_RPC_URL || `https://rpc.zerodev.app/api/v3/${process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID}/chain/84532`,
-  
+  bundlerUrl:
+    process.env.NEXT_PUBLIC_ZERODEV_TESTNET_RPC_URL ||
+    `https://rpc.zerodev.app/api/v3/${process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID}/chain/84532`,
+  paymasterUrl:
+    process.env.NEXT_PUBLIC_ZERODEV_TESTNET_RPC_URL ||
+    `https://rpc.zerodev.app/api/v3/${process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID}/chain/84532`,
+
   // Transfer and swap amounts
   fundingAmount: parseEther('0.005'), // Fund smart wallet with 0.005 ETH
-  swapAmount: parseEther('0.002'),    // Swap 0.002 ETH for USDC
+  swapAmount: parseEther('0.002'), // Swap 0.002 ETH for USDC
   poolFee: 3000,
 };
 
 // Check balances for both EOA and smart wallet
-async function checkAllBalances(eoaAddress: string, smartWalletAddress: string) {
+async function checkAllBalances(
+  eoaAddress: string,
+  smartWalletAddress: string,
+) {
   const publicClient = createPublicClient({
     chain: TEST_CONFIG.chain,
     transport: http(),
   });
-  
+
   console.log('💰 Balance Check:');
-  
+
   // Check EOA balance
-  const eoaBalance = await publicClient.getBalance({ address: eoaAddress as `0x${string}` });
+  const eoaBalance = await publicClient.getBalance({
+    address: eoaAddress as `0x${string}`,
+  });
   console.log(`EOA (${eoaAddress}): ${formatEther(eoaBalance)} ETH`);
-  
+
   // Check Smart Wallet balances
-  const smartWalletEthBalance = await publicClient.getBalance({ address: smartWalletAddress as `0x${string}` });
+  const smartWalletEthBalance = await publicClient.getBalance({
+    address: smartWalletAddress as `0x${string}`,
+  });
   console.log(`Smart Wallet ETH: ${formatEther(smartWalletEthBalance)} ETH`);
-  
+
   try {
     const usdcContract = getContract({
       address: ADDRESSES.USDC,
       abi: erc20Abi,
       client: publicClient,
     });
-    
-    const usdcBalance = await usdcContract.read.balanceOf([smartWalletAddress as `0x${string}`]);
+
+    const usdcBalance = await usdcContract.read.balanceOf([
+      smartWalletAddress as `0x${string}`,
+    ]);
     console.log(`Smart Wallet USDC: ${formatUnits(usdcBalance, 6)} USDC`);
-    
+
     return { eoaBalance, smartWalletEthBalance, usdcBalance };
   } catch (error) {
     console.log('Smart Wallet USDC: 0 USDC (error reading)');
@@ -121,79 +132,81 @@ async function checkAllBalances(eoaAddress: string, smartWalletAddress: string) 
 async function fundSmartWallet(
   ownerPrivateKey: string,
   smartWalletAddress: string,
-  amount: bigint
+  amount: bigint,
 ): Promise<string> {
-  console.log(`\n💸 Step 1: Funding smart wallet with ${formatEther(amount)} ETH...`);
-  
+  console.log(
+    `\n💸 Step 1: Funding smart wallet with ${formatEther(amount)} ETH...`,
+  );
+
   const publicClient = createPublicClient({
     chain: TEST_CONFIG.chain,
     transport: http(),
   });
-  
+
   const walletClient = createWalletClient({
     chain: TEST_CONFIG.chain,
     transport: http(),
   });
-  
+
   const owner = privateKeyToAccount(ownerPrivateKey as `0x${string}`);
-  
+
   // Send ETH from EOA to smart wallet
   const txHash = await walletClient.sendTransaction({
     account: owner,
     to: smartWalletAddress as `0x${string}`,
     value: amount,
   });
-  
+
   console.log('Funding transaction sent:', txHash);
-  
+
   // Wait for confirmation
-  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+  const receipt = await publicClient.waitForTransactionReceipt({
+    hash: txHash,
+  });
   console.log('✅ Funding confirmed in block:', receipt.blockNumber);
-  
+
   return txHash;
 }
 
 // Step 2: Create DCA session key
-async function createDCASessionKey(
-  ownerPrivateKey: string
-): Promise<{
+async function createDCASessionKey(ownerPrivateKey: string): Promise<{
   smartWalletAddress: string;
   serializedSessionKey: string;
   sessionKeyAddress: string;
 }> {
   console.log('\n🔑 Step 2: Creating DCA Session Key...');
-  
+
   const publicClient = createPublicClient({
     chain: TEST_CONFIG.chain,
     transport: http(),
   });
-  
+
   const owner = privateKeyToAccount(ownerPrivateKey as `0x${string}`);
   const entryPoint = getEntryPoint('0.7');
-  
+
   // Create ECDSA validator
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
     signer: owner,
     entryPoint,
     kernelVersion: KERNEL_V3_1,
   });
-  
+
   // Create smart wallet
   const smartWalletAccount = await createKernelAccount(publicClient, {
     plugins: { sudo: ecdsaValidator },
     entryPoint,
     kernelVersion: KERNEL_V3_1,
   });
-  
+
   console.log('Smart Wallet:', smartWalletAccount.address);
-  
+
   // Generate session key
   const sessionPrivateKey = generatePrivateKey();
   const sessionAccount = privateKeyToAccount(sessionPrivateKey);
   const sessionKeySigner = await toECDSASigner({ signer: sessionAccount });
-  
+
   console.log('Session Key:', sessionAccount.address);
-  
+
   // Create permission validator
   const permissionPlugin = await toPermissionValidator(publicClient, {
     entryPoint,
@@ -203,7 +216,7 @@ async function createDCASessionKey(
       toSudoPolicy({}), // Full permissions for testing
     ],
   });
-  
+
   // Create session key account
   const sessionKeyAccount = await createKernelAccount(publicClient, {
     entryPoint,
@@ -213,12 +226,18 @@ async function createDCASessionKey(
       regular: permissionPlugin,
     },
   });
-  
-  console.log('✅ Session key created. Address matches:', sessionKeyAccount.address === smartWalletAccount.address);
-  
+
+  console.log(
+    '✅ Session key created. Address matches:',
+    sessionKeyAccount.address === smartWalletAccount.address,
+  );
+
   // Serialize session key
-  const serializedSessionKey = await serializePermissionAccount(sessionKeyAccount, sessionPrivateKey);
-  
+  const serializedSessionKey = await serializePermissionAccount(
+    sessionKeyAccount,
+    sessionPrivateKey,
+  );
+
   return {
     smartWalletAddress: smartWalletAccount.address,
     serializedSessionKey,
@@ -230,31 +249,33 @@ async function createDCASessionKey(
 async function executeDCASwap(
   serializedSessionKey: string,
   smartWalletAddress: string,
-  swapAmount: bigint
+  swapAmount: bigint,
 ): Promise<string> {
-  console.log(`\n🔄 Step 3: Executing DCA swap (${formatEther(swapAmount)} ETH → USDC)...`);
-  
+  console.log(
+    `\n🔄 Step 3: Executing DCA swap (${formatEther(swapAmount)} ETH → USDC)...`,
+  );
+
   const publicClient = createPublicClient({
     chain: TEST_CONFIG.chain,
     transport: http(),
   });
-  
+
   // Deserialize session key
   const entryPoint = getEntryPoint('0.7');
   const sessionKeyAccount = await deserializePermissionAccount(
     publicClient,
     entryPoint,
     KERNEL_V3_1,
-    serializedSessionKey
+    serializedSessionKey,
   );
-  
+
   // Create paymaster client
   const paymasterClient = createZeroDevPaymasterClient({
     chain: TEST_CONFIG.chain,
     transport: http(TEST_CONFIG.paymasterUrl),
     entryPoint,
   });
-  
+
   // Create kernel client
   const kernelClient = createKernelAccountClient({
     account: sessionKeyAccount,
@@ -267,7 +288,7 @@ async function executeDCASwap(
     },
     entryPoint,
   });
-  
+
   // Prepare swap parameters
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200);
   const swapParams = {
@@ -280,28 +301,30 @@ async function executeDCASwap(
     amountOutMinimum: 0n, // Accept any amount for testnet
     sqrtPriceLimitX96: 0n,
   };
-  
+
   // Encode swap call
   const swapCalldata = encodeFunctionData({
     abi: UNISWAP_ROUTER_ABI,
     functionName: 'exactInputSingle',
     args: [swapParams],
   });
-  
+
   // Execute swap
   const swapTx = await kernelClient.sendTransaction({
     to: ADDRESSES.UNISWAP_ROUTER,
     data: swapCalldata,
     value: swapAmount,
   });
-  
+
   console.log('🔄 Swap transaction sent:', swapTx);
-  
+
   // Wait for confirmation
-  const receipt = await publicClient.waitForTransactionReceipt({ hash: swapTx });
+  const receipt = await publicClient.waitForTransactionReceipt({
+    hash: swapTx,
+  });
   console.log('✅ Swap confirmed in block:', receipt.blockNumber);
   console.log('Gas used:', receipt.gasUsed.toString());
-  
+
   return swapTx;
 }
 
@@ -311,45 +334,51 @@ async function runCompleteDCATest() {
   console.log('Chain:', TEST_CONFIG.chain.name);
   console.log('Router:', ADDRESSES.UNISWAP_ROUTER);
   console.log('===================================\n');
-  
+
   try {
     const ownerPrivateKey = process.env.BASE_SEPOLIA_TEST_PRIVATE_KEY;
     if (!ownerPrivateKey) {
-      throw new Error('Please set BASE_SEPOLIA_TEST_PRIVATE_KEY in your .env file');
+      throw new Error(
+        'Please set BASE_SEPOLIA_TEST_PRIVATE_KEY in your .env file',
+      );
     }
-    
+
     const ownerAccount = privateKeyToAccount(ownerPrivateKey as `0x${string}`);
     console.log('🔑 Test EOA:', ownerAccount.address);
-    
+
     // Check initial balances
     const { smartWalletAddress } = await createDCASessionKey(ownerPrivateKey);
     console.log('\n💰 Initial Balances:');
     await checkAllBalances(ownerAccount.address, smartWalletAddress);
-    
+
     // Step 1: Fund smart wallet
     const fundingTx = await fundSmartWallet(
       ownerPrivateKey,
       smartWalletAddress,
-      TEST_CONFIG.fundingAmount
+      TEST_CONFIG.fundingAmount,
     );
-    
+
     console.log('\n💰 After Funding:');
     await checkAllBalances(ownerAccount.address, smartWalletAddress);
-    
+
     // Step 2: Create session key (already done above, but get fresh one)
-    const { serializedSessionKey, sessionKeyAddress } = await createDCASessionKey(ownerPrivateKey);
-    
+    const { serializedSessionKey, sessionKeyAddress } =
+      await createDCASessionKey(ownerPrivateKey);
+
     // Step 3: Execute DCA swap
     const swapTx = await executeDCASwap(
       serializedSessionKey,
       smartWalletAddress,
-      TEST_CONFIG.swapAmount
+      TEST_CONFIG.swapAmount,
     );
-    
+
     // Check final balances
     console.log('\n💰 Final Balances:');
-    const finalBalances = await checkAllBalances(ownerAccount.address, smartWalletAddress);
-    
+    const finalBalances = await checkAllBalances(
+      ownerAccount.address,
+      smartWalletAddress,
+    );
+
     // Summary
     console.log('\n🎉 Complete DCA Flow Success!');
     console.log('=====================================');
@@ -359,16 +388,19 @@ async function runCompleteDCATest() {
     console.log('\n📊 Results:');
     console.log(`• Smart Wallet: ${smartWalletAddress}`);
     console.log(`• Session Key: ${sessionKeyAddress}`);
-    console.log(`• Funding Amount: ${formatEther(TEST_CONFIG.fundingAmount)} ETH`);
+    console.log(
+      `• Funding Amount: ${formatEther(TEST_CONFIG.fundingAmount)} ETH`,
+    );
     console.log(`• Swap Amount: ${formatEther(TEST_CONFIG.swapAmount)} ETH`);
-    console.log(`• Final USDC: ${formatUnits(finalBalances.usdcBalance, 6)} USDC`);
-    
+    console.log(
+      `• Final USDC: ${formatUnits(finalBalances.usdcBalance, 6)} USDC`,
+    );
+
     console.log('\n💡 This demonstrates:');
     console.log('✅ Automated ETH → USDC conversion');
     console.log('✅ Session key authorization working');
     console.log('✅ Gas sponsorship by paymaster');
     console.log('✅ Complete DCA automation ready!');
-    
   } catch (error) {
     console.error('\n❌ Test failed:', error);
     throw error;

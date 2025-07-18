@@ -1,6 +1,4 @@
 'use client';
-
-import { usePrivy, useWallets } from '@privy-io/react-auth';
 import {
   type Address,
   encodeFunctionData,
@@ -211,11 +209,11 @@ export class GelatoOneClickDCAService {
 export function useGelatoOneClickDCA() {
   // Remove the direct use of Privy hooks here since they need to be inside PrivyProvider
   // Instead, accept user and wallet as parameters to executeGelatoOneClickDCA
-  
+
   const executeGelatoOneClickDCA = async (
     params: GelatoOneClickDCAParams,
     userAddress: Address | undefined,
-    wallet: any | undefined
+    wallet: any | undefined,
   ): Promise<GelatoOneClickDCAResult> => {
     if (!userAddress || !wallet) {
       return {
@@ -227,7 +225,7 @@ export function useGelatoOneClickDCA() {
     return GelatoOneClickDCAService.executeGelatoOneClickDCA(
       params,
       userAddress,
-      wallet
+      wallet,
     );
   };
 

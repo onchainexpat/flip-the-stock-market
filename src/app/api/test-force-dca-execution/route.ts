@@ -57,10 +57,11 @@ export async function GET(request: NextRequest) {
       `Processing DCA order ${order.id} for user ${order.userAddress}`,
     );
     // Calculate amount per order from total amount and total executions
-    const amountPerOrder = order.totalAmount && order.totalExecutions 
-      ? order.totalAmount / BigInt(order.totalExecutions)
-      : order.totalAmount || BigInt(0);
-    
+    const amountPerOrder =
+      order.totalAmount && order.totalExecutions
+        ? order.totalAmount / BigInt(order.totalExecutions)
+        : order.totalAmount || BigInt(0);
+
     console.log('Order details:', {
       totalAmount: order.totalAmount?.toString(),
       amountPerOrder: amountPerOrder.toString(),

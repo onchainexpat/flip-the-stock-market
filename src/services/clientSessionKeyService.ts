@@ -1,26 +1,24 @@
 /**
  * Client-side Session Key Service for ZeroDev
- * 
+ *
  * This service handles session key creation on the client side, where the user's
- * wallet signs the permission delegation. The session key is then serialized 
+ * wallet signs the permission delegation. The session key is then serialized
  * and can be used server-side for automated DCA execution.
  */
 
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import {
+  serializePermissionAccount,
+  toPermissionValidator,
+} from '@zerodev/permissions';
+import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
 import {
   createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import {
-  serializePermissionAccount,
-  toPermissionValidator,
-} from '@zerodev/permissions';
-import {
-  toSudoPolicy,
-} from '@zerodev/permissions/policies';
-import { toECDSASigner } from '@zerodev/permissions/signers';
 import {
   http,
   type Address,
@@ -31,10 +29,10 @@ import {
   formatUnits,
   getContract,
 } from 'viem';
-import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import { erc20Abi } from 'viem';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { TOKENS } from '../utils/openOceanApi';
-import { erc20Abi } from 'viem';
 
 // ZeroDev configuration for Base mainnet
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
@@ -132,10 +130,16 @@ export class ClientSessionKeyService {
 
       // Check wallet balance
       const balance = await this.getUSDCBalance(originalAccount.address);
-      console.log('Smart Wallet USDC Balance:', formatUnits(balance, 6), 'USDC');
+      console.log(
+        'Smart Wallet USDC Balance:',
+        formatUnits(balance, 6),
+        'USDC',
+      );
 
       if (balance < totalAmount) {
-        throw new Error(`Insufficient USDC balance. Have: ${formatUnits(balance, 6)} USDC, Need: ${formatUnits(totalAmount, 6)} USDC`);
+        throw new Error(
+          `Insufficient USDC balance. Have: ${formatUnits(balance, 6)} USDC, Need: ${formatUnits(totalAmount, 6)} USDC`,
+        );
       }
 
       // Generate session key
@@ -167,14 +171,22 @@ export class ClientSessionKeyService {
         },
       });
 
-      console.log('Session key account created. Address matches:', sessionKeyAccount.address === originalAccount.address);
+      console.log(
+        'Session key account created. Address matches:',
+        sessionKeyAccount.address === originalAccount.address,
+      );
 
       if (sessionKeyAccount.address !== originalAccount.address) {
-        throw new Error(`Session key address mismatch! Expected: ${originalAccount.address}, Got: ${sessionKeyAccount.address}`);
+        throw new Error(
+          `Session key address mismatch! Expected: ${originalAccount.address}, Got: ${sessionKeyAccount.address}`,
+        );
       }
 
       // Serialize the session key
-      const serializedSessionKey = await serializePermissionAccount(sessionKeyAccount, sessionPrivateKey);
+      const serializedSessionKey = await serializePermissionAccount(
+        sessionKeyAccount,
+        sessionPrivateKey,
+      );
 
       const now = Math.floor(Date.now() / 1000);
       const validUntil = now + durationDays * 24 * 60 * 60;
@@ -192,7 +204,6 @@ export class ClientSessionKeyService {
 
       console.log('✅ Session key created successfully');
       return sessionKeyData;
-
     } catch (error) {
       console.error('❌ Failed to create session key:', error);
       throw error;
@@ -215,7 +226,9 @@ export class ClientSessionKeyService {
       console.log(`- Test amount: ${formatUnits(testAmount, 6)} USDC`);
 
       // Import the server session key service for testing
-      const { zerodevSessionKeyService } = await import('./zerodevSessionKeyService');
+      const { zerodevSessionKeyService } = await import(
+        './zerodevSessionKeyService'
+      );
 
       // Execute a small test swap
       const result = await zerodevSessionKeyService.executeDCASwap(
@@ -229,7 +242,6 @@ export class ClientSessionKeyService {
         txHash: result.txHash,
         error: result.error,
       };
-
     } catch (error) {
       return {
         success: false,
@@ -254,9 +266,7 @@ export class ClientSessionKeyService {
   /**
    * Deploy smart wallet if needed
    */
-  async deploySmartWallet(
-    userWalletProvider: any,
-  ): Promise<{
+  async deploySmartWallet(userWalletProvider: any): Promise<{
     success: boolean;
     smartWalletAddress?: Address;
     txHash?: string;
@@ -315,7 +325,9 @@ export class ClientSessionKeyService {
       const kernelClient = createKernelAccountClient({
         account: smartWalletAccount,
         chain: base,
-        bundlerTransport: http(`https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`),
+        bundlerTransport: http(
+          `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`,
+        ),
         paymaster: {
           getPaymasterData: (userOperation) => {
             return this.paymasterClient.sponsorUserOperation({ userOperation });
@@ -325,11 +337,13 @@ export class ClientSessionKeyService {
 
       // Deploy with a dummy transaction
       const txHash = await kernelClient.sendUserOperation({
-        calls: [{
-          to: smartWalletAccount.address,
-          value: BigInt(0),
-          data: '0x',
-        }],
+        calls: [
+          {
+            to: smartWalletAccount.address,
+            value: BigInt(0),
+            data: '0x',
+          },
+        ],
       });
 
       console.log('✅ Smart wallet deployed');
@@ -340,7 +354,6 @@ export class ClientSessionKeyService {
         smartWalletAddress: smartWalletAccount.address,
         txHash,
       };
-
     } catch (error) {
       console.error('❌ Failed to deploy smart wallet:', error);
       return {

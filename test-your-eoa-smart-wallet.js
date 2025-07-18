@@ -7,16 +7,16 @@ import {
 } from '@zerodev/permissions';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { toECDSASigner } from '@zerodev/permissions/signers';
-import {
-  createKernelAccount,
-} from '@zerodev/sdk';
+import { createKernelAccount } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
-import { http, createPublicClient, encodeFunctionData, erc20Abi } from 'viem';
+import { http, createPublicClient, erc20Abi } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 
 // Use our mainnet configuration
-const ZERODEV_RPC = process.env.NEXT_PUBLIC_ZERODEV_RPC_URL || 'https://rpc.zerodev.app/api/v3/4dcfe8c1-3f73-4977-b000-a736e7514079/chain/8453';
+const ZERODEV_RPC =
+  process.env.NEXT_PUBLIC_ZERODEV_RPC_URL ||
+  'https://rpc.zerodev.app/api/v3/4dcfe8c1-3f73-4977-b000-a736e7514079/chain/8453';
 
 // Your actual addresses
 const YOUR_EOA = '0xC9860f5D7b80015D0Ff3E440d0f8dB90A518F7E7';
@@ -35,13 +35,13 @@ async function testYourEOASmartWallet() {
   console.log('🔍 Testing which private key created your smart wallet...');
   console.log('   Your EOA:', YOUR_EOA);
   console.log('   Your Smart Wallet:', YOUR_SMART_WALLET);
-  
+
   try {
     const publicClient = createPublicClient({
       chain: base,
       transport: http(ZERODEV_RPC),
     });
-    
+
     // Check USDC balance of your smart wallet
     const usdcBalance = await publicClient.readContract({
       address: USDC_ADDRESS,
@@ -49,27 +49,34 @@ async function testYourEOASmartWallet() {
       functionName: 'balanceOf',
       args: [YOUR_SMART_WALLET],
     });
-    
-    console.log('💰 Your smart wallet USDC balance:', (Number(usdcBalance) / 1e6).toFixed(6), 'USDC');
-    
+
+    console.log(
+      '💰 Your smart wallet USDC balance:',
+      (Number(usdcBalance) / 1e6).toFixed(6),
+      'USDC',
+    );
+
     const entryPoint = getEntryPoint('0.7');
-    
+
     // Test each possible private key
     for (let i = 0; i < TEST_KEYS.length; i++) {
       const testKey = TEST_KEYS[i];
-      console.log(`\\n🧪 Testing key ${i + 1}:`, testKey.substring(0, 10) + '...');
-      
+      console.log(
+        `\\n🧪 Testing key ${i + 1}:`,
+        testKey.substring(0, 10) + '...',
+      );
+
       try {
         const ownerSigner = privateKeyToAccount(testKey);
         console.log('   Owner address:', ownerSigner.address);
-        
+
         // Create ECDSA validator
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
           entryPoint,
           signer: ownerSigner,
           kernelVersion: KERNEL_V3_1,
         });
-        
+
         // Create kernel account
         const masterAccount = await createKernelAccount(publicClient, {
           entryPoint,
@@ -78,26 +85,35 @@ async function testYourEOASmartWallet() {
           },
           kernelVersion: KERNEL_V3_1,
         });
-        
+
         console.log('   Generated smart wallet:', masterAccount.address);
-        console.log('   Matches your wallet:', masterAccount.address.toLowerCase() === YOUR_SMART_WALLET.toLowerCase());
-        
-        if (masterAccount.address.toLowerCase() === YOUR_SMART_WALLET.toLowerCase()) {
+        console.log(
+          '   Matches your wallet:',
+          masterAccount.address.toLowerCase() ===
+            YOUR_SMART_WALLET.toLowerCase(),
+        );
+
+        if (
+          masterAccount.address.toLowerCase() ===
+          YOUR_SMART_WALLET.toLowerCase()
+        ) {
           console.log('\\n🎉 FOUND THE CORRECT KEY!');
           console.log('   This private key created your smart wallet');
-          console.log('   You can now create session keys for your existing smart wallet');
-          
+          console.log(
+            '   You can now create session keys for your existing smart wallet',
+          );
+
           // Create a working session key for your actual smart wallet
           console.log('\\n🔑 Creating session key for your smart wallet...');
-          
+
           const sessionPrivateKey = generatePrivateKey();
           const sessionKeyAccount = privateKeyToAccount(sessionPrivateKey);
           const sessionKeySigner = await toECDSASigner({
             signer: sessionKeyAccount,
           });
-          
+
           console.log('   Session key address:', sessionKeyAccount.address);
-          
+
           // Create permission validator
           const permissionPlugin = await toPermissionValidator(publicClient, {
             entryPoint,
@@ -105,7 +121,7 @@ async function testYourEOASmartWallet() {
             policies: [toSudoPolicy({})],
             kernelVersion: KERNEL_V3_1,
           });
-          
+
           // Create session key account
           const sessionKeyAccount2 = await createKernelAccount(publicClient, {
             entryPoint,
@@ -115,18 +131,28 @@ async function testYourEOASmartWallet() {
             },
             kernelVersion: KERNEL_V3_1,
           });
-          
-          console.log('   Session key account address:', sessionKeyAccount2.address);
-          console.log('   Should match your smart wallet:', sessionKeyAccount2.address.toLowerCase() === YOUR_SMART_WALLET.toLowerCase());
-          
+
+          console.log(
+            '   Session key account address:',
+            sessionKeyAccount2.address,
+          );
+          console.log(
+            '   Should match your smart wallet:',
+            sessionKeyAccount2.address.toLowerCase() ===
+              YOUR_SMART_WALLET.toLowerCase(),
+          );
+
           // Serialize session key
           const serializedSessionKey = await serializePermissionAccount(
             sessionKeyAccount2,
             sessionPrivateKey,
           );
-          
-          console.log('   Serialized session key length:', serializedSessionKey.length);
-          
+
+          console.log(
+            '   Serialized session key length:',
+            serializedSessionKey.length,
+          );
+
           // Test deserialization
           const deserializedAccount = await deserializePermissionAccount(
             publicClient,
@@ -134,17 +160,27 @@ async function testYourEOASmartWallet() {
             KERNEL_V3_1,
             serializedSessionKey,
           );
-          
+
           console.log('   Deserialized address:', deserializedAccount.address);
-          console.log('   Address match:', deserializedAccount.address === sessionKeyAccount2.address);
-          
+          console.log(
+            '   Address match:',
+            deserializedAccount.address === sessionKeyAccount2.address,
+          );
+
           if (deserializedAccount.address === sessionKeyAccount2.address) {
-            console.log('\\n✅ SUCCESS! Session key works for your smart wallet');
-            console.log('   You can now use this to create a working DCA order');
+            console.log(
+              '\\n✅ SUCCESS! Session key works for your smart wallet',
+            );
+            console.log(
+              '   You can now use this to create a working DCA order',
+            );
             console.log('   Smart wallet address:', YOUR_SMART_WALLET);
             console.log('   Session private key:', sessionPrivateKey);
-            console.log('   Serialized session key (first 100 chars):', serializedSessionKey.substring(0, 100) + '...');
-            
+            console.log(
+              '   Serialized session key (first 100 chars):',
+              serializedSessionKey.substring(0, 100) + '...',
+            );
+
             return {
               success: true,
               ownerKey: testKey,
@@ -154,31 +190,39 @@ async function testYourEOASmartWallet() {
             };
           }
         }
-        
       } catch (error) {
         console.log('   ❌ Error with this key:', error.message);
       }
     }
-    
+
     console.log('\\n❌ None of the test keys created your smart wallet');
-    console.log('   This means your smart wallet was created with a different private key');
+    console.log(
+      '   This means your smart wallet was created with a different private key',
+    );
     console.log('   OR it was created with different ZeroDev configuration');
     console.log('\\n💡 Solutions:');
-    console.log('   1. Use the client-side UI to create a new session key for your existing smart wallet');
-    console.log('   2. Or continue testing with the new smart wallet that has the working session key');
-    
+    console.log(
+      '   1. Use the client-side UI to create a new session key for your existing smart wallet',
+    );
+    console.log(
+      '   2. Or continue testing with the new smart wallet that has the working session key',
+    );
+
     return { success: false };
-    
   } catch (error) {
     console.error('❌ Test failed:', error.message);
     return { success: false };
   }
 }
 
-testYourEOASmartWallet().then(result => {
+testYourEOASmartWallet().then((result) => {
   if (result.success) {
-    console.log('\\n🎯 RECOMMENDATION: Use your existing smart wallet with the working session key');
+    console.log(
+      '\\n🎯 RECOMMENDATION: Use your existing smart wallet with the working session key',
+    );
   } else {
-    console.log('\\n🎯 RECOMMENDATION: Continue testing with the new smart wallet, then migrate');
+    console.log(
+      '\\n🎯 RECOMMENDATION: Continue testing with the new smart wallet, then migrate',
+    );
   }
 });

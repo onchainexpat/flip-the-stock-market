@@ -68,7 +68,9 @@ export async function GET(request: NextRequest) {
       agentKeyId: sessionData.agentKeyId,
       agentKeyStatus,
       orderStatus: order.status,
-      amountPerOrder: (order.totalAmount / BigInt(order.totalExecutions)).toString(),
+      amountPerOrder: (
+        order.totalAmount / BigInt(order.totalExecutions)
+      ).toString(),
     });
   } catch (error) {
     console.error('Failed to check agent key:', error);

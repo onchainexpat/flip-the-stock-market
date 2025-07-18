@@ -1,5 +1,5 @@
 import type { Address } from 'viem';
-import { openOceanApi, TOKENS } from '../utils/openOceanApi';
+import { TOKENS, openOceanApi } from '../utils/openOceanApi';
 import { GelatoSmartWalletService } from './gelatoSmartWalletService';
 import { serverAgentKeyService } from './serverAgentKeyService';
 
@@ -66,7 +66,7 @@ export class GelatoDCAExecutor {
       // Step 3: Initialize Gelato service and execute gasless DCA swap
       console.log('🌐 Initializing Gelato Relay...');
       GelatoSmartWalletService.initialize();
-      
+
       console.log('🌐 Executing gasless swap via Gelato Relay...');
       const executionResult = await GelatoSmartWalletService.executeDCASwap(
         agentPrivateKey,

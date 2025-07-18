@@ -3,7 +3,7 @@ const { Redis } = require('@upstash/redis');
 
 async function debugAgentKeys() {
   console.log('🔍 Debugging agent keys...');
-  
+
   try {
     const redis = new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL,
@@ -13,8 +13,9 @@ async function debugAgentKeys() {
     // Look for agent key patterns
     const agentKeys = await redis.keys('agent_key:*');
     console.log(`📋 Found ${agentKeys.length} agent keys:`);
-    
-    for (const key of agentKeys.slice(0, 5)) { // Show first 5
+
+    for (const key of agentKeys.slice(0, 5)) {
+      // Show first 5
       try {
         const data = await redis.get(key);
         const keyId = key.replace('agent_key:', '');
@@ -37,7 +38,9 @@ async function debugAgentKeys() {
         console.log(`   Agent Key ID: ${orderData.agentKeyId || 'NULL'}`);
         console.log(`   User: ${orderData.userAddress}`);
         console.log(`   Smart wallet: ${orderData.sessionKeyAddress}`);
-        console.log(`   Session key data: ${orderData.sessionKeyData ? 'Present' : 'Missing'}`);
+        console.log(
+          `   Session key data: ${orderData.sessionKeyData ? 'Present' : 'Missing'}`,
+        );
       } else {
         console.log(`\n❌ Order not found in Redis: ${orderKey}`);
       }
@@ -52,7 +55,6 @@ async function debugAgentKeys() {
       console.log(`\n✅ Example working agent key structure:`);
       console.log(JSON.stringify(workingData, null, 2));
     }
-
   } catch (error) {
     console.error('❌ Debug failed:', error.message);
   }

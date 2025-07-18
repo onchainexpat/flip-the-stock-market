@@ -9,22 +9,21 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     // Use the existing CoinGecko endpoint
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
       : `http://localhost:${process.env.PORT || 3000}`;
-    
-    const coingeckoResponse = await fetch(
-      `${baseUrl}/api/coingecko`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+
+    const coingeckoResponse = await fetch(`${baseUrl}/api/coingecko`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!coingeckoResponse.ok) {
-      throw new Error(`CoinGecko API failed with status ${coingeckoResponse.status}`);
+      throw new Error(
+        `CoinGecko API failed with status ${coingeckoResponse.status}`,
+      );
     }
 
     const coingeckoData = await coingeckoResponse.json();
@@ -46,7 +45,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching SPX price:', error);
-    
+
     // Return fallback response
     return NextResponse.json(
       {
@@ -55,7 +54,7 @@ export async function GET() {
         price: 'N/A',
         timestamp: Date.now(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -11,14 +11,14 @@ console.log(`Buy: ${buyAmount} (SPX6900 raw)`);
 // Let's try different decimal assumptions
 const decimalOptions = [6, 8, 18];
 
-decimalOptions.forEach(decimals => {
-  const spxReceived = buyAmount / (10 ** decimals);
+decimalOptions.forEach((decimals) => {
+  const spxReceived = buyAmount / 10 ** decimals;
   const pricePerSPX = 1 / spxReceived; // USD per SPX
-  
+
   console.log(`\nAssuming ${decimals} decimals:`);
   console.log(`  SPX received: ${spxReceived.toFixed(8)}`);
   console.log(`  Price per SPX: $${pricePerSPX.toFixed(6)}`);
-  
+
   // Compare with known rates
   if (pricePerSPX > 1.75 && pricePerSPX < 1.85) {
     console.log(`  ✅ This matches Aerodrome UI (~$1.80)!`);
@@ -35,11 +35,13 @@ const expectedSPXReceived = 1 / 1.78561; // SPX per USD
 console.log(`Expected SPX per 1 USDC: ${expectedSPXReceived.toFixed(8)}`);
 
 // What decimal places would give us this?
-decimalOptions.forEach(decimals => {
-  const calculatedSPX = buyAmount / (10 ** decimals);
+decimalOptions.forEach((decimals) => {
+  const calculatedSPX = buyAmount / 10 ** decimals;
   const diff = Math.abs(calculatedSPX - expectedSPXReceived);
-  console.log(`${decimals} decimals gives: ${calculatedSPX.toFixed(8)}, diff: ${diff.toFixed(8)}`);
-  
+  console.log(
+    `${decimals} decimals gives: ${calculatedSPX.toFixed(8)}, diff: ${diff.toFixed(8)}`,
+  );
+
   if (diff < 0.01) {
     console.log(`  ✅ MATCH! SPX6900 uses ${decimals} decimals`);
   }

@@ -1,35 +1,22 @@
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import { deserializePermissionAccount } from '@zerodev/permissions';
 import {
-  createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
 } from '@zerodev/sdk';
 import { KERNEL_V3_1, getEntryPoint } from '@zerodev/sdk/constants';
 import {
-  serializePermissionAccount,
-  deserializePermissionAccount,
-  toPermissionValidator,
-} from '@zerodev/permissions';
-import {
-  toSudoPolicy,
-} from '@zerodev/permissions/policies';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import {
   http,
   type Address,
   type Hex,
   createPublicClient,
-  parseEther,
   encodeFunctionData,
-  formatEther,
   formatUnits,
   getContract,
 } from 'viem';
-import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import { erc20Abi } from 'viem';
 import { base } from 'viem/chains';
 import { NEXT_PUBLIC_URL } from '../config';
 import { TOKENS } from '../utils/openOceanApi';
-import { erc20Abi } from 'viem';
 
 // ZeroDev configuration for Base mainnet
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
@@ -38,7 +25,8 @@ const ZERODEV_BUNDLER_URL = `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID
 const ZERODEV_PAYMASTER_URL = `https://rpc.zerodev.app/api/v3/${ZERODEV_PROJECT_ID}/chain/8453`;
 
 // OpenOcean router on Base mainnet
-const OPENOCEAN_ROUTER = '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
+const OPENOCEAN_ROUTER =
+  '0x6352a56caadc4f1e25cd6c75970fa768a3304e64' as Address;
 
 export interface SessionKeyData {
   sessionPrivateKey: Hex;
@@ -138,8 +126,12 @@ export class ZeroDevSessionKeyService {
       }
 
       // Step 1: Check current USDC balance
-      const currentBalance = await this.getUSDCBalance(sessionKeyData.smartWalletAddress);
-      console.log(`💰 Current USDC balance: ${formatUnits(currentBalance, 6)} USDC`);
+      const currentBalance = await this.getUSDCBalance(
+        sessionKeyData.smartWalletAddress,
+      );
+      console.log(
+        `💰 Current USDC balance: ${formatUnits(currentBalance, 6)} USDC`,
+      );
 
       if (currentBalance < swapAmount) {
         return {
@@ -170,7 +162,7 @@ export class ZeroDevSessionKeyService {
         this.publicClient,
         this.entryPoint,
         KERNEL_V3_1,
-        sessionKeyData.serializedSessionKey
+        sessionKeyData.serializedSessionKey,
       );
 
       // Step 4: Create kernel client with session key
@@ -224,12 +216,12 @@ export class ZeroDevSessionKeyService {
         txHash,
         amountOut: swapQuote.expectedOutput,
       };
-
     } catch (error) {
       console.error('❌ DCA swap execution failed:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'DCA swap execution failed',
+        error:
+          error instanceof Error ? error.message : 'DCA swap execution failed',
       };
     }
   }
@@ -247,7 +239,9 @@ export class ZeroDevSessionKeyService {
       console.log(`- Destination: ${destinationAddress}`);
 
       // Check USDC balance in smart wallet
-      const balance = await this.getUSDCBalance(sessionKeyData.smartWalletAddress);
+      const balance = await this.getUSDCBalance(
+        sessionKeyData.smartWalletAddress,
+      );
 
       if (balance === BigInt(0)) {
         return {
@@ -263,7 +257,7 @@ export class ZeroDevSessionKeyService {
         this.publicClient,
         this.entryPoint,
         KERNEL_V3_1,
-        sessionKeyData.serializedSessionKey
+        sessionKeyData.serializedSessionKey,
       );
 
       // Create kernel client with session key
@@ -286,11 +280,13 @@ export class ZeroDevSessionKeyService {
       });
 
       const txHash = await kernelClient.sendUserOperation({
-        calls: [{
-          to: TOKENS.USDC,
-          value: BigInt(0),
-          data: transferData,
-        }],
+        calls: [
+          {
+            to: TOKENS.USDC,
+            value: BigInt(0),
+            data: transferData,
+          },
+        ],
       });
 
       console.log('✅ Funds swept successfully!');
@@ -301,7 +297,6 @@ export class ZeroDevSessionKeyService {
         txHash,
         amountOut: balance.toString(),
       };
-
     } catch (error) {
       console.error('❌ Fund sweep failed:', error);
       return {
@@ -393,11 +388,11 @@ export class ZeroDevSessionKeyService {
         },
         expectedOutput,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get swap quote',
+        error:
+          error instanceof Error ? error.message : 'Failed to get swap quote',
       };
     }
   }

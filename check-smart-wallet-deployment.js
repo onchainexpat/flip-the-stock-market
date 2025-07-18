@@ -7,17 +7,17 @@ async function checkSmartWalletDeployment() {
     chain: base,
     transport: http('https://mainnet.base.org'),
   });
-  
+
   const smartWalletAddress = '0x320b2943e26ccbDacE18575e7974EDC200BA4dCE';
-  
+
   console.log('🔍 Checking smart wallet deployment...');
   console.log('   Address:', smartWalletAddress);
-  
+
   try {
     const code = await publicClient.getCode({
       address: smartWalletAddress,
     });
-    
+
     if (code && code !== '0x') {
       console.log('✅ Smart wallet is deployed');
       console.log('   Code length:', code.length);
@@ -27,15 +27,14 @@ async function checkSmartWalletDeployment() {
       console.log('   This could be why UserOperation is failing');
       console.log('   The wallet needs to be deployed first');
     }
-    
+
     // Also check balance
     const balance = await publicClient.getBalance({
       address: smartWalletAddress,
     });
-    
+
     console.log('\n💰 ETH Balance:', balance.toString(), 'wei');
     console.log('   In ETH:', Number(balance) / 1e18);
-    
   } catch (error) {
     console.error('❌ Error checking deployment:', error.message);
   }

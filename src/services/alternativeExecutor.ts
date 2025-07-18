@@ -1,11 +1,8 @@
 import {
-  createPublicClient,
-  createWalletClient,
   http,
   type Address,
-  type Hex,
-  encodeFunctionData,
-  erc20Abi,
+  createPublicClient,
+  createWalletClient,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
@@ -56,27 +53,31 @@ export class AlternativeExecutor {
       const agentBalance = await this.publicClient.getBalance({
         address: account.address,
       });
-      
+
       console.log('💰 Agent ETH balance:', agentBalance.toString());
-      
+
       if (agentBalance === 0n) {
         return {
           success: false,
-          error: 'Agent has no ETH for gas fees. This test confirms ZeroDev paymaster is needed.',
+          error:
+            'Agent has no ETH for gas fees. This test confirms ZeroDev paymaster is needed.',
         };
       }
 
       // Get swap quote from Aerodrome
-      const aerodromeResponse = await fetch('http://localhost:3000/api/aerodrome-swap', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sellToken: TOKENS.USDC,
-          buyToken: TOKENS.SPX6900,
-          sellAmount: swapAmount.toString(),
-          takerAddress: smartWalletAddress,
-        }),
-      });
+      const aerodromeResponse = await fetch(
+        'http://localhost:3000/api/aerodrome-swap',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sellToken: TOKENS.USDC,
+            buyToken: TOKENS.SPX6900,
+            sellAmount: swapAmount.toString(),
+            takerAddress: smartWalletAddress,
+          }),
+        },
+      );
 
       if (!aerodromeResponse.ok) {
         throw new Error('Failed to get Aerodrome quote');
@@ -89,9 +90,9 @@ export class AlternativeExecutor {
       // but we can't actually execute without smart wallet permissions
       return {
         success: true,
-        error: 'Test successful - infrastructure working, but need ZeroDev smart wallet for actual execution',
+        error:
+          'Test successful - infrastructure working, but need ZeroDev smart wallet for actual execution',
       };
-
     } catch (error) {
       console.error('❌ Alternative execution failed:', error);
       return {

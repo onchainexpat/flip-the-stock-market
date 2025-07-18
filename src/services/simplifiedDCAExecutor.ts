@@ -1,7 +1,6 @@
 import type { Address } from 'viem';
-import { openOceanApi, TOKENS } from '../utils/openOceanApi';
+import { TOKENS, openOceanApi } from '../utils/openOceanApi';
 import { SimplifiedZeroDevDCAService } from './simplifiedZeroDevDCAService';
-import { serverAgentKeyService } from './serverAgentKeyService';
 
 export interface SimplifiedDCAResult {
   success: boolean;
@@ -104,12 +103,12 @@ export class SimplifiedDCAExecutor {
         transport: http(),
       });
 
-      const currentBalance = await publicClient.readContract({
+      const currentBalance = (await publicClient.readContract({
         address: TOKENS.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [smartWalletAddress],
-      }) as bigint;
+      })) as bigint;
 
       return {
         sufficient: currentBalance >= requiredAmount,

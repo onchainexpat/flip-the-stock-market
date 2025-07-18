@@ -2,11 +2,7 @@
 import { PrivyProvider } from '@privy-io/react-auth';
 import type { ReactNode } from 'react';
 import { base, baseSepolia } from 'viem/chains';
-import {
-  NEXT_PUBLIC_BASE_BUNDLER_URL,
-  NEXT_PUBLIC_BASE_PAYMASTER_URL,
-  NEXT_PUBLIC_PRIVY_APP_ID,
-} from '../config';
+import { NEXT_PUBLIC_PRIVY_APP_ID } from '../config';
 
 type Props = {
   children: ReactNode;
@@ -52,7 +48,6 @@ export default function PrivyProviders({ children }: Props) {
         // Chain configuration - ensure Base is default
         defaultChain: base,
         supportedChains: [base, baseSepolia],
-
       }}
     >
       {children}

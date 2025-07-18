@@ -1,6 +1,6 @@
 'use client';
 
-import type { Address, Hex } from 'viem';
+import type { Address } from 'viem';
 import { SimplifiedZeroDevDCAService } from './simplifiedZeroDevDCAService';
 
 export interface SimplifiedOneClickDCAParams {
@@ -47,22 +47,24 @@ export class SimplifiedOneClickDCAService {
 
       // Step 1: Deploy smart wallet using connected wallet
       console.log('📦 Step 1: Deploying smart wallet...');
-      const deployResult = await SimplifiedZeroDevDCAService.deploySmartWallet(
-        walletClient,
-      );
+      const deployResult =
+        await SimplifiedZeroDevDCAService.deploySmartWallet(walletClient);
 
       if (!deployResult.success) {
-        throw new Error(`Smart wallet deployment failed: ${deployResult.error}`);
+        throw new Error(
+          `Smart wallet deployment failed: ${deployResult.error}`,
+        );
       }
 
       console.log('✅ Smart wallet ready:', deployResult.smartWalletAddress);
 
       // Step 2: Create session key for automation
       console.log('🔑 Step 2: Creating DCA session key...');
-      const sessionResult = await SimplifiedZeroDevDCAService.createDCASessionKey(
-        walletClient,
-        deployResult.smartWalletAddress,
-      );
+      const sessionResult =
+        await SimplifiedZeroDevDCAService.createDCASessionKey(
+          walletClient,
+          deployResult.smartWalletAddress,
+        );
 
       if (!sessionResult.success) {
         throw new Error(`Session key creation failed: ${sessionResult.error}`);
@@ -72,22 +74,25 @@ export class SimplifiedOneClickDCAService {
 
       // Step 3: Create DCA order in database
       console.log('📋 Step 3: Creating DCA order in database...');
-      const response = await fetch(`${window.location.origin}/api/dca-orders-v2`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${window.location.origin}/api/dca-orders-v2`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userAddress: String(walletClient.account.address), // Ensure string
+            smartWalletAddress: String(deployResult.smartWalletAddress), // Ensure string
+            sessionKeyApproval: String(sessionResult.sessionKeyData), // Ensure string
+            totalAmount: String(amount), // Ensure string
+            frequency: String(frequency),
+            duration: String(duration),
+            platformFeePercentage: Number(platformFeePercentage),
+            provider: 'zerodev-simplified',
+          }),
         },
-        body: JSON.stringify({
-          userAddress: String(walletClient.account.address), // Ensure string
-          smartWalletAddress: String(deployResult.smartWalletAddress), // Ensure string
-          sessionKeyApproval: String(sessionResult.sessionKeyData), // Ensure string
-          totalAmount: String(amount), // Ensure string
-          frequency: String(frequency),
-          duration: String(duration),
-          platformFeePercentage: Number(platformFeePercentage),
-          provider: 'zerodev-simplified',
-        }),
-      });
+      );
 
       if (!response.ok) {
         let errorMessage = 'Failed to create DCA order';
