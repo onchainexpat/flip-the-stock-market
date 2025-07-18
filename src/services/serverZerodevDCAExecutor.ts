@@ -17,8 +17,8 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 import { TOKENS } from '../utils/openOceanApi';
-import { aggregatorExecutionService } from './aggregatorExecutionService';
 import { serverAgentKeyService } from './serverAgentKeyService';
+import { aggregatorExecutionService } from './aggregatorExecutionService';
 
 // ZeroDev configuration
 const ZERODEV_PROJECT_ID = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID || '';
@@ -76,14 +76,50 @@ export class ServerZerodevDCAExecutor {
     swapAmount: bigint,
   ): Promise<ServerDCAExecutionResult> {
     console.log('🔄 Executing direct DCA without session key approval...');
+    console.log('💡 Using alternative execution method...');
     
-    // This is a simplified version that doesn't use session key approval
-    // Instead, it will use the unified smart wallet system or another execution method
-    
-    return {
-      success: false,
-      error: 'Direct DCA execution not yet implemented. Please create a new DCA order with proper session key approval.',
-    };
+    try {
+      // Get the agent private key
+      const privateKey = await serverAgentKeyService.getPrivateKey(agentKeyData.keyId);
+      if (!privateKey) {
+        throw new Error('Agent private key not found');
+      }
+
+      // Create agent account
+      const agentAccount = privateKeyToAccount(privateKey);
+      console.log('🤖 Agent account created:', agentAccount.address);
+
+      // Check if agent has any ETH for gas
+      const agentBalance = await this.publicClient.getBalance({
+        address: agentAccount.address,
+      });
+      
+      console.log('⚡ Agent ETH balance:', Number(agentBalance) / 1e18, 'ETH');
+
+      if (agentBalance === 0n) {
+        return {
+          success: false,
+          error: 'Agent account has no ETH for gas fees. Direct execution requires gas sponsorship or funded agent.',
+        };
+      }
+
+      // For now, return a success message indicating the setup is working
+      // The actual swap execution would require more complex setup
+      return {
+        success: false,
+        error: 'Direct execution setup validated. Full implementation requires gas sponsorship setup.',
+        swapAmount: swapAmount.toString(),
+        spxReceived: '0',
+        gasUsed: 0n,
+        transactions: {},
+      };
+    } catch (error) {
+      console.error('❌ Direct DCA execution failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Direct execution failed',
+      };
+    }
   }
 
   /**
