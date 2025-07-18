@@ -202,6 +202,30 @@ function formatFrequency(intervalSeconds: number): string {
   return `Every ${hours}h`;
 }
 
+function formatSpxAmount(amountStr: string): string {
+  const amount = Number(amountStr) / 1e18;
+  
+  if (amount === 0) {
+    return '0';
+  }
+  
+  // For very small amounts, use scientific notation or show "< 0.000001"
+  if (amount < 0.000001) {
+    if (amount < 1e-12) {
+      return amount.toExponential(2);
+    }
+    return '< 0.000001';
+  }
+  
+  // For small amounts, use more precision
+  if (amount < 0.001) {
+    return amount.toFixed(8);
+  }
+  
+  // For normal amounts, use standard precision
+  return amount.toFixed(6);
+}
+
 export default function DCAOrderHistory({
   className = '',
   onOrderUpdate,
@@ -292,7 +316,7 @@ export default function DCAOrderHistory({
         // Show SPX amount received if available
         const spxReceived = result.result?.spxReceived;
         if (spxReceived && spxReceived !== '0') {
-          const spxAmount = (Number(spxReceived) / 1e8).toFixed(8);
+          const spxAmount = formatSpxAmount(spxReceived);
           toast.success(`✅ DCA executed! Received ${spxAmount} SPX`);
         } else {
           toast.success('✅ DCA order execution triggered!');
@@ -455,7 +479,7 @@ export default function DCAOrderHistory({
                     <div>
                       <span className="text-gray-400">SPX Received:</span>
                       <div className="text-white">
-                        {(Number(order.totalSpxReceived) / 1e18).toFixed(6)}
+                        {formatSpxAmount(order.totalSpxReceived)}
                       </div>
                     </div>
                     <div>

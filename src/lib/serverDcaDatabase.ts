@@ -617,9 +617,47 @@ class ServerDCADatabase {
   }
 
   async getOrderExecutions(orderId: string): Promise<DCAExecution[]> {
-    const executionIds = await redis.smembers(
-      REDIS_KEYS.ORDER_EXECUTIONS(orderId),
-    );
+    let executionIds: string[] = [];
+    
+    try {
+      // Try to get execution IDs from the Redis set
+      executionIds = await redis.smembers(
+        REDIS_KEYS.ORDER_EXECUTIONS(orderId),
+      );
+    } catch (error) {
+      // If Redis set operation fails (WRONGTYPE), fall back to scanning for executions
+      console.warn(`Redis smembers failed for order ${orderId}, scanning for executions:`, error);
+      
+      try {
+        // Get all execution keys and filter by orderId
+        const allKeys = await redis.keys('dca:execution:*');
+        const matchingExecutions: string[] = [];
+        
+        for (const key of allKeys) {
+          try {
+            const data = await redis.get(key);
+            if (data) {
+              const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+              if (parsed.orderId === orderId) {
+                // Extract execution ID from key
+                const execId = key.replace('dca:execution:', '');
+                matchingExecutions.push(execId);
+              }
+            }
+          } catch (e) {
+            // Skip invalid execution records
+            continue;
+          }
+        }
+        
+        executionIds = matchingExecutions;
+        console.log(`Found ${executionIds.length} executions for order ${orderId} via fallback method`);
+      } catch (fallbackError) {
+        console.error(`Fallback execution retrieval failed for order ${orderId}:`, fallbackError);
+        return [];
+      }
+    }
+    
     const executions: DCAExecution[] = [];
 
     for (const id of executionIds) {
