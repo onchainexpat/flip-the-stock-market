@@ -5,11 +5,16 @@ export const runtime = 'edge';
 
 function getIntervalSeconds(frequency: string): number {
   switch (frequency) {
-    case 'hourly': return 3600;
-    case 'daily': return 86400;
-    case 'weekly': return 604800;
-    case 'monthly': return 2592000;
-    default: return 86400; // Default to daily
+    case 'hourly':
+      return 3600;
+    case 'daily':
+      return 86400;
+    case 'weekly':
+      return 604800;
+    case 'monthly':
+      return 2592000;
+    default:
+      return 86400; // Default to daily
   }
 }
 
@@ -18,13 +23,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userAddress = searchParams.get('userAddress');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '5');
+    const page = Number.parseInt(searchParams.get('page') || '1');
+    const limit = Number.parseInt(searchParams.get('limit') || '5');
 
     if (!userAddress) {
       return NextResponse.json(
         { success: false, error: 'User address is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,8 +37,10 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Get all orders for the user
-    const allOrders = await serverDcaDatabase.getUserOrders(userAddress as `0x${string}`);
-    
+    const allOrders = await serverDcaDatabase.getUserOrders(
+      userAddress as `0x${string}`,
+    );
+
     // Sort orders: active first, then by creation date (newest first)
     const sortedOrders = allOrders.sort((a, b) => {
       // Check if orders are active (executionsRemaining > 0)
@@ -41,34 +48,38 @@ export async function GET(request: NextRequest) {
       const bExecutionsRemaining = b.totalExecutions - b.executionsCount;
       const aActive = aExecutionsRemaining > 0 && a.status === 'active';
       const bActive = bExecutionsRemaining > 0 && b.status === 'active';
-      
+
       // Active orders come first
       if (aActive && !bActive) return -1;
       if (!aActive && bActive) return 1;
-      
+
       // Within same status, sort by creation date (newest first)
       return b.createdAt - a.createdAt;
     });
 
     // Apply pagination
     const paginatedOrders = sortedOrders.slice(offset, offset + limit);
-    
+
     // Calculate next execution times and format order data
     const ordersWithDetails = await Promise.all(
       paginatedOrders.map(async (order) => {
-        // Get execution history for this order
-        const executions = await serverDcaDatabase.getOrderExecutions(order.id);
-        
+        try {
+          // Get execution history for this order
+          const executions = await serverDcaDatabase.getOrderExecutions(order.id);
+
         // Calculate next execution time
-        const lastExecutionTime = executions.length > 0 
-          ? Math.max(...executions.map(e => e.executedAt))
-          : order.createdAt;
-        
-        const executionsRemaining = order.totalExecutions - order.executionsCount;
+        const lastExecutionTime =
+          executions.length > 0
+            ? Math.max(...executions.map((e) => e.executedAt))
+            : order.createdAt;
+
+        const executionsRemaining =
+          order.totalExecutions - order.executionsCount;
         const intervalSeconds = getIntervalSeconds(order.frequency);
-        const nextExecutionAt = executionsRemaining > 0 && order.status === 'active'
-          ? lastExecutionTime + intervalSeconds
-          : null;
+        const nextExecutionAt =
+          executionsRemaining > 0 && order.status === 'active'
+            ? lastExecutionTime + intervalSeconds
+            : null;
 
         // Parse session key data for additional details
         let orderDetails: any = {};
@@ -83,7 +94,9 @@ export async function GET(request: NextRequest) {
           userAddress: order.userAddress,
           smartWalletAddress: orderDetails.smartWalletAddress || 'Unknown',
           totalAmount: order.totalAmount.toString(),
-          amountPerExecution: (order.totalAmount / BigInt(order.totalExecutions)).toString(),
+          amountPerExecution: (
+            order.totalAmount / BigInt(order.totalExecutions)
+          ).toString(),
           totalExecutions: order.totalExecutions,
           executionsCompleted: executions.length,
           executionsRemaining,
@@ -91,12 +104,42 @@ export async function GET(request: NextRequest) {
           nextExecutionAt,
           expiresAt: order.expiresAt,
           createdAt: order.createdAt,
-          status: executionsRemaining > 0 && order.status === 'active' ? 'active' : order.status,
+          status:
+            executionsRemaining > 0 && order.status === 'active'
+              ? 'active'
+              : order.status,
           agentKeyId: orderDetails.agentKeyId,
-          lastExecutionHash: executions.length > 0 ? executions[executions.length - 1].txHash : null,
-          totalSpxReceived: executions.reduce((sum, e) => sum + e.amountOut, 0n).toString(),
+          lastExecutionHash:
+            executions.length > 0
+              ? executions[executions.length - 1].txHash
+              : null,
+          totalSpxReceived: executions
+            .reduce((sum, e) => sum + BigInt(e.amountOut || 0), 0n)
+            .toString(),
         };
-      })
+        } catch (orderError) {
+          console.error(`Error processing order ${order.id}:`, orderError);
+          // Return a safe fallback order object
+          return {
+            id: order.id,
+            userAddress: order.userAddress,
+            smartWalletAddress: 'Unknown',
+            totalAmount: order.totalAmount.toString(),
+            amountPerExecution: (order.totalAmount / BigInt(order.totalExecutions)).toString(),
+            totalExecutions: order.totalExecutions,
+            executionsCompleted: 0,
+            executionsRemaining: order.totalExecutions,
+            intervalSeconds: 3600,
+            nextExecutionAt: order.createdAt,
+            expiresAt: order.expiresAt,
+            createdAt: order.createdAt,
+            status: 'error',
+            agentKeyId: 'unknown',
+            lastExecutionHash: null,
+            totalSpxReceived: '0',
+          };
+        }
+      }),
     );
 
     // Calculate pagination info
@@ -105,7 +148,7 @@ export async function GET(request: NextRequest) {
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
-    return NextResponse.json({
+    const response = {
       success: true,
       orders: ordersWithDetails,
       pagination: {
@@ -116,7 +159,31 @@ export async function GET(request: NextRequest) {
         hasPrevPage,
         limit,
       },
-    });
+    };
+
+    // Test JSON serialization before returning
+    try {
+      JSON.stringify(response);
+      return NextResponse.json(response);
+    } catch (jsonError) {
+      console.error('JSON serialization error:', jsonError);
+      console.error('Response object:', response);
+      
+      // Return a safe fallback response
+      return NextResponse.json({
+        success: false,
+        error: 'JSON serialization failed',
+        orders: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalOrders: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+          limit,
+        },
+      });
+    }
   } catch (error) {
     console.error('Failed to fetch DCA order history:', error);
     return NextResponse.json(
@@ -124,7 +191,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
