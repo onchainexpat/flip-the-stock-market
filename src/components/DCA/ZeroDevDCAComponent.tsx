@@ -200,8 +200,10 @@ export default function ZeroDevDCAComponent({
       });
 
       const orderResult = await createOrderResponse.json();
+      console.log('📋 DCA order creation response:', orderResult);
 
       if (!orderResult.success) {
+        console.error('❌ DCA order creation failed:', orderResult);
         throw new Error(orderResult.error || 'Failed to create DCA order');
       }
 

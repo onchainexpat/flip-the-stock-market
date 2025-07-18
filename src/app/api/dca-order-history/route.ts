@@ -86,13 +86,24 @@ export async function GET(request: NextRequest) {
         try {
           // Check if sessionKeyData is already an object or needs parsing
           if (typeof order.sessionKeyData === 'string') {
-            orderDetails = JSON.parse(order.sessionKeyData);
-          } else if (typeof order.sessionKeyData === 'object') {
+            // Handle case where sessionKeyData might be "[object Object]" string
+            if (order.sessionKeyData === '[object Object]') {
+              console.warn(`Order ${order.id} has corrupted sessionKeyData: "[object Object]"`);
+              orderDetails = {};
+            } else {
+              orderDetails = JSON.parse(order.sessionKeyData);
+            }
+          } else if (typeof order.sessionKeyData === 'object' && order.sessionKeyData !== null) {
             orderDetails = order.sessionKeyData;
+          } else {
+            console.warn(`Order ${order.id} has invalid sessionKeyData type:`, typeof order.sessionKeyData);
+            orderDetails = {};
           }
         } catch (e) {
           console.error(`Failed to parse sessionKeyData for order ${order.id}:`, e);
+          console.error(`Raw sessionKeyData:`, order.sessionKeyData);
           // Handle legacy format or corrupted data
+          orderDetails = {};
         }
 
         return {
