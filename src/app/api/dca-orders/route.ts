@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
       Number(duration),
     );
 
-    // Set first execution to immediate (current time + 1 minute to allow for processing)
-    const nextExecutionAt = now + 60 * 1000; // Start in 1 minute
+    // Set first execution to immediate
+    const nextExecutionAt = now; // Start immediately
 
     const order = await serverDcaDatabase.createOrder({
       userAddress,

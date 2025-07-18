@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
 
         // Timestamps
         createdAt: now,
-        nextExecutionAt: now + 30000, // First execution in 30 seconds for testing
+        nextExecutionAt: now, // First execution immediately
         expiresAt: now + durationDays * 24 * 60 * 60 * 1000,
 
         // Transaction hashes
