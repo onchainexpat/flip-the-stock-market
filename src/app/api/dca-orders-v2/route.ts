@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         destinationAddress: userAddress as Address, // SPX goes to user wallet
         totalAmount: totalAmountWei,
         frequency,
-        duration: durationDays,
+        duration: totalExecutions,
 
         // Fee tracking
         platformFeePercentage,
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         // Timestamps
         createdAt: now,
         nextExecutionAt: now, // First execution immediately
-        expiresAt: now + durationDays * 24 * 60 * 60 * 1000,
+        expiresAt: now + totalExecutions * frequencyMs, // Expire after all executions complete
 
         // Transaction hashes
         executionTxHashes: [],
