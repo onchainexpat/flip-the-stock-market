@@ -1,0 +1,25 @@
+name: Test DCA Cron on Branch
+
+on:
+  # Run every 10 minutes on zerodev branch
+  schedule:
+    - cron: '*/10 * * * *'
+  # Also allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  test-cron:
+    # Only run on zerodev branch
+    if: github.ref == 'refs/heads/zerodev'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger DCA Execution
+        run: |
+          # Get the preview URL for zerodev branch
+          PREVIEW_URL="${{ secrets.VERCEL_PREVIEW_URL }}"
+          
+          # Call the test endpoint
+          curl -X GET "$PREVIEW_URL/api/test-cron-execution" \
+            -H "Content-Type: application/json" \
+            --fail-with-body
