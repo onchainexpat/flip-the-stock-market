@@ -1,32 +1,13 @@
 'use client';
 import Footer from 'src/components/Footer';
-import { useAccount, useBalance, useBlockNumber, useReadContracts } from 'wagmi';
-import { 
-  type LifecycleStatus,
-  Swap, 
-  SwapAmountInput, 
-  SwapButton, 
-  SwapMessage, 
-  SwapToggleButton,
-  SwapError,
-  SwapToast ,
-} from '@coinbase/onchainkit/swap'
-import type { Token } from '@coinbase/onchainkit/token';
-import { FundButton, getOnrampBuyUrl } from '@coinbase/onchainkit/fund';
-import { useState, useCallback, useRef, useEffect } from 'react';
-import type { TransactionReceipt } from 'viem';
+import { useState, useRef, useEffect } from 'react';
 import Confetti from 'react-confetti';
-import { NEXT_PUBLIC_CDP_PROJECT_ID } from 'src/config';
 import { createPortal } from 'react-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import ProfileGrid from './components/ProfileGrid';
 import html2canvas from 'html2canvas';
 import React from 'react';
-import WalletWrapper from '../components/WalletWrapper';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 
-const FALLBACK_DEFAULT_MAX_SLIPPAGE = 3;
-const defaultMaxSlippage = 3;
 
 type DuneDataPoint = {
   date: string;
@@ -102,7 +83,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
   return (
     <div
       ref={ref}
-      data-price-comparison
+      data-price-comparison={true}
       // Adjust height slightly if needed for the extra line
       className={`${showExtraSection ? 'h-auto md:h-[370px]' : 'h-auto md:h-[300px]'} w-full max-w-full px-2 md:px-4`}
     >
@@ -141,13 +122,13 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span 
-              data-snp-price 
+              data-snp-price={true} 
               className="text-2xl md:text-3xl font-bold"
             >
               {formatPrice(snpPrice)}
             </span>
             <span 
-              data-snp-change
+              data-snp-change={true}
               className={`text-base md:text-lg ${snpChangeFormatted.color}`}
             >
               {snpChangeFormatted.text}
@@ -161,7 +142,7 @@ const PriceComparison = React.forwardRef<HTMLDivElement, PriceComparisonProps>((
 
       {/* Extra section for Twitter image */}
       {showExtraSection && (
-        <div className="mt-3 pt-3 text-center text-white" data-market-cap-section>
+        <div className="mt-3 pt-3 text-center text-white" data-market-cap-section={true}>
           <h3 className="text-base md:text-lg font-semibold mb-3">
             <span className="gold-text">SPX6900</span> WITH THE MARKET CAP OF <span className="gold-text">S&P500</span>
           </h3>
@@ -319,7 +300,6 @@ interface SnpData { // Renamed from AlphaVantageData
 
 export default function Page() {
   const priceComparisonRef = useRef<HTMLDivElement>(null);
-  const [openDropdown, setOpenDropdown] = useState<'sponsoredBuys' | 'howToBuyVideo' | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -338,10 +318,7 @@ export default function Page() {
   // --- Rename state variable ---
   const [snpData, setSnpData] = useState<SnpData | null>(null); // Renamed from snpAlphaVantageData
 
-  const projectId = 'cc2411f3-9ed7-4da8-a005-711f71b8e8dc';
-  const { address } = useAccount();
 
-  const { openConnectModal } = useConnectModal();
 
   // Fetch CoinGecko data (no changes needed here)
   useEffect(() => {
@@ -407,15 +384,6 @@ export default function Page() {
     return () => clearInterval(interval); // Cleanup interval on unmount
   }, []);
 
-  const onrampBuyUrl = address
-    ? getOnrampBuyUrl({
-        projectId,
-        addresses: { [address]: ['base'] },
-        assets: ['USDC'],
-        presetFiatAmount: 20,
-        fiatCurrency: 'USD'
-      })
-    : undefined;
 
   useEffect(() => {
     const updateWindowDimensions = () => {
@@ -492,142 +460,57 @@ export default function Page() {
     fetchHoldersData();
   }, []);
 
-  const toggleDropdown = (dropdown: 'sponsoredBuys' | 'howToBuyVideo') => {
-    if (openDropdown === dropdown) {
-      setOpenDropdown(null);
-    } else {
-      setOpenDropdown(dropdown);
-    }
-  };
  
   // Define token constants with original image URIs
-  // NOTE: OnchainKit's Token type might expect 'logoURI' instead of 'image'.
-  // If you encounter type errors, you might need to adjust the type definition
-  // or use 'logoURI' as the key, keeping the original URL values.
 
-  const ETHToken: Token = {
-    address: '', // Or appropriate WETH address for Base
-    chainId: 8453,
-    decimals: 18,
-    name: "ETH", // Or just "ETH" if using native ETH representation
-    symbol: "ETH", // Or "ETH"
-    image: "/ETH-LOGO.png", // Use local path
-  };
-
-  const SPXToken: Token = {
-    address: "0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C",
-    chainId: 8453,
-    decimals: 8,
-    name: "SPX6900",
-    symbol: "SPX",
-    image: "/spx6900.png" // Original
-  };
-
-  const USDCToken: Token = {
-    address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    chainId: 8453,
-    decimals: 6,
-    name: "USDC",
-    symbol: "USDC",
-    image: "/USDC-LOGO.png", // Use local path
-  };
-
-  // Update the swappable tokens array to include ETH
-  const swappableTokens: Token[] = [ETHToken, SPXToken, USDCToken];
-
-  // Add state for selected tokens
-  const [fromToken, setFromToken] = useState<Token>(USDCToken);
-  const [toToken, setToToken] = useState<Token>(SPXToken);
-  // const finalToTokenRef = useRef<Token | null>(null); // No longer needed
-
-  const handleOnStatus = useCallback(
-    (lifecycleStatus: LifecycleStatus) => {
-      console.log('Swap Status:', lifecycleStatus);
-      const statusName = lifecycleStatus.statusName as any;
-      const statusData = lifecycleStatus.statusData as any; // Cast for easier access
-
-      // --- Trigger confetti logic ONLY on 'success' status ---
-      if (statusName === 'success' && statusData?.tokenTo) {
-        console.log('Swap Success Status Data:', statusData);
-        let confirmedToToken: Token | null = null;
-
-        // Check if the image URL is directly available
-        if (statusData.tokenTo.image) {
-            console.log('Using token data directly from success statusData.');
-            confirmedToToken = statusData.tokenTo;
-        } else {
-            // Fallback: Find the full token object from our list
-            console.log('Image not directly in statusData.tokenTo, searching swappableTokens...');
-            confirmedToToken = swappableTokens.find(
-                t => t.address.toLowerCase() === statusData.tokenTo.address?.toLowerCase() &&
-                     t.chainId === statusData.tokenTo.chainId
-            );
-             if (confirmedToToken) {
-               console.log('Found matching token in swappableTokens:', confirmedToToken);
-             } else {
-               console.error("Could not find matching token in swappableTokens for:", statusData.tokenTo);
-             }
-        }
-
-        // --- Moved confetti logic here ---
-        if (confirmedToToken?.image) {
-          const imageUrl = confirmedToToken.image;
-          console.log(`Starting confetti for: ${imageUrl}`);
-
-          // Load the image and trigger confetti
-          const img = new window.Image();
-          img.crossOrigin = "anonymous";
-          img.src = imageUrl;
-
-          img.onload = () => {
-            console.log(`Confetti image loaded successfully: ${imageUrl}`);
-            confettiImage.current = img;
-            setShowConfetti(true); // Trigger confetti state
-            // --- REMOVE setTimeout from here ---
-            // setTimeout(() => {
-            //   setShowConfetti(false);
-            //   console.log('Confetti timeout reached, hiding confetti.');
-            // }, 5000);
-          };
-
-          img.onerror = (error) => {
-            console.error(`Failed to load confetti image: ${imageUrl}`, error);
-            confettiImage.current = null;
-          };
-        } else {
-          console.error("Could not determine confirmedToToken or its image URL for confetti.");
-        }
-        // --- End moved confetti logic ---
-
-      } // --- End of 'success' status block ---
-      else {
-        // Handle other statuses if needed (logging, UI updates, etc.)
-        if (statusName === 'transactionPending') {
-          console.log('Transaction Pending status...');
-        }
-        if (statusName === 'approvalPending') {
-          console.log('Approval transaction sent, awaiting confirmation...');
-        }
-        // ... other status logs ...
-      }
-    },
-    [swappableTokens] // Dependency for the lookup fallback
-  );
-
-  const handleOnError = useCallback((swapError: SwapError) => {
-    console.error('Swap Error:', swapError); // Log the full error object
-    // Log specific details if available
-    // Check if swapError.error exists and cast it to 'any' to access potential properties
-    if (swapError.error) {
-      const internalError = swapError.error as any; 
-      console.error('Internal Error Code:', internalError.code);
-      console.error('Internal Error Message:', internalError.message);
-    }
-  }, []);
 
   const [parseHubData, setParseHubData] = useState<any>(null);
   // Renamed state variable for clarity
   const [isParseHubDataLoaded, setIsParseHubDataLoaded] = useState(false);
+
+  // Helper function to parse platforms from HTML string
+  const parsePlatformsFromHtml = (htmlString: string) => {
+    // Split by svg tags to get individual platform sections
+    const platformSections = htmlString.split('<svg').slice(1).map(section => '<svg' + section);
+    
+    return platformSections.map((section, index) => {
+      // Extract SVG (including the opening tag)
+      const svgMatch = section.match(/<svg[^>]*>.*?<\/svg>/);
+      const svgContent = svgMatch ? svgMatch[0] : '';
+      
+      // Extract sentiment percentages for this platform
+      const sentimentMatch = section.match(/width: ([\d.]+)%.*?background-color: rgb\(246, 80, 108\).*?width: ([\d.]+)%.*?background-color: rgb\(255, 132, 74\).*?width: ([\d.]+)%.*?background-color: rgb\(0, 184, 146\)/);
+      
+      return {
+        name: section, // Keep full section for compatibility
+        svgContent: svgContent,
+        negative: sentimentMatch ? Number.parseFloat(sentimentMatch[1]) : 0,
+        neutral: sentimentMatch ? Number.parseFloat(sentimentMatch[2]) : 0,
+        positive: sentimentMatch ? Number.parseFloat(sentimentMatch[3]) : 0
+      };
+    }).filter(platform => platform.svgContent); // Only include platforms with valid SVG
+  };
+
+  // Helper function to parse engagement platforms from HTML string
+  const parseEngagementFromHtml = (htmlString: string) => {
+    // Split by svg tags to get individual platform sections
+    const platformSections = htmlString.split('<svg').slice(1).map(section => '<svg' + section);
+    
+    return platformSections.map((section, index) => {
+      // Extract SVG (including the opening tag)
+      const svgMatch = section.match(/<svg[^>]*>.*?<\/svg>/);
+      const svgContent = svgMatch ? svgMatch[0] : '';
+      
+      // Extract engagement percentage for this platform
+      const widthMatch = section.match(/width: ([\d.]+)%/);
+      
+      return {
+        name: section, // Keep full section for compatibility
+        svgContent: svgContent,
+        width: widthMatch ? Number.parseFloat(widthMatch[1]) : 0
+      };
+    }).filter(platform => platform.svgContent); // Only include platforms with valid SVG
+  };
 
   useEffect(() => {
     const fetchParseHubProjects = async () => {
@@ -666,16 +549,6 @@ export default function Page() {
     fetchParseHubProjects();
   }, []);
 
-  const handleCoinbaseWalletClick = useCallback((event: React.MouseEvent) => {
-    // Prevent default
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Use the openConnectModal directly
-    if (openConnectModal) {
-      openConnectModal();
-    }
-  }, [openConnectModal]);
 
   const generatePriceImage = async () => {
     console.log('Starting image generation...');
@@ -941,7 +814,7 @@ export default function Page() {
   // --- Update readiness check ---
   const isDataReadyForShare = spxPrice !== null && spxMarketCap !== null && snpData !== null && isParseHubDataLoaded; // Use snpData
 
-  const handleShareToX = useCallback(async () => {
+  const handleShareToX = async () => {
     setIsGeneratingImage(true);
 
     if (!isDataReadyForShare) { // Uses updated check
@@ -989,13 +862,13 @@ export default function Page() {
       setIsGeneratingImage(false);
     }
     // --- Update dependencies ---
-  }, [isDataReadyForShare, spxPrice, spx24hChange, spxMarketCap, snpData, parseHubData]); // Use snpData
+  };
 
   // Helper function to get S&P 500 Market Cap from ParseHub data
   const parseSnpMarketCap = (data: any): number | null => {
     const mcStr = data?.slickchart?.marketcap; // Still use slickchart data
     if (typeof mcStr === 'string') {
-      const value = parseFloat(mcStr.replace(/[^0-9.]/g, ''));
+      const value = Number.parseFloat(mcStr.replace(/[^0-9.]/g, ''));
       if (isNaN(value)) return null;
       if (mcStr.toLowerCase().includes('t')) return value * 1e12;
       if (mcStr.toLowerCase().includes('b')) return value * 1e9;
@@ -1189,16 +1062,16 @@ export default function Page() {
   }, []);
 
   // Callback function for when confetti animation completes
-  const handleConfettiComplete = useCallback(() => {
+  const handleConfettiComplete = () => {
       console.log('Confetti animation complete, hiding confetti.');
       setShowConfetti(false);
       confettiImage.current = null; // Optional: clear the image ref after use
-  }, []);
+  };
 
   return (
     <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden relative">
       {/* Fixed background MOVED OUTSIDE main */}
-      <div className="fixed inset-0 z-0 bg-[#131827]"></div>
+      <div className="fixed inset-0 z-0 bg-[#131827] pointer-events-none"></div>
 
       {/* Fixed Hamburger Menu MOVED OUTSIDE main */}
       <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-[#131827]/50 backdrop-blur-sm">
@@ -1232,7 +1105,7 @@ export default function Page() {
         </button>
 
         <div className="flex items-center gap-3">
-          <WalletWrapper />
+          {/* Wallet functionality removed */}
         </div>
         
         {isMenuOpen && (
@@ -1259,12 +1132,12 @@ export default function Page() {
         )}
       </div>
 
-      <main className="flex-1 w-full px-4 sm:px-6 py-8 mx-auto max-w-7xl pb-4">
+      <main className="flex-1 w-full px-4 sm:px-6 py-8 pb-4">
         {/* Removed fixed background div from here */}
         {/* Removed fixed hamburger menu div from here */}
 
         {/* Main content wrapper */}
-        <div className="relative z-10 pt-20 sm:pt-24">
+        <div className="relative z-10 pt-20 sm:pt-24 w-full max-w-6xl mx-auto">
           {showConfetti && confettiImage.current && createPortal(
             <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 10000 }}>
               <Confetti
@@ -1295,19 +1168,19 @@ export default function Page() {
             <div className="relative w-full max-w-3xl mx-auto mb-4">
               {/* Background image/glow with reduced spread */}
               <div className="absolute inset-0 z-0">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[100%] bg-gradient-to-r from-[#ff69b4]/10 via-[#ff8c00]/10 to-[#4caf50]/10 rounded-[40px] blur-[20px]"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[100%] bg-gradient-to-r from-[#FFD700]/10 via-[#FFA500]/10 to-[#FFFF99]/10 rounded-[40px] blur-[20px]"></div>
               </div>
               
               {/* Text with gradient */}
               <h1 className="relative z-10 text-7xl sm:text-8xl md:text-9xl font-bold text-center p-4">
-                <span className="bg-gradient-to-r from-[#ff69b4] via-[#ff8c00] to-[#4caf50] text-transparent bg-clip-text">
+                <span className="shimmer-text">
                   flip the stock market
                 </span>
               </h1>
             </div>
             
             {/* Price Comparison Section - Pass updated props */}
-            <div className="flex flex-row w-full gap-4 justify-center">
+            <div className="flex flex-row w-full max-w-4xl gap-4 justify-center mx-auto">
               <div className="flex-1 p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl">
                 <VisiblePriceComparison 
                   spxPrice={spxPrice}
@@ -1330,9 +1203,7 @@ export default function Page() {
               }`}
             >
               <span className="flex items-center gap-2 text-base font-medium">
-                {!isDataReadyForShare ? ( // Check combined state
-                  'Loading market data...'
-                ) : isGeneratingImage ? (
+                {isDataReadyForShare ? isGeneratingImage ? (
                   <>
                     Preparing image... 
                     {/* ... spinner svg ... */}
@@ -1341,12 +1212,14 @@ export default function Page() {
                   <>
                     Post to <img src="/x-logo.svg" alt="X Logo" className="w-5 h-5" />
                   </>
+                ) : ( // Check combined state
+                  'Loading market data...'
                 )}
               </span>
             </button>
 
             {/* Market Cap Calculator Section - Ensure data dependencies */}
-            <div className="w-full p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl mt-4">
+            <div className="w-full max-w-4xl mx-auto p-4 bg-[#1B2236]/40 backdrop-blur-md rounded-xl mt-4">
               <h2 className="text-2xl font-bold text-white text-center mb-4">
                 <span className="gold-text">SPX6900</span> WITH THE MARKET CAP OF <span className="gold-text">S&P500</span>
               </h2>
@@ -1384,7 +1257,7 @@ export default function Page() {
                         const value = e.target.value;
                         const element = document.getElementById('calculatedValue');
                         if (element) {
-                          const amount = parseFloat(value);
+                          const amount = Number.parseFloat(value);
                            const snpMC = parseSnpMarketCap(parseHubData);
                            if (snpMC === null) {
                               element.textContent = 'N/A';
@@ -1409,72 +1282,28 @@ export default function Page() {
             </div>
 
             {/* Swap Section - reduce bottom margin */}
-            <div className="w-full items-center justify-center rounded-xl bg-transparent mt-4 mb-4">
-              {address ? (
-                <div className="flex w-full flex-col items-center justify-center gap-2">
-                  <div className="w-full max-w-[450px] relative">
-                    <Swap
-                      className="w-full bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md text-white [&_*]:text-white [&_p]:text-white [&_span]:text-white [&_div]:text-white [&_input]:bg-[#1B2236] [&_button]:bg-[#1B2236] [&_.swap-input]:!bg-[#1B2236] [&_.swap-input-container]:!bg-[#1B2236] [&_.swap-button]:!bg-[#1B2236] [&_.swap-message]:!bg-[#1B2236] [&_*]:!bg-[#1B2236] [&_*]:!bg-opacity-70 [&_.token-selector]:!bg-[#1B2236] [&_.token-selector-button]:!bg-[#1B2236] [&_.token-list]:!bg-[#1B2236] [&_.input-container]:!bg-[#1B2236] [&_button]:!flex [&_button]:!justify-center [&_button]:!items-center [&_svg]:!text-white [&_svg]:!fill-white [&_.token-selector]:!static [&_.token-list]:!absolute [&_.token-list]:!left-0 [&_.token-list]:!right-0 [&_.token-list]:!w-full [&_.token-list]:!mt-2 !px-6 !pb-2 !pt-24 [&_h1]:!hidden [&_[data-testid='ockSwap_title']]:!hidden [&_[data-testid='ockSwap_header']]:!hidden [&_.swap-header]:!hidden [&_h2]:!hidden [&_h3]:!hidden [&_.swap-title]:!hidden [&_div:contains('Swap')]:!hidden sm:[&_input]:!text-3xl [&_input]:!text-lg [&_label]:!text-sm sm:[&_label]:!text-lg [&_.token-selector-button]:!text-sm sm:[&_.token-selector-button]:!text-lg [&_.swap-input-container]:!gap-1 sm:[&_.swap-input-container]:!gap-2 [&_span:contains('Balance')]:hidden [&_span:empty~span]:before:content-['Bal:']"
-                      onStatus={handleOnStatus} // Uses updated handler
-                      onError={handleOnError} // Uses updated handler
-                      config={{
-                        maxSlippage: defaultMaxSlippage || FALLBACK_DEFAULT_MAX_SLIPPAGE,
-                      }}
-                      experimental={{
-                        useAggregator: true  // <--- Enabled aggregator
-                      }}
-                      isSponsored={true} // <-- Enabled sponsorship
-                    >
-                      <SwapAmountInput
-                        label="Sell"
-                        swappableTokens={swappableTokens}
-                        token={fromToken}
-                        type="from"
-                      />
-                      <SwapToggleButton
-                        className="!border-0 !bg-transparent !text-white [&_svg]:!text-white [&_svg]:!fill-white [&_path]:!stroke-white scale-100 !p-1 hover:!bg-[#1B2236] transition-all duration-200 !z-0 !w-8 !h-8 rounded-lg"
-                      />
-                      <SwapAmountInput
-                        label="Buy"
-                        swappableTokens={swappableTokens}
-                        token={toToken}
-                        type="to"
-                      />
-                      <SwapButton />
-                      <SwapMessage />
-                      <SwapToast position="bottom-center" durationMs={10000}/>
-                    </Swap>
-                    {address && onrampBuyUrl && (
-                      <div className="absolute right-4 top-3 z-[1]">
-                        <FundButton
-                          fundingUrl={onrampBuyUrl}
-                          text="BUY USDC"
-                          className="!bg-white/5 hover:!bg-white/10 !text-white !font-semibold !py-1 !px-3 !rounded-lg !leading-none !text-lg transition-all duration-200"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center w-full">
-                  <h1 className="text-5xl font-bold text-center text-white mb-6">
-                    Buy SPX6900
-                  </h1>
+            <div className="w-full max-w-4xl mx-auto items-center justify-center rounded-xl bg-transparent mt-4 mb-4">
+              <div className="flex flex-col items-center w-full">
+                <h1 className="text-5xl font-bold text-center text-white mb-6">
+                  Buy SPX6900
+                </h1>
                   <div className="w-full bg-[#1B2236] bg-opacity-70 backdrop-blur-md rounded-xl shadow-md px-8 py-8 mb-4">
                     {/* Recommended heading */}
                     <h3 className="text-xl font-bold text-white mb-4">Recommended</h3>
                     
-                    {/* Replace the existing Coinbase Wallet button section with this */}
-                    <button 
-                      onClick={handleCoinbaseWalletClick}
+                    {/* DCASPX.COM Link */}
+                    <a 
+                      href="https://dcaspx.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="w-full bg-[#1B2236]/70 hover:bg-[#1B2236]/90 text-white rounded-xl p-4 mb-6 flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer"
                     >
-                      <img src="/Coinbase_Coin_Primary.png" alt="Coinbase" className="h-8" />
+                      <img src="/spx6900.png" alt="SPX6900" className="h-8" />
                       <div className="flex flex-col items-center justify-center">
-                        <span className="text-lg font-medium">Coinbase Wallet</span>
-                        <p className="text-sm opacity-75 text-center">(0% fees)</p>
+                        <span className="text-lg font-medium">DCASPX.COM</span>
+                        <p className="text-sm opacity-75 text-center">(DCA Strategy)</p>
                       </div>
-                    </button>
+                    </a>
 
                     {/* Centralized Exchanges */}
                     <h3 className="text-xl font-bold text-white mb-4">Centralized Exchanges</h3>
@@ -1541,7 +1370,7 @@ export default function Page() {
                     <h3 className="text-xl font-bold text-white mb-4">Onchain Wallets</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
                       {[
-                        { name: 'INFINEX', url: 'https://app.infinex.xyz/', icon: '/Infinex_Logo_Cantaloupe.svg' },
+                        { name: 'INFINEX', url: 'https://app.infinex.xyz/?r=1ES7E678', icon: '/Infinex_Logo_Cantaloupe.svg' },
                         { name: 'Rabby', url: 'https://rabby.io/', icon: '/rabby-logo-white.svg' },
                         { name: 'Phantom', url: 'https://phantom.com/', icon: '/Phantom-Logo-Purple.svg' }
                       ].map((wallet) => (
@@ -1568,7 +1397,6 @@ export default function Page() {
                     </div>
                   </div>
                 </div>
-              )}
             </div>
             
             {/* Remove spacer completely */}
@@ -1613,11 +1441,9 @@ export default function Page() {
               </div>
             </div>
           </section>
-          {/* Reduce top margin for chart section */}
-          <div className="w-full max-w-[1200px] mx-auto mb-0 p-2 mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* SPX6900 Holders Over Time */}
-              <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
+          {/* SPX6900 Holders Chart - Standalone */}
+          <div className="w-full max-w-4xl mx-auto mb-4 p-2">
+            <div className="bg-[#1B2236]/40 backdrop-blur-md p-4 rounded-xl">
                 <h2 className="text-xl font-bold mb-4 text-center text-white">SPX6900 Holders Over Time</h2>
                 <div className="w-full h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1669,47 +1495,43 @@ export default function Page() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
+            </div>
+          </div>
 
-              {/* Sentiment and Engagement Section */}
-              <div className="space-y-4">
+          {/* Sentiment and Engagement Section */}
+          <div className="w-full max-w-4xl mx-auto space-y-4 p-2">
                 {/* Sentiment by Network */}
-                <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
+                <div className="bg-[#1B2236]/40 backdrop-blur-md p-4 rounded-xl">
                   <h2 className="text-xl font-bold mb-4 text-center text-white">Sentiment by Network</h2>
                   {/* Use isParseHubDataLoaded */}
                   {isParseHubDataLoaded && parseHubData?.['lunarcrush.com']?.sentiment ? (
                     <div className="space-y-4">
-                      {parseHubData?.['lunarcrush.com']?.sentiment?.map((platform: any, index: number) => {
-                        const sentimentMatch = platform.name.match(/width: ([\d.]+)%.*?background-color: rgb\(246, 80, 108\).*?width: ([\d.]+)%.*?background-color: rgb\(255, 132, 74\).*?width: ([\d.]+)%.*?background-color: rgb\(0, 184, 146\)/);
-                        
-                        const negative = sentimentMatch ? parseFloat(sentimentMatch[1]) : 0;
-                        const neutral = sentimentMatch ? parseFloat(sentimentMatch[2]) : 0;
-                        const positive = sentimentMatch ? parseFloat(sentimentMatch[3]) : 0;
-                        
-                        let svgContent = platform.name.split('</svg>')[0] + '</svg>';
-                        if (platform.name.includes('twitterColor')) {
-                          svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
-                          svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
-                        }
+                      {parseHubData?.['lunarcrush.com']?.sentiment?.[0]?.name && 
+                        parsePlatformsFromHtml(parseHubData?.['lunarcrush.com']?.sentiment[0].name).map((platform: any, index: number) => {
+                          let svgContent = platform.svgContent;
+                          if (platform.name.includes('twitterColor')) {
+                            svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
+                            svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
+                          }
 
-                        return (
-                          <div key={index} className="relative flex items-center gap-2">
-                            <div 
-                              className="w-6 h-6 flex-shrink-0"
-                              dangerouslySetInnerHTML={{ 
-                                __html: svgContent
-                              }} 
-                            />
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
-                              <div className="h-full flex">
-                                <div className="h-full bg-[#f6506c] hover:brightness-125 hover:shadow-[0_0_15px_rgba(246,80,108,0.5)] transition-all duration-300" style={{ width: `${negative}%` }} />
-                                <div className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300" style={{ width: `${neutral}%` }} />
-                                <div className="h-full bg-[#00b892] hover:brightness-125 hover:shadow-[0_0_15px_rgba(0,184,146,0.5)] transition-all duration-300" style={{ width: `${positive}%` }} />
+                          return (
+                            <div key={index} className="relative flex items-center gap-2">
+                              <div 
+                                className="w-6 h-6 flex-shrink-0"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: svgContent
+                                }} 
+                              />
+                              <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
+                                <div className="h-full flex">
+                                  <div className="h-full bg-[#f6506c] hover:brightness-125 hover:shadow-[0_0_15px_rgba(246,80,108,0.5)] transition-all duration-300" style={{ width: `${platform.negative}%` }} />
+                                  <div className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300" style={{ width: `${platform.neutral}%` }} />
+                                  <div className="h-full bg-[#00b892] hover:brightness-125 hover:shadow-[0_0_15px_rgba(0,184,146,0.5)] transition-all duration-300" style={{ width: `${platform.positive}%` }} />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   ) : (
                     <p className="text-center text-gray-400">Loading sentiment data...</p>
@@ -1717,126 +1539,44 @@ export default function Page() {
                 </div>
 
                 {/* Engagements by Network */}
-                <div className="bg-[#1B2236] bg-opacity-70 backdrop-blur-md p-4 rounded-xl shadow-md">
+                <div className="bg-[#1B2236]/40 backdrop-blur-md p-4 rounded-xl">
                   <h2 className="text-xl font-bold mb-4 text-center text-white">Engagements by Network</h2>
                   {/* Use isParseHubDataLoaded */}
                   {isParseHubDataLoaded && parseHubData?.['lunarcrush.com']?.engagement ? (
                     <div className="space-y-4">
-                      {parseHubData?.['lunarcrush.com']?.engagement?.map((platform: any, index: number) => {
-                        const widthMatch = platform.name.match(/width: ([\d.]+)%/);
-                        const width = widthMatch ? parseFloat(widthMatch[1]) : 0;
-                        
-                        let svgContent = platform.name.split('</svg>')[0] + '</svg>';
-                        if (platform.name.includes('twitterColor')) {
-                          svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
-                          svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
-                        }
+                      {parseHubData?.['lunarcrush.com']?.engagement?.[0]?.name && 
+                        parseEngagementFromHtml(parseHubData?.['lunarcrush.com']?.engagement[0].name).map((platform: any, index: number) => {
+                          let svgContent = platform.svgContent;
+                          if (platform.name.includes('twitterColor')) {
+                            svgContent = svgContent.replace(/fill="(?:#fff|#ffffff|white|#F5FAFA)"|fill=#fff/g, 'fill="white"');
+                            svgContent = svgContent.replace(/(width="24" height="24".*?fill=["'])(#fff|#ffffff|white|#F5FAFA)(["'])/, '$1white$3');
+                          }
 
-                        return (
-                          <div key={index} className="relative flex items-center gap-2">
-                            <div 
-                              className="w-6 h-6 flex-shrink-0"
-                              dangerouslySetInnerHTML={{ 
-                                __html: svgContent
-                              }} 
-                            />
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
+                          return (
+                            <div key={index} className="relative flex items-center gap-2">
                               <div 
-                                className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300"
-                                style={{ width: `${width}%` }}
+                                className="w-6 h-6 flex-shrink-0"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: svgContent
+                                }} 
                               />
+                              <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex-grow">
+                                <div 
+                                  className="h-full bg-[#ff844a] hover:brightness-125 hover:shadow-[0_0_15px_rgba(255,132,74,0.5)] transition-all duration-300"
+                                  style={{ width: `${platform.width}%` }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   ) : (
                     <p className="text-center text-gray-400">Loading engagement data...</p>
                   )}
                 </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Links and Dropdowns Section */}
-        <div className="w-full max-w-[1200px] mx-auto mb-0 p-2">
-          <div className="w-full grid grid-cols-1 gap-2">
-            <a 
-              href="https://spx6900.com/"
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="px-4 py-3 bg-[#1B2236] bg-opacity-70 text-white rounded-md text-center hover:bg-opacity-80 transition-colors flex items-center justify-center backdrop-blur-sm"
-            >
-              <img 
-                src="/spx6900.png" 
-                alt="SPX6900" 
-                className="w-5 h-5 mr-2"
-              />
-              <span>Official Website</span>
-            </a>
-            <a 
-              href="https://t.me/SPX6900" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="px-4 py-3 bg-[#1B2236] bg-opacity-70 text-white rounded-md text-center hover:bg-opacity-80 transition-colors flex items-center justify-center backdrop-blur-sm"
-            >
-              <img 
-                src="/telegram_logo.png" 
-                alt="Telegram" 
-                className="w-5 h-5 mr-2"
-              />
-              <span>Community Chat</span>
-            </a>
-            <button 
-              onClick={() => toggleDropdown('howToBuyVideo')}
-              className="px-4 py-3 bg-[#1B2236] bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
-            >
-              <span className="mr-2">🎥 How to Buy (Video Guide)</span>
-              <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'howToBuyVideo' ? 'rotate-180' : ''}`}>▼</span>
-            </button>
-            <button 
-              onClick={() => toggleDropdown('sponsoredBuys')}
-              className="px-4 py-3 bg-[#1B2236] bg-opacity-70 text-white rounded-md flex items-center justify-center relative hover:bg-opacity-80 transition-colors backdrop-blur-sm"
-            >
-              <span className="mr-2">🎁 How are there no fees?</span>
-              <span className={`absolute right-2 transition-transform duration-300 ${openDropdown === 'sponsoredBuys' ? 'rotate-180' : ''}`}>▼</span>
-            </button>
-          </div>
-
-          {/* Sponsored Buys content */}
-          <div 
-            className={`w-full md:w-[450px] mx-auto overflow-hidden transition-all duration-300 ease-in-out mt-4 ${
-              openDropdown === 'sponsoredBuys' ? 'max-h-[600px]' : 'max-h-0'
-            }`}
-          >
-            <div className="bg-white bg-opacity-50 backdrop-blur-md p-4 rounded-md shadow-md text-center">
-              <p className="font-bold text-xl mb-4">Zero Fees! We're sponsoring!</p>
-              <div className="w-full overflow-auto">
-                <img src="/nogas.png" alt="Sponsored Buys" className="w-full h-auto max-w-none" />
-              </div>
-            </div>
-          </div>
-          
-          {/* How to Buy Video content */}
-          <div 
-            className={`w-full md:w-[450px] mx-auto overflow-hidden transition-all duration-300 ease-in-out mt-4 ${
-              openDropdown === 'howToBuyVideo' ? 'max-h-[315px]' : 'max-h-0'
-            }`}
-          >
-            <div className="bg-white bg-opacity-50 backdrop-blur-md p-4 rounded-md shadow-md">
-              <iframe
-                width="100%"
-                height="315"
-                src="https://www.youtube.com/embed/HxAkFlOIoCA"
-                title="How to Buy SPX6900"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-        </div>
       </main>
 
       {/* Footer positioned outside of main */}

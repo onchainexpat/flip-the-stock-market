@@ -54,7 +54,7 @@ export default function RootLayout({
 }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen w-full max-w-full overflow-x-hidden">
+      <body className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden items-center">
         <OnchainProviders>{children}</OnchainProviders>
         <Toaster position="bottom-center" />
       </body>
