@@ -203,46 +203,35 @@ a {
   scrollbar-color: #2D3748 #1B2236;
 }
 
-/* Coin flip animation for the word "flip" */
-@keyframes coin-flip {
-  0% {
-    transform: translateY(0) rotateX(0deg);
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  20% {
-    transform: translateY(-80px) rotateX(360deg);
-    animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
-  }
-  30% {
-    transform: translateY(-100px) rotateX(540deg);
-    animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  }
-  40% {
-    transform: translateY(-80px) rotateX(720deg);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+/* Simple flip animation for the word "flip" */
+@keyframes flip-x {
+  0%, 100% {
+    transform: rotateX(0deg);
   }
   50% {
-    transform: translateY(-40px) rotateX(900deg);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-  60% {
-    transform: translateY(0) rotateX(1080deg);
-    animation-timing-function: ease-out;
-  }
-  65% {
-    transform: translateY(0) rotateX(1080deg);
-  }
-  100% {
-    transform: translateY(0) rotateX(1080deg);
+    transform: rotateX(180deg);
   }
 }
 
-.flip-word {
+.flip-container {
   display: inline-block;
-  animation: coin-flip 4s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite;
-  transform-style: preserve-3d;
   position: relative;
-  transform-origin: center center;
+  transform-style: preserve-3d;
+  animation: flip-x 3s ease-in-out infinite;
+}
+
+.flip-word {
+  display: block;
+  backface-visibility: hidden;
+}
+
+.flip-word-back {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotateX(180deg) rotateY(180deg);
+  backface-visibility: hidden;
 }
 
 .header-text {
