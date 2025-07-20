@@ -217,7 +217,7 @@ a {
   display: inline-block;
   animation: flip-horizontal 3s ease-in-out infinite;
   transform-style: preserve-3d;
-  backface-visibility: hidden;
+  position: relative;
 }
 
 .header-text {
@@ -230,6 +230,8 @@ a {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Ensure the gradient is inherited by children */
+  background-attachment: fixed;
 }
 
 /* Add this at the end of the file */
