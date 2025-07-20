@@ -206,19 +206,10 @@ a {
 /* Shimmer animation for header text */
 @keyframes shimmer {
   0% {
-    background-position: -100% center;
+    background-position: -200% center;
   }
   100% {
-    background-position: 100% center;
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
-  }
-  50% {
-    filter: brightness(1.2) drop-shadow(0 0 30px rgba(255, 215, 0, 0.6));
+    background-position: 200% center;
   }
 }
 
@@ -226,17 +217,16 @@ a {
   background: linear-gradient(
     90deg,
     #FFD700 0%,
-    #FFFF99 20%,
-    #FFD700 40%,
-    #FFA500 60%,
-    #FFD700 80%,
-    #FFFF99 100%
+    #FFFF99 25%,
+    #FFD700 50%,
+    #FFA500 75%,
+    #FFD700 100%
   );
-  background-size: 200% 100%;
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 8s ease-in-out infinite;
+  animation: shimmer 6s linear infinite;
 }
 
 /* Add this at the end of the file */
