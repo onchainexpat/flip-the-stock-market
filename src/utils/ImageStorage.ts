@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis'
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { type Browser, type Page } from 'puppeteer';
 import * as cheerio from 'cheerio';
 
 const redis = new Redis({
@@ -175,7 +175,11 @@ export async function downloadAndStoreProfileImages(profiles: any[]) {
       try {
           // --- MODIFIED CACHE CHECK ---
           let existingData = null; // Define it here for update counter later
-          if (!FORCE_UPDATE) {
+          if (FORCE_UPDATE) {
+               console.log(`  FORCE_UPDATE is true. Will attempt to fetch and update ${profile.username} even if it exists in cache.`);
+               // Fetch existing data only if FORCE_UPDATE is true AND you want the 'updated' counter
+               existingData = await redis.get(key);
+          } else {
               // ... cache check logic ...
               const checkExisting = await redis.get(key); // Rename var to avoid conflict
               if (checkExisting) {
@@ -183,10 +187,6 @@ export async function downloadAndStoreProfileImages(profiles: any[]) {
                    results.skipped++;
                    continue;
               }
-          } else {
-               console.log(`  FORCE_UPDATE is true. Will attempt to fetch and update ${profile.username} even if it exists in cache.`);
-               // Fetch existing data only if FORCE_UPDATE is true AND you want the 'updated' counter
-               existingData = await redis.get(key);
           }
           // --- END MODIFIED CACHE CHECK ---
 

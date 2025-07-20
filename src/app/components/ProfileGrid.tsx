@@ -181,7 +181,7 @@ export default function ProfileGrid() {
                 <Image
                   src={imageCache[profile.username]}
                   alt={profile.username}
-                  fill
+                  fill={true}
                   sizes="(max-width: 640px) 32px, (max-width: 768px) 35px, 38px"
                   className="rounded-full object-cover hover:opacity-60 transition-opacity border border-white/10 hover:border-white/30"
                   quality={75}
@@ -207,7 +207,7 @@ export default function ProfileGrid() {
                       <Image
                         src={imageCache[profile.username]}
                         alt={profile.username}
-                        fill
+                        fill={true}
                         sizes="48px"
                         className="rounded-full object-cover"
                         quality={75}

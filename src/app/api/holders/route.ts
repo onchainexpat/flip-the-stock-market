@@ -34,7 +34,7 @@ async function fetchFreshHoldersData() {
   const formattedData = rows.map(row => ({
     date: row.day.split(' ')[0],
     holders: row.total_holders,
-    percentChange: parseFloat(row.daily_change_percent)
+    percentChange: Number.parseFloat(row.daily_change_percent)
   })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
   console.log(`Fetched ${formattedData.length} rows from Dune`);
@@ -43,12 +43,17 @@ async function fetchFreshHoldersData() {
 
 export async function GET() {
   try {
-    const cachedString = await redis.get<string>(CACHE_KEY);
+    const cachedData = await redis.get(CACHE_KEY);
     let cachedResult: CachedHoldersData | null = null;
 
-    if (cachedString) {
+    if (cachedData) {
       try {
-        cachedResult = JSON.parse(cachedString) as CachedHoldersData;
+        // If the cached data is already an object, use it directly
+        if (typeof cachedData === 'object') {
+          cachedResult = cachedData as CachedHoldersData;
+        } else if (typeof cachedData === 'string') {
+          cachedResult = JSON.parse(cachedData) as CachedHoldersData;
+        }
       } catch (parseError) {
         console.error('Failed to parse cached Dune data:', parseError);
       }

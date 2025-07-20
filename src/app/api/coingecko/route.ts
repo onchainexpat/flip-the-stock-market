@@ -1,12 +1,12 @@
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
-import { kv } from '@vercel/kv'; // Assuming KV is used elsewhere, or replace if not needed
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
+const COINGECKO_API_KEY = process.env.COINGECKO_API;
 const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=spx6900&vs_currencies=usd&include_market_cap=true&include_24hr_change=true';
 const CACHE_KEY = 'coingecko_price_data'; // Use a new key for structured data
 const CACHE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
@@ -45,7 +45,12 @@ export async function GET() {
 
     // 3. Fetch fresh data if cache is missing or expired
     console.log('Fetching fresh CoinGecko data');
-    const response = await fetch(COINGECKO_API_URL);
+    const headers: HeadersInit = {};
+    if (COINGECKO_API_KEY) {
+      headers['x-cg-demo-api-key'] = COINGECKO_API_KEY;
+    }
+    
+    const response = await fetch(COINGECKO_API_URL, { headers });
     if (!response.ok) {
       throw new Error(`CoinGecko API request failed with status ${response.status}`);
     }

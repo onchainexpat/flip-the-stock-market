@@ -1,5 +1,4 @@
-import { Metadata } from 'next';
-import Image from 'next/image'; // Optional: if you want to display the image
+import type { Metadata } from 'next';
 
 // Function to generate metadata dynamically
 export async function generateMetadata({ params }: { params: { imageFilename: string } }): Promise<Metadata> {

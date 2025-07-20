@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { NEXT_PUBLIC_URL } from '../../../config';
 
 type Props = {

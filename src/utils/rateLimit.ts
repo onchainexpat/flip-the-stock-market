@@ -3,7 +3,7 @@ export class RateLimiter {
   private maxRequests: number;
   private timeWindowMs: number;
 
-  constructor(maxRequests: number = 5, timeWindowMs: number = 60000) {
+  constructor(maxRequests = 5, timeWindowMs = 60000) {
     this.requests = new Map();
     this.maxRequests = maxRequests;
     this.timeWindowMs = timeWindowMs;
