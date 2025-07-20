@@ -1173,10 +1173,7 @@ export default function Page() {
               
               {/* Text with gradient */}
               <h1 className="relative z-10 text-7xl sm:text-8xl md:text-9xl font-bold text-center p-4 header-text">
-                <span className="flip-container">
-                  <span className="flip-word">flip</span>
-                  <span className="flip-word-back">flip</span>
-                </span> the stock market
+                <span className="flip-word">flip</span> the stock market
               </h1>
             </div>
             
