@@ -23,6 +23,7 @@
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@types/cheerio": "^0.22.35",
     "@upstash/redis": "^1.34.8",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^1.0.0",
     "@vercel/kv": "^3.0.0",
     "cheerio": "^1.0.0",

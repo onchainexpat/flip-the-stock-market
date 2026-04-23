@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { NEXT_PUBLIC_URL } from '../config';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/next';
 
 import './global.css';
 import '@coinbase/onchainkit/styles.css';
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden items-center">
         <OnchainProviders>{children}</OnchainProviders>
         <Toaster position="bottom-center" />
+        <Analytics />
       </body>
     </html>
   );
